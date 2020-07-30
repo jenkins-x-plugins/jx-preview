@@ -31,20 +31,20 @@ import (
 
 	"github.com/jenkins-x/jx/v2/pkg/kube/services"
 
+	"github.com/jenkins-x/jx-logging/pkg/log"
 	v1 "github.com/jenkins-x/jx/v2/pkg/apis/jenkins.io/v1"
 	"github.com/jenkins-x/jx/v2/pkg/cmd/opts"
 	"github.com/jenkins-x/jx/v2/pkg/cmd/templates"
 	"github.com/jenkins-x/jx/v2/pkg/config"
 	"github.com/jenkins-x/jx/v2/pkg/gits"
 	"github.com/jenkins-x/jx/v2/pkg/kube"
-	"github.com/jenkins-x/jx-logging/pkg/log"
 	"github.com/jenkins-x/jx/v2/pkg/util"
-	kserve "knative.dev/serving/pkg/client/clientset/versioned"
 	"github.com/spf13/cobra"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+	kserve "knative.dev/serving/pkg/client/clientset/versioned"
 )
 
 var (
@@ -82,8 +82,8 @@ type PreviewRequirementsYaml struct {
 	Preview config.RequirementsValues `json:"preview,omitempty"`
 }
 
-// PreviewOptions the options for viewing running PRs
-type PreviewOptions struct {
+// Options the options for viewing running PRs
+type Options struct {
 	promote.PromoteOptions
 
 	Name                   string
@@ -119,7 +119,7 @@ type PreviewOptions struct {
 
 // NewCmdPreview creates a command object for the "create" command
 func NewCmdPreview(commonOpts *opts.CommonOptions) *cobra.Command {
-	options := &PreviewOptions{
+	options := &Options{
 		HelmValuesConfig: config.HelmValuesConfig{
 			ExposeController: &config.ExposeController{},
 		},
@@ -154,7 +154,7 @@ func NewCmdPreview(commonOpts *opts.CommonOptions) *cobra.Command {
 	return cmd
 }
 
-func (o *PreviewOptions) AddPreviewOptions(cmd *cobra.Command) {
+func (o *Options) AddPreviewOptions(cmd *cobra.Command) {
 	cmd.Flags().StringVarP(&o.Name, kube.OptionName, "n", "", "The Environment resource name. Must follow the Kubernetes name conventions like Services, Namespaces")
 	cmd.Flags().StringVarP(&o.Label, "label", "l", "", "The Environment label which is a descriptive string like 'Production' or 'Staging'")
 	cmd.Flags().StringVarP(&o.Namespace, kube.OptionNamespace, "", "", "The Kubernetes namespace for the Environment")
@@ -174,7 +174,7 @@ func (o *PreviewOptions) AddPreviewOptions(cmd *cobra.Command) {
 }
 
 // Run implements the command
-func (o *PreviewOptions) Run() error {
+func (o *Options) Run() error {
 	var err error
 	if o.PostPreviewJobPollTime != "" {
 		o.PostPreviewJobPollDuration, err = time.ParseDuration(o.PostPreviewJobPollTime)
@@ -683,7 +683,7 @@ func (o *PreviewOptions) Run() error {
 }
 
 // findPreviewURL finds the preview URL
-func (o *PreviewOptions) findPreviewURL(kubeClient kubernetes.Interface, kserveClient kserve.Interface) (string, []string, error) {
+func (o *Options) findPreviewURL(kubeClient kubernetes.Interface, kserveClient kserve.Interface) (string, []string, error) {
 	app := naming.ToValidName(o.Application)
 	appNames := []string{app, o.ReleaseName, o.Namespace + "-preview", o.ReleaseName + "-" + app}
 	url := ""
@@ -706,7 +706,7 @@ func (o *PreviewOptions) findPreviewURL(kubeClient kubernetes.Interface, kserveC
 }
 
 // RunPostPreviewSteps lets run any post-preview steps that are configured for all apps in a team
-func (o *PreviewOptions) RunPostPreviewSteps(kubeClient kubernetes.Interface, ns string, url string, pipeline string, build string, application string) error {
+func (o *Options) RunPostPreviewSteps(kubeClient kubernetes.Interface, ns string, url string, pipeline string, build string, application string) error {
 	teamSettings, err := o.TeamSettings()
 	if err != nil {
 		return err
@@ -773,7 +773,7 @@ func (o *PreviewOptions) RunPostPreviewSteps(kubeClient kubernetes.Interface, ns
 	return o.waitForJobsToComplete(kubeClient, createdJobs)
 }
 
-func (o *PreviewOptions) waitForJobsToComplete(kubeClient kubernetes.Interface, jobs []*batchv1.Job) error {
+func (o *Options) waitForJobsToComplete(kubeClient kubernetes.Interface, jobs []*batchv1.Job) error {
 	for _, job := range jobs {
 		err := o.waitForJob(kubeClient, job)
 		if err != nil {
@@ -784,7 +784,7 @@ func (o *PreviewOptions) waitForJobsToComplete(kubeClient kubernetes.Interface, 
 }
 
 // waits for this job to complete
-func (o *PreviewOptions) waitForJob(kubeClient kubernetes.Interface, job *batchv1.Job) error {
+func (o *Options) waitForJob(kubeClient kubernetes.Interface, job *batchv1.Job) error {
 	name := job.Name
 	ns := job.Namespace
 	log.Logger().Infof("waiting for Job %s in namespace %s to complete...\n", util.ColorInfo(name), util.ColorInfo(ns))
@@ -819,7 +819,7 @@ func (o *PreviewOptions) waitForJob(kubeClient kubernetes.Interface, job *batchv
 }
 
 // modifyJob adds the given environment variables into all the containers in the job
-func (o *PreviewOptions) modifyJob(originalJob *batchv1.Job, envVars map[string]string) *batchv1.Job {
+func (o *Options) modifyJob(originalJob *batchv1.Job, envVars map[string]string) *batchv1.Job {
 	job := *originalJob
 	for k, v := range envVars {
 		templateSpec := &job.Spec.Template.Spec
@@ -837,7 +837,7 @@ func (o *PreviewOptions) modifyJob(originalJob *batchv1.Job, envVars map[string]
 	return &job
 }
 
-func (o *PreviewOptions) DefaultValues(ns string, warnMissingName bool) error {
+func (o *Options) DefaultValues(ns string, warnMissingName bool) error {
 	var err error
 	if o.Application == "" {
 		o.Application, err = o.DiscoverAppName()
@@ -951,7 +951,7 @@ func (o *PreviewOptions) DefaultValues(ns string, warnMissingName bool) error {
 }
 
 // GetPreviewValuesConfig returns the PreviewValuesConfig to use as extraValues for helm
-func (o *PreviewOptions) GetPreviewValuesConfig(projectConfig *config.ProjectConfig, domain string) (*config.PreviewValuesConfig, error) {
+func (o *Options) GetPreviewValuesConfig(projectConfig *config.ProjectConfig, domain string) (*config.PreviewValuesConfig, error) {
 	repository, err := o.getImageName(projectConfig)
 	if err != nil {
 		return nil, err
@@ -979,7 +979,7 @@ func (o *PreviewOptions) GetPreviewValuesConfig(projectConfig *config.ProjectCon
 	return &values, nil
 }
 
-func writePreviewURL(o *PreviewOptions, url string) {
+func writePreviewURL(o *Options, url string) {
 	previewFileName := filepath.Join(o.Dir, ".previewUrl")
 	err := ioutil.WriteFile(previewFileName, []byte(url), 0644)
 	if err != nil {
@@ -987,7 +987,7 @@ func writePreviewURL(o *PreviewOptions, url string) {
 	}
 }
 
-func (o *PreviewOptions) getContainerRegistry(projectConfig *config.ProjectConfig) (string, error) {
+func (o *Options) getContainerRegistry(projectConfig *config.ProjectConfig) (string, error) {
 	teamSettings, err := o.TeamSettings()
 	if err != nil {
 		return "", errors.Wrap(err, "could not load team")
@@ -1028,7 +1028,7 @@ func (o *PreviewOptions) getContainerRegistry(projectConfig *config.ProjectConfi
 	return fmt.Sprintf("%s:%s", registryHost, registryPort), nil
 }
 
-func (o *PreviewOptions) getImageName(projectConfig *config.ProjectConfig) (string, error) {
+func (o *Options) getImageName(projectConfig *config.ProjectConfig) (string, error) {
 	containerRegistry, err := o.getContainerRegistry(projectConfig)
 	if err != nil {
 		return "", err

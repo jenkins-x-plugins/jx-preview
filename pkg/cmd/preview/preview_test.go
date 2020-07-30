@@ -6,25 +6,25 @@ import (
 	"os"
 	"testing"
 
-	"github.com/jenkins-x/jx/pkg/cmd/preview"
-	"github.com/jenkins-x/jx/pkg/cmd/testhelpers"
+	"github.com/jenkins-x/jx-preview/pkg/cmd/preview"
+	"github.com/jenkins-x/jx/v2/pkg/cmd/testhelpers"
 
-	"github.com/jenkins-x/jx/pkg/cmd/opts"
-	"github.com/jenkins-x/jx/pkg/config"
-	gits_test "github.com/jenkins-x/jx/pkg/gits/mocks"
-	helm_test "github.com/jenkins-x/jx/pkg/helm/mocks"
+	"github.com/jenkins-x/jx/v2/pkg/cmd/opts"
+	"github.com/jenkins-x/jx/v2/pkg/config"
+	gits_test "github.com/jenkins-x/jx/v2/pkg/gits/mocks"
+	helm_test "github.com/jenkins-x/jx/v2/pkg/helm/mocks"
 )
 
 func TestGetPreviewValuesConfig(t *testing.T) {
 	t.Parallel()
 	tests := []struct {
-		opts               preview.PreviewOptions
+		opts               preview.Options
 		env                map[string]string
 		domain             string
 		expectedYAMLConfig string
 	}{
 		{
-			opts: preview.PreviewOptions{
+			opts: preview.Options{
 				HelmValuesConfig: config.HelmValuesConfig{
 					ExposeController: &config.ExposeController{},
 				},
@@ -44,7 +44,7 @@ preview:
 `,
 		},
 		{
-			opts: preview.PreviewOptions{
+			opts: preview.Options{
 				HelmValuesConfig: config.HelmValuesConfig{
 					ExposeController: &config.ExposeController{
 						Config: config.ExposeControllerConfig{
