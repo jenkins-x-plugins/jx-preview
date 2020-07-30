@@ -7,7 +7,7 @@
 [![Slack Status](https://img.shields.io/badge/slack-join_chat-white.svg?logo=slack&style=social)](https://slack.k8s.io/)
 
 
-`jx-preview` is a small command line tool for working with applications deployed in [Jenkins X](https://jenkins-x.io/) environments.
+`jx-preview` is a small command line tool for creating Preview Environments in [Jenkins X](https://jenkins-x.io/) environments.
 
 ## Commands
 
