@@ -11,6 +11,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/jenkins-x/jx-helpers/pkg/cmdrunner"
+	"github.com/jenkins-x/jx-helpers/pkg/files"
+	"github.com/jenkins-x/jx-helpers/pkg/gitclient/cli"
+	"github.com/jenkins-x/jx-helpers/pkg/versionstream/versionstreamrepo"
 	"github.com/jenkins-x/jx/v2/pkg/builds"
 
 	"github.com/jenkins-x/jx/v2/pkg/cmd/opts/step"
@@ -527,7 +531,13 @@ func (o *Options) Run() error {
 			helmOptions.ValueFiles = append(helmOptions.ValueFiles, defaultValuesFileName)
 		}
 
+		versionStreamURL := ""
+		versionStreamRef := ""
+
 		if requirements != nil {
+			versionStreamURL = requirements.VersionStream.URL
+			versionStreamRef = requirements.VersionStream.Ref
+
 			// lets generate the requirements yaml file indented by preview
 			y := &PreviewRequirementsYaml{}
 			y.Preview.RequirementsConfig = requirements
@@ -548,6 +558,24 @@ func (o *Options) Run() error {
 			log.Logger().Infof("adding helm values file %s for namespace %s", util.ColorInfo(requirementsYamlFile), util.ColorInfo(o.Namespace))
 			helmOptions.ValueFiles = append(helmOptions.ValueFiles, requirementsYamlFile)
 		}
+
+
+		// lets use a temp dir for the version stream
+		tmpDir, err := ioutil.TempDir("", "")
+		if err != nil {
+		  return errors.Wrapf(err, "failed to create temp dir")
+		}
+
+		newGitter := cli.NewCLIClient("", cmdrunner.DefaultCommandRunner)
+
+		helmOptions.VersionsGitURL = versionStreamURL
+		helmOptions.VersionsGitRef = versionStreamRef
+		h := o.GetIOFileHandles()
+		newHandles := files.IOFileHandles{
+			Out: h.Out,
+			Err: h.Err,
+		}
+		helmOptions.VersionsDir, _, err = versionstreamrepo.CloneJXVersionsRepoToDir(tmpDir, versionStreamURL, versionStreamRef, nil, newGitter, true, false, newHandles)
 
 		err = o.InstallChartWithOptions(helmOptions)
 		if err != nil {
