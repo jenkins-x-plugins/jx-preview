@@ -8,6 +8,7 @@ import (
 	"github.com/jenkins-x/jx-preview/pkg/cmd/version"
 	"github.com/jenkins-x/jx/v2/pkg/cmd/clients"
 	"github.com/jenkins-x/jx/v2/pkg/cmd/opts"
+	"github.com/jenkins-x/jx/v2/pkg/helm"
 	"github.com/spf13/cobra"
 )
 
@@ -15,6 +16,7 @@ import (
 func Main() *cobra.Command {
 	f := clients.NewFactory()
 	commonOpts := opts.NewCommonOptionsWithTerm(f, os.Stdin, os.Stdout, os.Stderr)
+	commonOpts.SetHelm(helm.NewHelmCLI("helm", helm.V3, "", false))
 
 	cmd := preview.NewCmdPreview(commonOpts)
 
