@@ -36,7 +36,8 @@ import (
 	"github.com/jenkins-x/jx/v2/pkg/kube/services"
 
 	"github.com/jenkins-x/jx-logging/pkg/log"
-	v1 "github.com/jenkins-x/jx/v2/pkg/apis/jenkins.io/v1"
+
+	v1 "github.com/jenkins-x/jx-api/pkg/apis/jenkins.io/v1"
 	"github.com/jenkins-x/jx/v2/pkg/cmd/opts"
 	"github.com/jenkins-x/jx/v2/pkg/cmd/templates"
 	"github.com/jenkins-x/jx/v2/pkg/config"
@@ -568,7 +569,7 @@ func (o *Options) Run() error {
 			Out: h.Out,
 			Err: h.Err,
 		}
-		helmOptions.VersionsDir, _, err = versionstreamrepo.CloneJXVersionsRepoToDir(tmpDir, versionStreamURL, versionStreamRef, nil, newGitter, true, false, newHandles)
+		helmOptions.VersionsDir, _, err = versionstreamrepo.CloneJXVersionsRepoToDir(tmpDir, versionStreamURL, versionStreamRef, teamSettings, newGitter, true, false, newHandles)
 
 		err = o.InstallChartWithOptions(helmOptions)
 		if err != nil {
