@@ -108,6 +108,7 @@ type Options struct {
 	GitConfDir      string
 	GitProvider     gits.GitProvider
 	GitInfo         *gits.GitRepository
+	HelmForce       bool
 	NoComment       bool
 	skipDeploy      bool
 
@@ -172,6 +173,7 @@ func (o *Options) AddPreviewOptions(cmd *cobra.Command) {
 	cmd.Flags().StringVarP(&o.PostPreviewJobTimeout, optionPostPreviewJobTimeout, "", "2h", "The duration before we consider the post preview Jobs failed")
 	cmd.Flags().StringVarP(&o.PostPreviewJobPollTime, optionPostPreviewJobPollTime, "", "10s", "The amount of time between polls for the post preview Job status")
 	cmd.Flags().StringVarP(&o.PreviewHealthTimeout, optionPreviewHealthTimeout, "", "5m", "The amount of time to wait for the preview application to become healthy")
+	cmd.Flags().BoolVarP(&o.HelmForce, "helm-force", "", false, "Adds --force to the helm command.")
 	cmd.Flags().BoolVarP(&o.NoComment, "no-comment", "", false, "Disables commenting on the Pull Request after preview is created.")
 	cmd.Flags().BoolVarP(&o.skipDeploy, "skip-deploy", "", false, "Skips the helm deployment")
 	cmd.Flags().BoolVarP(&o.SkipAvailabilityCheck, "skip-availability-check", "", false, "Disables the mandatory availability check.")
@@ -504,7 +506,6 @@ func (o *Options) Run() error {
 	}
 
 	if !o.skipDeploy {
-
 		setValues, setStrings := o.GetEnvChartValues(o.Namespace, env)
 		helmOptions := helm.InstallChartOptions{
 			Chart:       ".",
@@ -514,6 +515,7 @@ func (o *Options) Run() error {
 			SetStrings:  setStrings,
 			ValueFiles:  []string{configFileName},
 			Wait:        true,
+			NoForce:     !o.HelmForce,
 		}
 
 		// if the preview chart has values.yaml then pass that so we can replace any secrets from vault
