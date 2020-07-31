@@ -334,15 +334,7 @@ func (o *Options) Run() error {
 	}
 
 	if o.ReleaseName == "" {
-		_, noTiller, helmTemplate, err := o.TeamHelmBin()
-		if err != nil {
-			return err
-		}
-		if noTiller || helmTemplate {
-			o.ReleaseName = "preview"
-		} else {
-			o.ReleaseName = o.Namespace
-		}
+		o.ReleaseName = "preview"
 	}
 
 	environmentsResource := jxClient.JenkinsV1().Environments(ns)
@@ -559,11 +551,10 @@ func (o *Options) Run() error {
 			helmOptions.ValueFiles = append(helmOptions.ValueFiles, requirementsYamlFile)
 		}
 
-
 		// lets use a temp dir for the version stream
 		tmpDir, err := ioutil.TempDir("", "")
 		if err != nil {
-		  return errors.Wrapf(err, "failed to create temp dir")
+			return errors.Wrapf(err, "failed to create temp dir")
 		}
 
 		newGitter := cli.NewCLIClient("", cmdrunner.DefaultCommandRunner)
