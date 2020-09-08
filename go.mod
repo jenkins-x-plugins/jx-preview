@@ -4,14 +4,18 @@ require (
 	github.com/cenkalti/backoff v2.2.1+incompatible
 	github.com/cpuguy83/go-md2man v1.0.10
 	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32
+	github.com/jenkins-x/go-scm v1.5.162
 	github.com/jenkins-x/jx-api v0.0.17
-	github.com/jenkins-x/jx-helpers v1.0.47
+	github.com/jenkins-x/jx-gitops v0.0.276
+	github.com/jenkins-x/jx-helpers v1.0.48
+	github.com/jenkins-x/jx-kube-client v0.0.8
 	github.com/jenkins-x/jx-logging v0.0.11
 	github.com/jenkins-x/jx/v2 v2.1.142
-	github.com/jenkins-x/lighthouse v0.0.785 // indirect
+	github.com/jenkins-x/lighthouse v0.0.788
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/pflag v1.0.5
+	github.com/tektoncd/pipeline v0.14.2
 	k8s.io/api v0.18.1
 	k8s.io/apimachinery v0.18.1
 	k8s.io/client-go v11.0.1-0.20190805182717-6502b5e7b1b5+incompatible
@@ -46,5 +50,7 @@ replace github.com/TV4/logrus-stackdriver-formatter => github.com/jenkins-x/logr
 replace k8s.io/test-infra => github.com/jenkins-x/test-infra v0.0.0-20200611142252-211a92405c22
 
 replace gomodules.xyz/jsonpatch/v2 => gomodules.xyz/jsonpatch/v2 v2.0.1
+
+replace github.com/jenkins-x/jx-helpers => /workspace/go/src/github.com/jenkins-x/jx-helpers
 
 go 1.13

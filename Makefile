@@ -170,12 +170,53 @@ lint: ## Lint the code
 .PHONY: all
 all: fmt build test lint
 
+generate-client: codegen-clientset fmt ## Generate the client
+
+codegen-clientset: ## Generate the k8s types and clients
+	@echo "Generating Kubernetes Clients for pkg/apis/preview/v1alpha1 in pkg/client for preview.jenkins.io:v1alpha1"
+	./hack/update-codegen.sh
+
+verify-code-unchanged: ## Verify the generated/formatting of code is up to date
+	$(eval CHANGED = $(shell git ls-files --modified --others --exclude-standard))
+	@if [ "$(CHANGED)" == "" ]; \
+      	then \
+      	    echo "All generated and formatted files up to date"; \
+      	else \
+      		echo "Code generation and/or formatting is out of date"; \
+      		echo "$(CHANGED)"; \
+			git diff; \
+      		exit 1; \
+      	fi
+
+CONTROLLER_GEN := $(GOPATH)/bin/controller-gen
+$(CONTROLLER_GEN):
+	pushd /tmp; $(GO) get -u sigs.k8s.io/controller-tools/cmd/controller-gen@v0.4.0; popd
+
+crd-manifests: $(CONTROLLER_GEN)
+	$(CONTROLLER_GEN) crd:maxDescLen=0 paths="./pkg/apis/preview/v1alpha1/..." output:crd:artifacts:config=crds
+
+.PHONY: docs
+docs: cli-docs crds-docs
+
+DOCS_GEN := bin/gen-docs
+$(DOCS_GEN):
+	$(GO) build -o bin/gen-docs ./hack/struct-docs.go
+
+	pushd /tmp; $(GO) get -u sigs.k8s.io/controller-tools/cmd/controller-gen@v0.4.0; popd
+
+.PHONY: crds-docs
+crds-docs: $(DOCS_GEN)
+	rm -rf ./docs/crds
+	$(DOCS_GEN) --input=./pkg/apis/preview/v1alpha1/... --root=Preview --output=./docs/crds
+
 bin/docs:
 	go build $(LDFLAGS) -v -o bin/docs cmd/docs/*.go
 
-.PHONY: docs
-docs: bin/docs ## update docs
+.PHONY: cli-docs
+cli-docs: bin/docs ## update docs
 	@echo "Generating docs"
 	@./bin/docs --target=./docs/cmd
 	@./bin/docs --target=./docs/man/man1 --kind=man
 	@rm -f ./bin/docs
+
+

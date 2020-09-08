@@ -15,6 +15,7 @@ import (
 	"github.com/jenkins-x/jx-helpers/pkg/files"
 	"github.com/jenkins-x/jx-helpers/pkg/gitclient/cli"
 	"github.com/jenkins-x/jx-helpers/pkg/versionstream/versionstreamrepo"
+	"github.com/jenkins-x/jx-preview/pkg/cmd/create"
 	"github.com/jenkins-x/jx/v2/pkg/builds"
 
 	"github.com/jenkins-x/jx/v2/pkg/cmd/opts/step"
@@ -104,6 +105,7 @@ type Options struct {
 	PostPreviewJobTimeout  string
 	PostPreviewJobPollTime string
 	PreviewHealthTimeout   string
+	PreviewHelmfile        string
 
 	PullRequestName string
 	GitConfDir      string
@@ -162,6 +164,7 @@ func NewCmdPreview(commonOpts *opts.CommonOptions) *cobra.Command {
 
 func (o *Options) AddPreviewOptions(cmd *cobra.Command) {
 	cmd.Flags().StringVarP(&o.Name, kube.OptionName, "n", "", "The Environment resource name. Must follow the Kubernetes name conventions like Services, Namespaces")
+	cmd.Flags().StringVarP(&o.PreviewHelmfile, "helmfile", "", "charts/preview/helmfile.yaml", "The helmfile.yaml file to use for the preview")
 	cmd.Flags().StringVarP(&o.Label, "label", "l", "", "The Environment label which is a descriptive string like 'Production' or 'Staging'")
 	cmd.Flags().StringVarP(&o.Namespace, kube.OptionNamespace, "", "", "The Kubernetes namespace for the Environment")
 	cmd.Flags().StringVarP(&o.DevNamespace, "dev-namespace", "", "", "The Developer namespace where the preview command should run")
@@ -200,6 +203,31 @@ func (o *Options) Run() error {
 		if err != nil {
 			return fmt.Errorf("Invalid duration format %s for option --%s: %s", o.Timeout, optionPreviewHealthTimeout, err)
 		}
+	}
+
+	prNum := 0
+	if o.PullRequestName != "" {
+		prNum, err = strconv.Atoi(o.PullRequestName)
+		if err != nil {
+			log.Logger().Warnf(
+				"Unable to convert PR " + o.PullRequestName + " to a number")
+		}
+	}
+
+	exists, err := files.FileExists(o.PreviewHelmfile)
+	if err != nil {
+		return errors.Wrapf(err, "failed to check if file exists %s", o.PreviewHelmfile)
+	}
+	if exists {
+		co := create.Options{
+			PreviewHelmfile: o.PreviewHelmfile,
+			Number:          prNum,
+		}
+		err = co.Run()
+		if err != nil {
+			return errors.Wrapf(err, "failed to create helmfile based preview")
+		}
+		return nil
 	}
 
 	log.Logger().Info("Creating a preview")
@@ -253,12 +281,6 @@ func (o *Options) Run() error {
 	authConfigSvc, err := o.GitAuthConfigService()
 	if err != nil {
 		return err
-	}
-
-	prNum, err := strconv.Atoi(o.PullRequestName)
-	if err != nil {
-		log.Logger().Warnf(
-			"Unable to convert PR " + o.PullRequestName + " to a number")
 	}
 
 	var user *v1.UserSpec
