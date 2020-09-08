@@ -17,7 +17,7 @@ import (
 	"github.com/jenkins-x/jx-helpers/pkg/versionstream/versionstreamrepo"
 	"github.com/jenkins-x/jx-preview/pkg/cmd/create"
 	"github.com/jenkins-x/jx/v2/pkg/builds"
-
+	"github.com/jenkins-x/jx/v2/pkg/cmd/clients"
 	"github.com/jenkins-x/jx/v2/pkg/cmd/opts/step"
 
 	"github.com/jenkins-x/jx/v2/pkg/cmd/helper"
@@ -125,6 +125,16 @@ type Options struct {
 	SkipAvailabilityCheck bool
 }
 
+func NewCmdPreviewLegacy() *cobra.Command {
+	f := clients.NewFactory()
+	commonOpts := opts.NewCommonOptionsWithTerm(f, os.Stdin, os.Stdout, os.Stderr)
+	commonOpts.SetHelm(helm.NewHelmCLI("helm", helm.V3, "", false))
+
+	cmd := NewCmdPreview(commonOpts)
+	commonOpts.AddBaseFlags(cmd)
+	return cmd
+}
+
 // NewCmdPreview creates a command object for the "create" command
 func NewCmdPreview(commonOpts *opts.CommonOptions) *cobra.Command {
 	options := &Options{
@@ -137,7 +147,7 @@ func NewCmdPreview(commonOpts *opts.CommonOptions) *cobra.Command {
 	}
 
 	cmd := &cobra.Command{
-		Use:     "preview",
+		Use:     "create",
 		Short:   "Creates or updates a Preview Environment for the current version of an application",
 		Long:    cmdLong,
 		Example: cmdExample,
