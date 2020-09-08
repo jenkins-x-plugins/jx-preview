@@ -1,5 +1,5 @@
 buildPack: go-cli
-dockerRegistryOwner: jenkinsxio-labs-private
+dockerRegistryOwner: jenkinsxio
 pipelineConfig:
   pipelines:
     overrides:

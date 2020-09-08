@@ -1,0 +1,3 @@
+{{- if .Values.cluster.crds.create }}
+{{ .Files.Get "config/lighthousejobs.lighthouse.jenkins.io.yaml" }}
+{{- end -}}
