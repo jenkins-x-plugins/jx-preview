@@ -2,6 +2,7 @@ package create
 
 import (
 	"os"
+	"path/filepath"
 	"strconv"
 	"time"
 
@@ -11,6 +12,7 @@ import (
 	"github.com/cenkalti/backoff"
 	"github.com/jenkins-x/go-scm/scm"
 	jxc "github.com/jenkins-x/jx-api/pkg/client/clientset/versioned"
+	"github.com/jenkins-x/jx-gitops/pkg/cmd/git/get"
 	"github.com/jenkins-x/jx-helpers/pkg/cmdrunner"
 	"github.com/jenkins-x/jx-helpers/pkg/cobras/helper"
 	"github.com/jenkins-x/jx-helpers/pkg/cobras/templates"
@@ -128,6 +130,11 @@ func (o *Options) Run() error {
 	gitURL, err := stringhelpers.URLSetUserPassword(pr.Repository().Link, username, o.GitToken)
 	if err != nil {
 		return errors.Wrapf(err, "failed to modify the git URL")
+	}
+
+	err = o.createJXValuesFile()
+	if err != nil {
+		return errors.Wrapf(err, "failed to create the jx-values.yaml file")
 	}
 
 	preview, _, err := previews.GetOrCreatePreview(o.PreviewClient, o.Namespace, pr, destroyCmd, gitURL, o.PreviewNamespace, o.PreviewHelmfile)
@@ -469,5 +476,21 @@ func (o *Options) commentOnPullRequest(preview *v1alpha1.Preview, url string) er
 		return errors.Wrapf(err, "failed to comment on pull request %s on repository %s", prName, o.FullRepositoryName)
 	}
 	log.Logger().Infof("commented on pull request %s on repository %s", info(prName), info(o.FullRepositoryName))
+	return nil
+}
+
+func (o *Options) createJXValuesFile() error {
+	_, getOpts := get.NewCmdGitGet()
+
+	getOpts.Options = o.Options
+	getOpts.Env = "dev"
+	getOpts.Path = "jx-values.yaml"
+	getOpts.JXClient = o.JXClient
+	getOpts.Namespace = o.Namespace
+	getOpts.To = filepath.Join(filepath.Dir(o.PreviewHelmfile), "jx-values.yaml")
+	err := getOpts.Run()
+	if err != nil {
+		return errors.Wrapf(err, "failed to get the file %s from Environment %s", getOpts.Path, getOpts.Env)
+	}
 	return nil
 }

@@ -11,6 +11,7 @@ import (
 	jxfake "github.com/jenkins-x/jx-api/pkg/client/clientset/versioned/fake"
 	"github.com/jenkins-x/jx-helpers/pkg/cmdrunner"
 	"github.com/jenkins-x/jx-helpers/pkg/cmdrunner/fakerunner"
+	"github.com/jenkins-x/jx-helpers/pkg/kube/jxenv"
 	"github.com/jenkins-x/jx-preview/pkg/client/clientset/versioned/fake"
 	"github.com/jenkins-x/jx-preview/pkg/cmd/destroy"
 	"github.com/stretchr/testify/assert"
@@ -92,7 +93,12 @@ func TestPreviewCreate(t *testing.T) {
 			},
 		},
 	)
-	jxClient := jxfake.NewSimpleClientset()
+
+	devEnv := jxenv.CreateDefaultDevEnvironment(ns)
+	devEnv.Namespace = ns
+	devEnv.Spec.Source.URL = "https://github.com/myorg/my-gitops-repo.git"
+
+	jxClient := jxfake.NewSimpleClientset(devEnv)
 
 	scmClient, fakeScmData := fakescm.NewDefault()
 
