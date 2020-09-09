@@ -1,6 +1,8 @@
 package create_test
 
 import (
+	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strconv"
 	"testing"
@@ -11,6 +13,7 @@ import (
 	jxfake "github.com/jenkins-x/jx-api/pkg/client/clientset/versioned/fake"
 	"github.com/jenkins-x/jx-helpers/pkg/cmdrunner"
 	"github.com/jenkins-x/jx-helpers/pkg/cmdrunner/fakerunner"
+	"github.com/jenkins-x/jx-helpers/pkg/files"
 	"github.com/jenkins-x/jx-helpers/pkg/kube/jxenv"
 	"github.com/jenkins-x/jx-preview/pkg/client/clientset/versioned/fake"
 	"github.com/jenkins-x/jx-preview/pkg/cmd/destroy"
@@ -231,4 +234,48 @@ func TestPreviewCreate(t *testing.T) {
 	namespaceList, err := do.KubeClient.CoreV1().Namespaces().List(metav1.ListOptions{})
 	require.NoError(t, err, "failed to list namespaces")
 	require.Len(t, namespaceList.Items, 0, "should not have any Namespaces")
+}
+
+func TestPreviewCreateHelmfileDiscovery(t *testing.T) {
+	appsDirRelPath := filepath.Join("charts", "myapp")
+	testCases := []struct {
+		name    string
+		relPath string
+	}{
+		{
+			name: "rootDir",
+		},
+		{
+			name:    "appsDir",
+			relPath: appsDirRelPath,
+		},
+	}
+
+	runner := &fakerunner.FakeRunner{}
+
+	for _, tc := range testCases {
+		tmpDir, err := ioutil.TempDir("", "")
+		require.NoError(t, err, "could not create temp dir")
+
+		appsDir := filepath.Join(tmpDir, appsDirRelPath)
+		err = os.MkdirAll(appsDir, files.DefaultDirWritePermissions)
+		require.NoError(t, err, "could not create apps chart dir %s", appsDir)
+
+		_, o := create.NewCmdPreviewCreate()
+		o.CommandRunner = runner.Run
+		o.Dir = tmpDir
+		if tc.relPath != "" {
+			o.Dir = filepath.Join(tmpDir, tc.relPath)
+		}
+
+		err = o.DiscoverPreviewHelmfile()
+		require.NoError(t, err, "failed to run for test %s", tc.name)
+
+		assert.Equal(t, filepath.Join(tmpDir, "charts", "preview", "helmfile.yaml"), o.PreviewHelmfile, "for test %s", tc.name)
+		//require.FileExists(t, filepath.Join(tmpDir, "charts", "preview", "helmfile.yaml"), "should have created helmfile.yaml")
+	}
+
+	for _, c := range runner.OrderedCommands {
+		t.Logf("fake command: %s\n", c.CLI())
+	}
 }
