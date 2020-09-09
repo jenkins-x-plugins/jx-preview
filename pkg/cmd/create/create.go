@@ -16,6 +16,7 @@ import (
 	"github.com/jenkins-x/jx-helpers/pkg/cmdrunner"
 	"github.com/jenkins-x/jx-helpers/pkg/cobras/helper"
 	"github.com/jenkins-x/jx-helpers/pkg/cobras/templates"
+	"github.com/jenkins-x/jx-helpers/pkg/files"
 	"github.com/jenkins-x/jx-helpers/pkg/gitclient/giturl"
 	"github.com/jenkins-x/jx-helpers/pkg/kube"
 	"github.com/jenkins-x/jx-helpers/pkg/kube/activities"
@@ -88,6 +89,7 @@ func NewCmdPreviewCreate() (*cobra.Command, *Options) {
 			helper.CheckErr(err)
 		},
 	}
+	cmd.Flags().StringVarP(&o.PreviewHelmfile, "file", "f", "", "the Preview helmfile.yaml file to use. If not specified it is discovered in charts/preview/helmfile.yaml and created from a template if needed")
 	cmd.Flags().IntVarP(&o.Number, "pr", "", 0, "the Pull Request number. If not specified we will use $BRANCH_NAME")
 	cmd.Flags().DurationVarP(&o.PreviewURLTimeout, "preview-url-timeout", "", time.Minute+5, "the time to wait for the preview URL to be available")
 	cmd.Flags().BoolVarP(&o.NoComment, "no-comment", "", false, "Disables commenting on the Pull Request after preview is created")
@@ -178,14 +180,19 @@ func (o *Options) Run() error {
 
 // Validate validates the inputs are valid
 func (o *Options) Validate() error {
+	if o.CommandRunner == nil {
+		o.CommandRunner = cmdrunner.DefaultCommandRunner
+	}
 	err := o.Options.Validate()
 	if err != nil {
 		return errors.Wrapf(err, "failed to validate repository options")
 	}
 
-	if o.PreviewHelmfile == "" {
-		return options.MissingOption("helmfile")
+	err = o.DiscoverPreviewHelmfile()
+	if err != nil {
+		return errors.Wrapf(err, "failed to discover the preview helmfile")
 	}
+
 	if o.Number <= 0 {
 		prName := os.Getenv("PULL_NUMBER")
 		if prName != "" {
@@ -214,9 +221,6 @@ func (o *Options) Validate() error {
 		return errors.Wrapf(err, "failed to create jx client")
 	}
 
-	if o.CommandRunner == nil {
-		o.CommandRunner = cmdrunner.DefaultCommandRunner
-	}
 	if o.PreviewNamespace == "" {
 		o.PreviewNamespace, err = o.createPreviewNamespace()
 	}
@@ -491,6 +495,63 @@ func (o *Options) createJXValuesFile() error {
 	err := getOpts.Run()
 	if err != nil {
 		return errors.Wrapf(err, "failed to get the file %s from Environment %s", getOpts.Path, getOpts.Env)
+	}
+	return nil
+}
+
+// DiscoverPreviewHelmfile if there is no helmfile configured
+// lets find the charts folder and default the preview helmfile to that
+// then generate a helmfile.yaml if its missing
+func (o *Options) DiscoverPreviewHelmfile() error {
+	if o.PreviewHelmfile == "" {
+		chartsDir := filepath.Join(o.Dir, "charts")
+		exists, err := files.DirExists(chartsDir)
+		if err != nil {
+			return errors.Wrapf(err, "failed to check if dir %s exists", chartsDir)
+		}
+		if !exists {
+			chartsDir = filepath.Join(o.Dir, "..")
+			exists, err = files.DirExists(chartsDir)
+			if err != nil {
+				return errors.Wrapf(err, "failed to check if dir %s exists", chartsDir)
+			}
+			if !exists {
+				return errors.Wrapf(err, "could not detect the helm charts folder in dir %s", o.Dir)
+			}
+		}
+
+		o.PreviewHelmfile = filepath.Join(chartsDir, "preview", "helmfile.yaml")
+	}
+
+	exists, err := files.FileExists(o.PreviewHelmfile)
+	if err != nil {
+		return errors.Wrapf(err, "failed to check for file %s", o.PreviewHelmfile)
+	}
+	if exists {
+		return nil
+	}
+
+	// lets make the preview dir
+	previewDir := filepath.Dir(o.PreviewHelmfile)
+	chartsDir := filepath.Dir(previewDir)
+	relDir, err := filepath.Rel(o.Dir, chartsDir)
+	if err != nil {
+		return errors.Wrapf(err, "failed to find preview dir in %s of %s", o.Dir, chartsDir)
+	}
+	err = os.MkdirAll(chartsDir, files.DefaultDirWritePermissions)
+	if err != nil {
+		return errors.Wrapf(err, "failed to make preview dir %s", chartsDir)
+	}
+
+	// now lets grab the template preview
+	c := &cmdrunner.Command{
+		Dir:  o.Dir,
+		Name: "kpt",
+		Args: []string{"pkg", "get", "https://github.com/jenkins-x/jx3-gitops-template.git/charts/preview", relDir},
+	}
+	_, err = o.CommandRunner(c)
+	if err != nil {
+		return errors.Wrapf(err, "failed to get the preview helmfile: %s via kpt", o.PreviewHelmfile)
 	}
 	return nil
 }
