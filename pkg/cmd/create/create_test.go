@@ -34,6 +34,13 @@ func TestPreviewCreate(t *testing.T) {
 	repoLink := "https://" + gitUser + ":" + gitToken + "@fake.com/" + owner + "/" + repo
 
 	previewClient := fake.NewSimpleClientset()
+	kubeClient := fakekube.NewSimpleClientset(
+		&corev1.Namespace{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: previewNamespace,
+			},
+		},
+	)
 
 	scmClient, fakeScmData := fakescm.NewDefault()
 
@@ -66,6 +73,7 @@ func TestPreviewCreate(t *testing.T) {
 		_, o := create.NewCmdPreviewCreate()
 
 		o.PreviewClient = previewClient
+		o.KubeClient = kubeClient
 		o.Namespace = ns
 		o.GitToken = "dummy"
 		o.SourceURL = repoLink + ".git"
@@ -122,13 +130,7 @@ func TestPreviewCreate(t *testing.T) {
 	runner := &fakerunner.FakeRunner{}
 	do.CommandRunner = runner.Run
 
-	do.KubeClient = fakekube.NewSimpleClientset(
-		&corev1.Namespace{
-			ObjectMeta: metav1.ObjectMeta{
-				Name: previewNamespace,
-			},
-		},
-	)
+	do.KubeClient = kubeClient
 
 	err := do.Run()
 	require.NoError(t, err, "failed to delete preview %s", previewName)
