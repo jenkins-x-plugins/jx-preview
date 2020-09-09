@@ -6,7 +6,7 @@ require (
 	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32
 	github.com/jenkins-x/go-scm v1.5.162
 	github.com/jenkins-x/jx-api v0.0.17
-	github.com/jenkins-x/jx-helpers v1.0.54
+	github.com/jenkins-x/jx-helpers v1.0.55
 	github.com/jenkins-x/jx-kube-client v0.0.8
 	github.com/jenkins-x/jx-logging v0.0.11
 	github.com/jenkins-x/jx/v2 v2.1.142
@@ -47,6 +47,6 @@ replace github.com/TV4/logrus-stackdriver-formatter => github.com/jenkins-x/logr
 
 replace k8s.io/test-infra => github.com/jenkins-x/test-infra v0.0.0-20200611142252-211a92405c22
 
-replace gomodules.xyz/jsonpatch/v2 => gomodules.xyz/jsonpatch/v2 v2.0.1
+replace gomodules.xyz/jsonpambtch/v2 => gomodules.xyz/jsonpatch/v2 v2.0.1
 
 go 1.13
