@@ -3,12 +3,19 @@ package create
 import (
 	"os"
 	"strconv"
+	"time"
 
+	"context"
+	"fmt"
+
+	"github.com/cenkalti/backoff"
 	"github.com/jenkins-x/go-scm/scm"
 	"github.com/jenkins-x/jx-helpers/pkg/cmdrunner"
 	"github.com/jenkins-x/jx-helpers/pkg/cobras/helper"
 	"github.com/jenkins-x/jx-helpers/pkg/cobras/templates"
+	"github.com/jenkins-x/jx-helpers/pkg/kube"
 	"github.com/jenkins-x/jx-helpers/pkg/kube/naming"
+	"github.com/jenkins-x/jx-helpers/pkg/kube/services"
 	"github.com/jenkins-x/jx-helpers/pkg/options"
 	"github.com/jenkins-x/jx-helpers/pkg/scmhelpers"
 	"github.com/jenkins-x/jx-logging/pkg/log"
@@ -18,9 +25,7 @@ import (
 	"github.com/jenkins-x/jx-preview/pkg/rootcmd"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
-
-	"context"
-	"fmt"
+	"k8s.io/client-go/kubernetes"
 )
 
 var (
@@ -38,14 +43,17 @@ var (
 type Options struct {
 	scmhelpers.Options
 
-	PreviewHelmfile  string
-	PreviewNamespace string
-	Number           int
-	PreviewClient    versioned.Interface
-	Namespace        string
-	DockerRegistry   string
-	Debug            bool
-	CommandRunner    cmdrunner.CommandRunner
+	PreviewHelmfile   string
+	PreviewNamespace  string
+	Number            int
+	Namespace         string
+	DockerRegistry    string
+	BuildNumber       string
+	PreviewURLTimeout time.Duration
+	Debug             bool
+	PreviewClient     versioned.Interface
+	KubeClient        kubernetes.Interface
+	CommandRunner     cmdrunner.CommandRunner
 }
 
 type envVar struct {
@@ -68,6 +76,7 @@ func NewCmdPreviewCreate() (*cobra.Command, *Options) {
 		},
 	}
 	cmd.Flags().IntVarP(&o.Number, "pr", "", 0, "the Pull Request number. If not specified we will use $BRANCH_NAME")
+	cmd.Flags().DurationVarP(&o.PreviewURLTimeout, "preview-url-timeout", "", time.Minute+5, "the time to wait for the preview URL to be available")
 
 	o.Options.AddFlags(cmd)
 	return cmd, o
@@ -131,6 +140,12 @@ func (o *Options) Validate() error {
 	if err != nil {
 		return errors.Wrapf(err, "failed to create Preview client")
 	}
+
+	o.KubeClient, err = kube.LazyCreateKubeClient(o.KubeClient)
+	if err != nil {
+		return errors.Wrapf(err, "failed to create kube client")
+	}
+
 	if o.CommandRunner == nil {
 		o.CommandRunner = cmdrunner.DefaultCommandRunner
 	}
@@ -142,7 +157,7 @@ func (o *Options) Validate() error {
 
 func (o *Options) discoverPullRequest() (*scm.PullRequest, error) {
 	ctx := context.Background()
-	pr, _, err := o.ScmClient.PullRequests.Find(ctx, o.Repository, o.Number)
+	pr, _, err := o.ScmClient.PullRequests.Find(ctx, o.FullRepositoryName, o.Number)
 	if err != nil {
 		return nil, errors.Wrapf(err, "failed to find PR %d in repo %s", o.Number, o.Repository)
 	}
@@ -254,4 +269,104 @@ func (o *Options) createPreviewNamespace() (string, error) {
 	}
 	prNamespace = naming.ToValidName(prNamespace)
 	return prNamespace, nil
+}
+
+// findPreviewURL finds the preview URL
+func (o *Options) findPreviewURL() (string, error) {
+	// TODO lets load these values from the helmfile?
+	application := ""
+	releaseName := ""
+	app := naming.ToValidName(application)
+	appNames := []string{app, releaseName, o.Namespace + "-preview", releaseName + "-" + app}
+
+	url := ""
+	fn := func() error {
+		for _, n := range appNames {
+			url, _ = services.FindServiceURL(o.KubeClient, o.Namespace, n)
+			/*
+				TODO support kserve too
+				if url == "" {
+					var err error
+					url, _, err = kserving.FindServiceURL(kserveClient, kubeClient, o.Namespace, n)
+					if err != nil {
+					  return errors.Wrapf(err, "failed to ")
+					}
+				}
+			*/
+			if url != "" {
+				return nil
+			}
+		}
+		return errors.Errorf("not found")
+	}
+
+	bo := backoff.NewExponentialBackOff()
+	bo.MaxElapsedTime = o.PreviewURLTimeout
+	bo.Reset()
+	err := backoff.Retry(fn, bo)
+	if err != nil {
+		return "", errors.Wrapf(err, "failed to find preview URL for app names %#v in timeout %v", appNames, o.PreviewURLTimeout)
+	}
+	return url, nil
+}
+
+func (o *Options) updatePipelineActivity(url string) error {
+	if url == "" {
+		return nil
+	}
+	if o.BuildNumber == "" {
+		o.BuildNumber = os.Getenv("BUILD_NUMBER")
+	}
+	pipeline := fmt.Sprintf("%s/%s/%s", o.Owner, o.Repository, o.Branch)
+
+	if pipeline != "" && o.BuildNumber != "" {
+		ns := o.Namespace
+		name := naming.ToValidName(pipeline + "-" + o.BuildNumber)
+
+		/*
+			// lets see if we can update the pipeline
+			activities := jxClient.JenkinsV1().PipelineActivities(ns)
+			key := &kube.PromoteStepActivityKey{
+				PipelineActivityKey: kube.PipelineActivityKey{
+					Name:     name,
+					Pipeline: pipeline,
+					Build:    build,
+					GitInfo: &gits.GitRepository{
+						Name:         o.Repository,
+						Organisation: o.Owner,
+					},
+				},
+			}
+			jxClient, _, err = o.JXClient()
+			if err != nil {
+				return err
+			}
+			a, _, p, _, err := key.GetOrCreatePreview(jxClient, ns)
+			if err == nil && a != nil && p != nil {
+				updated := false
+				if p.ApplicationURL == "" {
+					p.ApplicationURL = url
+					updated = true
+				}
+				if p.PullRequestURL == "" && o.PullRequestURL != "" {
+					p.PullRequestURL = o.PullRequestURL
+					updated = true
+				}
+				if updated {
+					_, err = activities.PatchUpdate(a)
+					if err != nil {
+						log.Logger().Warnf("Failed to update PipelineActivities %s: %s", name, err)
+					} else {
+						log.Logger().Infof("Updating PipelineActivities %s which has status %s", name, string(a.Spec.Status))
+					}
+				}
+			}
+		*/
+
+		log.Logger().Infof("TODO update PipelineActivity %s/%s", ns, name)
+
+	} else {
+		log.Logger().Warnf("No pipeline and build number available on $JOB_NAME and $BUILD_NUMBER so cannot update PipelineActivities with the preview URLs")
+	}
+	return nil
 }

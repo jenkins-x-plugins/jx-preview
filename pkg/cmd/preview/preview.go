@@ -174,7 +174,7 @@ func NewCmdPreview(commonOpts *opts.CommonOptions) *cobra.Command {
 
 func (o *Options) AddPreviewOptions(cmd *cobra.Command) {
 	cmd.Flags().StringVarP(&o.Name, kube.OptionName, "n", "", "The Environment resource name. Must follow the Kubernetes name conventions like Services, Namespaces")
-	cmd.Flags().StringVarP(&o.PreviewHelmfile, "helmfile", "", "charts/preview/helmfile.yaml", "The helmfile.yaml file to use for the preview")
+	cmd.Flags().StringVarP(&o.PreviewHelmfile, "helmfile", "", filepath.Join("charts", "preview", "helmfile.yaml"), "The helmfile.yaml file to use for the preview")
 	cmd.Flags().StringVarP(&o.Label, "label", "l", "", "The Environment label which is a descriptive string like 'Production' or 'Staging'")
 	cmd.Flags().StringVarP(&o.Namespace, kube.OptionNamespace, "", "", "The Kubernetes namespace for the Environment")
 	cmd.Flags().StringVarP(&o.DevNamespace, "dev-namespace", "", "", "The Developer namespace where the preview command should run")
@@ -227,6 +227,14 @@ func (o *Options) Run() error {
 	exists, err := files.FileExists(o.PreviewHelmfile)
 	if err != nil {
 		return errors.Wrapf(err, "failed to check if file exists %s", o.PreviewHelmfile)
+	}
+	if !exists {
+		// handle being invoked inside the app chart
+		o.PreviewHelmfile = filepath.Join("..", "preview", "helmfile.yaml")
+		exists, err = files.FileExists(o.PreviewHelmfile)
+		if err != nil {
+			return errors.Wrapf(err, "failed to check if file exists %s", o.PreviewHelmfile)
+		}
 	}
 	if exists {
 		co := create.Options{
