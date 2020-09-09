@@ -1,9 +1,13 @@
 package destroy
 
 import (
+	"path/filepath"
+
 	"github.com/jenkins-x/jx-helpers/pkg/cmdrunner"
 	"github.com/jenkins-x/jx-helpers/pkg/cobras/helper"
 	"github.com/jenkins-x/jx-helpers/pkg/cobras/templates"
+	"github.com/jenkins-x/jx-helpers/pkg/gitclient"
+	"github.com/jenkins-x/jx-helpers/pkg/gitclient/cli"
 	"github.com/jenkins-x/jx-helpers/pkg/kube"
 	"github.com/jenkins-x/jx-helpers/pkg/termcolor"
 	"github.com/jenkins-x/jx-logging/pkg/log"
@@ -40,6 +44,7 @@ type Options struct {
 	PreviewClient versioned.Interface
 	KubeClient    kubernetes.Interface
 	Namespace     string
+	GitClient     gitclient.Interface
 	CommandRunner cmdrunner.CommandRunner
 }
 
@@ -80,7 +85,12 @@ func (o *Options) Run() error {
 		return errors.Wrapf(err, "failed to find preview %s in namespace %s", name, ns)
 	}
 
-	err = o.runDeletePreviewCommand(preview)
+	dir, err := o.gitCloneSource(preview)
+	if err != nil {
+		return errors.Wrapf(err, "failed to git clone preview source")
+	}
+
+	err = o.runDeletePreviewCommand(preview, dir)
 	if err != nil {
 		return errors.Wrapf(err, "failed to delete preview resources")
 	}
@@ -125,7 +135,7 @@ func (o *Options) Validate() error {
 	return nil
 }
 
-func (o *Options) runDeletePreviewCommand(preview *v1alpha1.Preview) error {
+func (o *Options) runDeletePreviewCommand(preview *v1alpha1.Preview, dir string) error {
 	destroyCmd := preview.Spec.DestroyCommand
 
 	envVars := map[string]string{}
@@ -133,10 +143,13 @@ func (o *Options) runDeletePreviewCommand(preview *v1alpha1.Preview) error {
 	for _, ev := range destroyCmd.Env {
 		envVars[ev.Name] = ev.Value
 	}
+	if destroyCmd.Path != "" {
+		dir = filepath.Join(dir, destroyCmd.Path)
+	}
 	c := &cmdrunner.Command{
 		Name: destroyCmd.Command,
 		Args: destroyCmd.Args,
-		Dir:  destroyCmd.Path,
+		Dir:  dir,
 		Env:  envVars,
 	}
 	_, err := o.CommandRunner(c)
@@ -169,4 +182,15 @@ func (o *Options) deletePreviewNamespace(preview *v1alpha1.Preview) error {
 	}
 	log.Logger().Infof("deleted preview namespace %s", info(previewNamespace))
 	return nil
+}
+
+func (o *Options) gitCloneSource(preview *v1alpha1.Preview) (string, error) {
+	if o.GitClient == nil {
+		o.GitClient = cli.NewCLIClient("", o.CommandRunner)
+	}
+	gitURL := preview.Spec.Source.URL
+	if gitURL == "" {
+		return "", errors.Errorf("no preview.Spec.Source.URL to clone for preview %s", preview.Name)
+	}
+	return gitclient.CloneToDir(o.GitClient, gitURL, "")
 }

@@ -6,7 +6,7 @@ require (
 	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32
 	github.com/jenkins-x/go-scm v1.5.162
 	github.com/jenkins-x/jx-api v0.0.17
-	github.com/jenkins-x/jx-helpers v1.0.55
+	github.com/jenkins-x/jx-helpers v1.0.56
 	github.com/jenkins-x/jx-kube-client v0.0.8
 	github.com/jenkins-x/jx-logging v0.0.11
 	github.com/jenkins-x/jx/v2 v2.1.142

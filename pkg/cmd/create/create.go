@@ -22,6 +22,7 @@ import (
 	"github.com/jenkins-x/jx-helpers/pkg/kube/services"
 	"github.com/jenkins-x/jx-helpers/pkg/options"
 	"github.com/jenkins-x/jx-helpers/pkg/scmhelpers"
+	"github.com/jenkins-x/jx-helpers/pkg/stringhelpers"
 	"github.com/jenkins-x/jx-helpers/pkg/termcolor"
 	"github.com/jenkins-x/jx-logging/pkg/log"
 	"github.com/jenkins-x/jx-preview/pkg/apis/preview/v1alpha1"
@@ -114,7 +115,22 @@ func (o *Options) Run() error {
 
 	destroyCmd := o.createDestroyCommand(envVars)
 
-	preview, _, err := previews.GetOrCreatePreview(o.PreviewClient, o.Namespace, pr, destroyCmd, o.PreviewNamespace, o.PreviewHelmfile)
+	// lets get the git clone URL with user/password so we can clone it again in the destroy command/CronJob
+	ctx := context.Background()
+	username := ""
+	user, _, err := o.ScmClient.Users.Find(ctx)
+	if err != nil {
+		return errors.Wrapf(err, "failed to find the current SCM user")
+	}
+	if user != nil {
+		username = user.Login
+	}
+	gitURL, err := stringhelpers.URLSetUserPassword(pr.Repository().Link, username, o.GitToken)
+	if err != nil {
+		return errors.Wrapf(err, "failed to modify the git URL")
+	}
+
+	preview, _, err := previews.GetOrCreatePreview(o.PreviewClient, o.Namespace, pr, destroyCmd, gitURL, o.PreviewNamespace, o.PreviewHelmfile)
 	if err != nil {
 		return errors.Wrapf(err, "failed to upsert the Preview resource in namespace %s", o.Namespace)
 	}
