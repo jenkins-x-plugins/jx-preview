@@ -3,6 +3,7 @@ package cmd
 import (
 	"github.com/jenkins-x/jx-helpers/pkg/cobras"
 	"github.com/jenkins-x/jx-logging/pkg/log"
+	"github.com/jenkins-x/jx-preview/pkg/cmd/destroy"
 	"github.com/jenkins-x/jx-preview/pkg/cmd/preview"
 	"github.com/jenkins-x/jx-preview/pkg/cmd/version"
 	"github.com/jenkins-x/jx-preview/pkg/rootcmd"
@@ -35,6 +36,7 @@ func Main() *cobra.Command {
 		DisableFlagParsing: true,
 	}
 	cmd.AddCommand(createCmd)
+	cmd.AddCommand(cobras.SplitCommand(destroy.NewCmdPreviewDestroy()))
 	cmd.AddCommand(cobras.SplitCommand(version.NewCmdVersion()))
 	return cmd
 }
