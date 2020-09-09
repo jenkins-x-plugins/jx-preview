@@ -90,7 +90,7 @@ func NewCmdPreviewCreate() (*cobra.Command, *Options) {
 		},
 	}
 	cmd.Flags().StringVarP(&o.PreviewHelmfile, "file", "f", "", "the Preview helmfile.yaml file to use. If not specified it is discovered in charts/preview/helmfile.yaml and created from a template if needed")
-	cmd.Flags().StringVarP(&o.Repository, "app", "", ".", "the name of the app or repository")
+	cmd.Flags().StringVarP(&o.Repository, "app", "", "", "the name of the app or repository")
 	cmd.Flags().IntVarP(&o.Number, "pr", "", 0, "the Pull Request number. If not specified we will use $BRANCH_NAME")
 	cmd.Flags().DurationVarP(&o.PreviewURLTimeout, "preview-url-timeout", "", time.Minute+5, "the time to wait for the preview URL to be available")
 	cmd.Flags().BoolVarP(&o.NoComment, "no-comment", "", false, "Disables commenting on the Pull Request after preview is created")
