@@ -9,6 +9,7 @@ require (
 	github.com/jenkins-x/jx-helpers v1.0.56
 	github.com/jenkins-x/jx-kube-client v0.0.8
 	github.com/jenkins-x/jx-logging v0.0.11
+	github.com/jenkins-x/jx/v2 v2.1.142
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/pflag v1.0.5
