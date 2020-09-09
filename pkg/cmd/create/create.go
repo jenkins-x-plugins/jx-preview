@@ -8,6 +8,7 @@ import (
 	"github.com/jenkins-x/jx-helpers/pkg/cmdrunner"
 	"github.com/jenkins-x/jx-helpers/pkg/cobras/helper"
 	"github.com/jenkins-x/jx-helpers/pkg/cobras/templates"
+	"github.com/jenkins-x/jx-helpers/pkg/kube/naming"
 	"github.com/jenkins-x/jx-helpers/pkg/options"
 	"github.com/jenkins-x/jx-helpers/pkg/scmhelpers"
 	"github.com/jenkins-x/jx-logging/pkg/log"
@@ -31,20 +32,25 @@ var (
 		# creates a new preview environemnt
 		%s create
 	`)
-
-	mandatoryEnvVars = []string{"APP_NAME", "VERSION", "DOCKER_REGISTRY", "DOCKER_REGISTRY_ORG"}
 )
 
 // Options the CLI options for
 type Options struct {
 	scmhelpers.Options
 
-	PreviewHelmfile string
-	Number          int
-	PreviewClient   versioned.Interface
-	Namespace       string
-	Debug           bool
-	CommandRunner   cmdrunner.CommandRunner
+	PreviewHelmfile  string
+	PreviewNamespace string
+	Number           int
+	PreviewClient    versioned.Interface
+	Namespace        string
+	DockerRegistry   string
+	Debug            bool
+	CommandRunner    cmdrunner.CommandRunner
+}
+
+type envVar struct {
+	Name         string
+	DefaultValue func() string
 }
 
 // NewCmdPreviewCreate creates a command object for the command
@@ -81,13 +87,20 @@ func (o *Options) Run() error {
 
 	log.Logger().Infof("found PullRequest %s", pr.Link)
 
-	preview, _, err := previews.GetOrCreatePreview(o.PreviewClient, o.Namespace, pr, o.PreviewHelmfile)
+	envVars, err := o.createHelmfileEnvVars()
+	if err != nil {
+		return errors.Wrapf(err, "failed to create env vars")
+	}
+
+	destroyCmd := o.createDestroyCommand(envVars)
+
+	preview, _, err := previews.GetOrCreatePreview(o.PreviewClient, o.Namespace, pr, destroyCmd, o.PreviewNamespace, o.PreviewHelmfile)
 	if err != nil {
 		return errors.Wrapf(err, "failed to upsert the Preview resource in namespace %s", o.Namespace)
 	}
 	log.Logger().Infof("upserted preview %s", preview.Name)
 
-	return o.helmfileSyncPreview(pr, preview)
+	return o.helmfileSyncPreview(envVars)
 }
 
 // Validate validates the inputs are valid
@@ -121,6 +134,9 @@ func (o *Options) Validate() error {
 	if o.CommandRunner == nil {
 		o.CommandRunner = cmdrunner.DefaultCommandRunner
 	}
+	if o.PreviewNamespace == "" {
+		o.PreviewNamespace, err = o.createPreviewNamespace()
+	}
 	return nil
 }
 
@@ -133,11 +149,30 @@ func (o *Options) discoverPullRequest() (*scm.PullRequest, error) {
 	return pr, nil
 }
 
-func (o *Options) helmfileSyncPreview(pr *scm.PullRequest, preview *v1alpha1.Preview) error {
-	envVars, err := o.createHelmfileEnvVars(pr, preview)
-	if err != nil {
-		return errors.Wrapf(err, "failed to create env vars")
+func (o *Options) createDestroyCommand(envVars map[string]string) v1alpha1.Command {
+	args := []string{"--file", o.PreviewHelmfile}
+	if o.Debug {
+		args = append(args, "--debug")
 	}
+	args = append(args, "destroy")
+
+	var env []v1alpha1.EnvVar
+	if envVars != nil {
+		for k, v := range envVars {
+			env = append(env, v1alpha1.EnvVar{
+				Name:  k,
+				Value: v,
+			})
+		}
+	}
+	return v1alpha1.Command{
+		Command: "helmfile",
+		Args:    args,
+		Env:     env,
+	}
+}
+
+func (o *Options) helmfileSyncPreview(envVars map[string]string) error {
 	args := []string{"--file", o.PreviewHelmfile}
 	if o.Debug {
 		args = append(args, "--debug")
@@ -148,22 +183,75 @@ func (o *Options) helmfileSyncPreview(pr *scm.PullRequest, preview *v1alpha1.Pre
 		Args: args,
 		Env:  envVars,
 	}
-	_, err = o.CommandRunner(c)
+	_, err := o.CommandRunner(c)
 	if err != nil {
 		return errors.Wrapf(err, "failed to run helmfile sync")
 	}
 	return nil
 }
 
-func (o *Options) createHelmfileEnvVars(pr *scm.PullRequest, preview *v1alpha1.Preview) (map[string]string, error) {
+func (o *Options) createHelmfileEnvVars() (map[string]string, error) {
 	env := map[string]string{}
+	mandatoryEnvVars := []envVar{
+		{
+			Name: "APP_NAME",
+			DefaultValue: func() string {
+				return o.Repository
+			},
+		},
+		{
+			Name: "DOCKER_REGISTRY",
+			DefaultValue: func() string {
+				return o.DockerRegistry
+			},
+		},
+		{
+			Name: "DOCKER_REGISTRY_ORG",
+			DefaultValue: func() string {
+				return o.Options.Owner
+			},
+		},
+		{
+			Name: "PREVIEW_NAMESPACE",
+			DefaultValue: func() string {
+				return o.PreviewNamespace
+			},
+		},
+		{
+			Name: "VERSION",
+		},
+	}
+
 	for _, e := range mandatoryEnvVars {
-		value := os.Getenv(e)
-		if value == "" {
-			return env, errors.Errorf("missing $%s environment variable", e)
+		name := e.Name
+		value := os.Getenv(name)
+		if value == "" && e.DefaultValue != nil {
+			value = e.DefaultValue()
 		}
-		env[e] = value
+		if value == "" {
+			return env, errors.Errorf("missing $%s environment variable", name)
+		}
+		env[name] = value
 	}
 	return env, nil
 
+}
+
+func (o *Options) createPreviewNamespace() (string, error) {
+	prefix := o.Namespace + "-"
+	prName := o.Owner + "-" + o.Repository + "-pr-" + strconv.Itoa(o.Number)
+
+	prNamespace := prefix + prName
+	if len(prNamespace) > 63 {
+		max := 62 - len(prefix)
+		size := len(prName)
+
+		prNamespace = prefix + prName[size-max:]
+		log.Logger().Warnf("Due the name of the organisation and repository being too long (%s) we are going to trim it to make the preview namespace: %s", prName, prNamespace)
+	}
+	if len(prNamespace) > 63 {
+		return "", fmt.Errorf("Preview namespace %s is too long. Must be no more than 63 character", prNamespace)
+	}
+	prNamespace = naming.ToValidName(prNamespace)
+	return prNamespace, nil
 }

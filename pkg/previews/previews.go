@@ -13,7 +13,7 @@ import (
 )
 
 // GetOrCreatePreview lazy creates the preview client and/or the current namespace if not already defined
-func GetOrCreatePreview(client versioned.Interface, ns string, pr *scm.PullRequest, path string) (*v1alpha1.Preview, bool, error) {
+func GetOrCreatePreview(client versioned.Interface, ns string, pr *scm.PullRequest, destroyCmd v1alpha1.Command, previewNamespace, path string) (*v1alpha1.Preview, bool, error) {
 	create := false
 
 	previewInterface := client.PreviewV1alpha1().Previews(ns)
@@ -78,6 +78,10 @@ func GetOrCreatePreview(client versioned.Interface, ns string, pr *scm.PullReque
 	if prr.Description == "" {
 		prr.Description = pr.Body
 	}
+	if previewNamespace != "" {
+		found.Spec.PreviewNamespace = previewNamespace
+	}
+	found.Spec.DestroyCommand = destroyCmd
 	if create {
 		found, err = previewInterface.Create(found)
 		if err != nil {

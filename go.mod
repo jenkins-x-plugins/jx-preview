@@ -6,14 +6,14 @@ require (
 	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32
 	github.com/jenkins-x/go-scm v1.5.162
 	github.com/jenkins-x/jx-api v0.0.17
-	github.com/jenkins-x/jx-helpers v1.0.52
+	github.com/jenkins-x/jx-helpers v1.0.53
 	github.com/jenkins-x/jx-kube-client v0.0.8
 	github.com/jenkins-x/jx-logging v0.0.11
 	github.com/jenkins-x/jx/v2 v2.1.142
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.0.0
 	github.com/spf13/pflag v1.0.5
-	github.com/tektoncd/pipeline v0.14.2
+	github.com/stretchr/testify v1.6.1
 	k8s.io/api v0.18.1
 	k8s.io/apimachinery v0.18.1
 	k8s.io/client-go v11.0.1-0.20190805182717-6502b5e7b1b5+incompatible

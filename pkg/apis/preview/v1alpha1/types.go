@@ -44,6 +44,12 @@ type PreviewSpec struct {
 
 	// PullRequest the pull request which triggered it
 	PullRequest PullRequest `json:"pullRequest,omitempty" protobuf:"bytes,2,opt,name=pullRequest"`
+
+	// DestroyCommand the command to destroy the preview
+	DestroyCommand Command `json:"destroyCommand,omitempty" protobuf:"bytes,3,opt,name=destroyCommand"`
+
+	// PreviewNamespace the optional namespace unique for the pull request to deploy into
+	PreviewNamespace string `json:"previewNamespace,omitempty" protobuf:"bytes,4,opt,name=previewNamespace"`
 }
 
 // PreviewSource the location of the preview
@@ -75,4 +81,18 @@ type UserSpec struct {
 	Name     string `json:"name,omitempty" protobuf:"bytes,2,opt,name=name"`
 	LinkURL  string `json:"linkUrl,omitempty" protobuf:"bytes,3,opt,name=linkUrl"`
 	ImageURL string `json:"imageUrl,omitempty" protobuf:"bytes,4,opt,name=imageUrl"`
+}
+
+// Command the CLI command for deleting the preview
+type Command struct {
+	Command string   `json:"command,omitempty" protobuf:"bytes,1,opt,name=command"`
+	Args    []string `json:"args,omitempty" protobuf:"bytes,2,opt,name=args"`
+	Path    string   `json:"path,omitempty" protobuf:"bytes,3,opt,name=path"`
+	Env     []EnvVar `json:"env,omitempty" protobuf:"bytes,4,opt,name=env"`
+}
+
+// EnvVar the environment variable name and vlaue
+type EnvVar struct {
+	Name  string `json:"name,omitempty" protobuf:"bytes,1,opt,name=name"`
+	Value string `json:"value,omitempty" protobuf:"bytes,2,opt,name=value"`
 }
