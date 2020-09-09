@@ -1,0 +1,8 @@
+releases:
+- chart: ../{{ requiredEnv "APP_NAME" }}
+  name: preview
+  wait: true
+  createNamespace: true
+  namespace: {{ requiredEnv "PREVIEW_NAMESPACE" }}
+  values:
+  - values.yaml.gotmpl
