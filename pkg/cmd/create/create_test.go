@@ -119,6 +119,7 @@ func TestPreviewCreate(t *testing.T) {
 			Link:      prLink,
 		},
 	}
+	fakeScmData.CurrentUser.Login = gitUser
 
 	previewName := ""
 	for _, testName := range []string{"create", "update"} {
@@ -128,7 +129,7 @@ func TestPreviewCreate(t *testing.T) {
 		o.JXClient = jxClient
 		o.Namespace = ns
 		o.Branch = branch
-		o.GitToken = "dummy"
+		o.GitToken = gitToken
 		o.BuildNumber = buildNumber
 		o.SourceURL = repoLink + ".git"
 		o.Number = prNumber
@@ -217,11 +218,8 @@ func TestPreviewCreate(t *testing.T) {
 	err = do.Run()
 	require.NoError(t, err, "failed to delete preview %s", previewName)
 
-	runner.ExpectResults(t,
-		fakerunner.FakeResult{
-			CLI: `helmfile --file test_data/charts/preview/helmfile.yaml destroy`,
-		},
-	)
+	require.Len(t, runner.OrderedCommands, 2, "should have 2 commands")
+	assert.Equal(t, `helmfile --file test_data/charts/preview/helmfile.yaml destroy`, runner.OrderedCommands[1].CLI(), "second command")
 
 	// now lets check we removed the preview namespace
 	namespaceList, err := do.KubeClient.CoreV1().Namespaces().List(metav1.ListOptions{})
