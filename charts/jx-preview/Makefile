@@ -1,7 +1,7 @@
-CHART_REPO := http://jenkins-x-chartmuseum:8080
+CHART_REPO := gs://jenkinsxio/charts
 CURRENT=$(pwd)
 GO_MOD := GO111MODULE=on go
-NAME := lighthouse
+NAME := jx-preview
 OS := $(shell uname)
 
 HELMDOCS := $(GOPATH)/bin/helm-docs
@@ -31,11 +31,13 @@ clean:
 snapshot: update-version release
 
 release: clean
+	sed -i -e "s/version:.*/version: $(VERSION)/" Chart.yaml
+
 	helm dependency build
 	helm lint
-	helm init --client-only
 	helm package .
-	@curl --fail -u $(CHARTMUSEUM_USER):$(CHARTMUSEUM_PASS) --data-binary "@$(NAME)-$(shell sed -n 's/^version: //p' Chart.yaml).tgz" $(CHART_REPO)/api/charts
+	helm repo add jx3 $(CHART_REPO)
+	helm gcs push ${NAME}*.tgz jx3 --public
 	rm -rf ${NAME}*.tgz%
 
 update-version:

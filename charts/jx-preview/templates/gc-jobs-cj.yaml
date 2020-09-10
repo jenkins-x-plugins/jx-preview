@@ -20,11 +20,11 @@ spec:
         spec:
           containers:
             - command:
-                - /gc-jobs
+                - jx-preview
               image: {{ tpl .Values.gcJobs.image.repository . }}:{{ tpl .Values.gcJobs.image.tag . }}
               imagePullPolicy: {{ tpl .Values.gcJobs.image.pullPolicy . }}
               args:
-                - "--namespace={{ .Release.Namespace }}"
+                - gc
                 - "--max-age={{ .Values.gcJobs.maxAge }}"
               name: {{ template "gcJobs.name" . }}
               resources: {}
