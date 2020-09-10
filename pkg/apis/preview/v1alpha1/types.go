@@ -54,14 +54,18 @@ type PreviewSpec struct {
 
 // PreviewSource the location of the preview
 type PreviewSource struct {
-	// URL the git URL to clone the source
+	// URL the git URL of the source
 	URL string `json:"url,omitempty" protobuf:"bytes,1,opt,name=url"`
 
+	// CloneURL the git URL to clone the source which should include user and password
+	// so that the garbage collection jobs can properly clone the repository
+	CloneURL string `json:"cloneURL,omitempty" protobuf:"bytes,2,opt,name=cloneURL"`
+
 	// Ref the git reference (sha / branch / tag) to clone the source
-	Ref string `json:"ref,omitempty" protobuf:"bytes,2,opt,name=ref"`
+	Ref string `json:"ref,omitempty" protobuf:"bytes,3,opt,name=ref"`
 
 	// Path the location of the helmfile.yaml file (defaults to charts/preview/helmfile.yaml)
-	Path string `json:"path,omitempty" protobuf:"bytes,3,opt,name=ref"`
+	Path string `json:"path,omitempty" protobuf:"bytes,4,opt,name=path"`
 }
 
 // PullRequest the pull request information which triggered the preview
