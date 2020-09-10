@@ -1,39 +1,41 @@
 package gc
 
 import (
+	"context"
 	"fmt"
 
-	"github.com/jenkins-x/jx/v2/pkg/cmd/deletecmd"
-	"github.com/jenkins-x/jx/v2/pkg/cmd/preview"
+	"github.com/jenkins-x/go-scm/scm"
+	"github.com/jenkins-x/jx-helpers/pkg/scmhelpers"
+	"github.com/jenkins-x/jx-preview/pkg/cmd/destroy"
+	"github.com/jenkins-x/jx-preview/pkg/previews"
+	"github.com/pkg/errors"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 
 	"github.com/jenkins-x/jx/v2/pkg/cmd/helper"
-	"github.com/jenkins-x/jx/v2/pkg/cmd/promote"
-
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"strconv"
-
 	"strings"
 
-	v1 "github.com/jenkins-x/jx-api/pkg/apis/jenkins.io/v1"
 	"github.com/jenkins-x/jx-logging/pkg/log"
-	"github.com/jenkins-x/jx/v2/pkg/cmd/opts"
 	"github.com/jenkins-x/jx/v2/pkg/cmd/templates"
-	"github.com/jenkins-x/jx/v2/pkg/gits"
 )
 
 // Options the command line options
 type Options struct {
-	*opts.CommonOptions
+	destroy.Options
 
-	DisableImport bool
-	OutDir        string
+	Deleted []string
+
+	// only needed for testing
+	ScmClient *scm.Client
 }
 
 var (
 	cmdLong = templates.LongDesc(`
-		Garbage collect Jenkins X preview environments.  If a pull request is merged or closed the associated preview
+		Garbage collect Jenkins X preview environments.
+
+		If a pull request is merged or closed the associated preview
 		environment will be deleted.
 
 `)
@@ -45,101 +47,100 @@ var (
 )
 
 // NewCmd s a command object for the "step" command
-func NewCmdGCPreviews(commonOpts *opts.CommonOptions) *cobra.Command {
-	options := &Options{
-		CommonOptions: commonOpts,
-	}
+func NewCmdGCPreviews() (*cobra.Command, *Options) {
+	options := &Options{}
 
 	cmd := &cobra.Command{
 		Use:     "gc",
-		Short:   "garbage collection for preview environments",
+		Short:   "garbage collect Preview environments for closed Pull Requests",
 		Long:    cmdLong,
 		Example: cmdExample,
 		Run: func(cmd *cobra.Command, args []string) {
-			options.Cmd = cmd
-			options.Args = args
 			err := options.Run()
 			helper.CheckErr(err)
 		},
 	}
-	return cmd
+	return cmd, options
 }
 
 // Run implements this command
 func (o *Options) Run() error {
-	client, currentNs, err := o.JXClientAndDevNamespace()
+	err := o.Validate()
 	if err != nil {
-		return err
+		return errors.Wrapf(err, "failed to validate options")
 	}
 
-	// cannot use field selectors like `spec.kind=Preview` on CRDs so list all environments
-	envs, err := client.JenkinsV1().Environments(currentNs).List(metav1.ListOptions{})
+	ns := o.Namespace
+	resourceList, err := o.PreviewClient.PreviewV1alpha1().Previews(ns).List(metav1.ListOptions{})
 	if err != nil {
-		return err
-	}
-	if len(envs.Items) == 0 {
-		// no environments found so lets return gracefully
-		log.Logger().Debug("no environments found")
-		return nil
-	}
-
-	var previewFound bool
-	for _, e := range envs.Items {
-		if e.Spec.Kind == v1.EnvironmentKindTypePreview {
-			previewFound = true
-			gitInfo, err := gits.ParseGitURL(e.Spec.Source.URL)
-			if err != nil {
-				return err
-			}
-			// we need pull request info to include
-			authConfigSvc, err := o.GitAuthConfigService()
-			if err != nil {
-				return err
-			}
-
-			gitKind, err := o.GitServerKind(gitInfo)
-			if err != nil {
-				return err
-			}
-
-			ghOwner, err := o.GetGitHubAppOwner(gitInfo)
-			if err != nil {
-				return err
-			}
-			gitProvider, err := gitInfo.CreateProvider(o.InCluster(), authConfigSvc, gitKind, ghOwner, o.Git(), o.BatchMode, o.GetIOFileHandles())
-			if err != nil {
-				return err
-			}
-			prNum, err := strconv.Atoi(e.Spec.PreviewGitSpec.Name)
-			if err != nil {
-				log.Logger().Warn("Unable to convert PR " + e.Spec.PreviewGitSpec.Name + " to a number")
-			}
-			pullRequest, err := gitProvider.GetPullRequest(gitInfo.Organisation, gitInfo, prNum)
-			if err != nil {
-				log.Logger().Warnf("Can not get pull request %s, skipping: %s", e.Spec.PreviewGitSpec.Name, err)
-				continue
-			}
-
-			lowerState := strings.ToLower(*pullRequest.State)
-
-			if strings.HasPrefix(lowerState, "clos") || strings.HasPrefix(lowerState, "merged") || strings.HasPrefix(lowerState, "superseded") || strings.HasPrefix(lowerState, "declined") {
-				// lets delete the preview environment
-				deleteOpts := deletecmd.DeletePreviewOptions{
-					PreviewOptions: preview.PreviewOptions{
-						PromoteOptions: promote.PromoteOptions{
-							CommonOptions: o.CommonOptions,
-						},
-					},
-				}
-				err = deleteOpts.DeletePreview(e.Name)
-				if err != nil {
-					return fmt.Errorf("failed to delete preview environment %s: %v\n", e.Name, err)
-				}
-			}
+		if !apierrors.IsNotFound(err) {
+			return errors.Wrapf(err, "failed to list Previews in namespace %s", ns)
 		}
 	}
-	if !previewFound {
+
+	resources := resourceList.Items
+	previews.SortPreviews(resources)
+
+	for _, preview := range resources {
+		name := preview.Name
+		gitURL := preview.Spec.Source.CloneURL
+		if gitURL == "" {
+			log.Logger().Warnf("cannot GC preview %s as it has no spec.source.cloneURL", name)
+			continue
+		}
+		prLink := preview.Spec.PullRequest.URL
+		owner := preview.Spec.PullRequest.Owner
+		if owner == "" {
+			log.Logger().Warnf("cannot GC preview %s as it has no spec.pullRequest.owner", name)
+			continue
+		}
+		repository := preview.Spec.PullRequest.Repository
+		if repository == "" {
+			log.Logger().Warnf("cannot GC preview %s as it has no spec.pullRequest.repository", name)
+			continue
+		}
+		prNumber := preview.Spec.PullRequest.Number
+		if prNumber <= 0 {
+			log.Logger().Warnf("cannot GC preview %s as it has no spec.pullRequest.number", name)
+			continue
+		}
+
+		so := &scmhelpers.Options{
+			SourceURL: gitURL,
+			ScmClient: o.ScmClient,
+
+			// lets avoid detecting the branch
+			Branch: "master",
+		}
+		err = so.Validate()
+		if err != nil {
+			return errors.Wrapf(err, "failed to validate preview %s with source URL %s", name, preview.Spec.Source.URL)
+		}
+
+		scmClient := so.ScmClient
+		fullName := scm.Join(owner, repository)
+
+		ctx := context.Background()
+		pullRequest, _, err := scmClient.PullRequests.Find(ctx, fullName, prNumber)
+		if err != nil {
+			return errors.Wrapf(err, "failed to query PullRequest %s", prLink)
+		}
+
+		lowerState := strings.ToLower(pullRequest.State)
+
+		if strings.HasPrefix(lowerState, "clos") || strings.HasPrefix(lowerState, "merged") || strings.HasPrefix(lowerState, "superseded") || strings.HasPrefix(lowerState, "declined") {
+
+			err = o.Destroy(name)
+			if err != nil {
+				return fmt.Errorf("failed to destroy preview environment %s: %v\n", name, err)
+			}
+
+			o.Deleted = append(o.Deleted, name)
+		}
+	}
+	if len(o.Deleted) == 0 {
 		log.Logger().Debug("no preview environments found")
+		return nil
 	}
 	return nil
 }
