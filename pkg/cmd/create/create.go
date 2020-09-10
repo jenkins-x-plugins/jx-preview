@@ -579,13 +579,9 @@ func (o *Options) DiscoverPreviewHelmfile() error {
 
 	// lets push the changes to git
 	_, po := push.NewCmdPullRequestPush()
-	po.CommandRunner = o.CommandRunner
+	po.CommandRunner = cmdrunner.DefaultCommandRunner
 	po.ScmClient = o.ScmClient
 	po.SourceURL = o.SourceURL
-	po.Number = o.Number
-	po.Branch = o.Branch
-
-	log.Logger().Infof("discovered PR number %d and branch %s", po.Number, po.Branch)
 
 	err = po.Run()
 	if err != nil {
