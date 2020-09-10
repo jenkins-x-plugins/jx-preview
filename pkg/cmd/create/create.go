@@ -57,12 +57,14 @@ var (
 type Options struct {
 	scmhelpers.Options
 
-	PreviewHelmfile   string
-	PreviewNamespace  string
-	Number            int
-	Namespace         string
-	DockerRegistry    string
-	BuildNumber       string
+	PreviewHelmfile  string
+	PreviewNamespace string
+	Number           int
+	Namespace        string
+	DockerRegistry   string
+	BuildNumber      string
+	// PullRequestBranch used for testing to fake out the pull request branch name
+	PullRequestBranch string
 	PreviewURLTimeout time.Duration
 	NoComment         bool
 	Debug             bool
@@ -579,10 +581,11 @@ func (o *Options) DiscoverPreviewHelmfile() error {
 
 	// lets push the changes to git
 	_, po := push.NewCmdPullRequestPush()
-	po.CommandRunner = cmdrunner.DefaultCommandRunner
+	po.CommandRunner = o.CommandRunner
 	po.ScmClient = o.ScmClient
 	po.SourceURL = o.SourceURL
 	po.Number = o.Number
+	po.Branch = o.PullRequestBranch
 
 	err = po.Run()
 	if err != nil {

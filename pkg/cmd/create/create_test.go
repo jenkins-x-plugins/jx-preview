@@ -17,6 +17,7 @@ import (
 	"github.com/jenkins-x/jx-helpers/pkg/kube/jxenv"
 	"github.com/jenkins-x/jx-preview/pkg/client/clientset/versioned/fake"
 	"github.com/jenkins-x/jx-preview/pkg/cmd/destroy"
+	"github.com/jenkins-x/jx-preview/pkg/fakescms"
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -252,7 +253,13 @@ func TestPreviewCreateHelmfileDiscovery(t *testing.T) {
 	}
 
 	runner := &fakerunner.FakeRunner{}
-	scmClient, _ := fakescm.NewDefault()
+	scmClient, fakeData := fakescm.NewDefault()
+
+	owner := "myowner"
+	repo := "myrepo"
+	sourceURL := "https://github.com/" + owner + "/" + repo
+
+	fakescms.CreatePullRequest(fakeData, owner, repo, 1)
 
 	for _, tc := range testCases {
 		tmpDir, err := ioutil.TempDir("", "")
@@ -270,6 +277,8 @@ func TestPreviewCreateHelmfileDiscovery(t *testing.T) {
 		o.Number = 1
 		o.ScmClient = scmClient
 		o.Branch = "PR-1"
+		o.SourceURL = sourceURL
+		o.PullRequestBranch = "master"
 
 		if tc.relPath != "" {
 			o.Dir = filepath.Join(tmpDir, tc.relPath)
