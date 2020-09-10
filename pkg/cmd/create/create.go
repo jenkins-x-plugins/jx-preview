@@ -17,6 +17,7 @@ import (
 	"github.com/jenkins-x/jx-helpers/pkg/cobras/helper"
 	"github.com/jenkins-x/jx-helpers/pkg/cobras/templates"
 	"github.com/jenkins-x/jx-helpers/pkg/files"
+	"github.com/jenkins-x/jx-helpers/pkg/gitclient/cli"
 	"github.com/jenkins-x/jx-helpers/pkg/gitclient/giturl"
 	"github.com/jenkins-x/jx-helpers/pkg/kube"
 	"github.com/jenkins-x/jx-helpers/pkg/kube/activities"
@@ -157,7 +158,7 @@ func (o *Options) Run() error {
 	}
 
 	if url != "" {
-		log.Logger().Infof("the preview %s is now running at %s", info(preview.Name), info(url))
+		log.Logger().Infof("preview %s is now running at %s", info(preview.Name), info(url))
 
 		// lets modify the preview
 		preview.Status.ApplicationName = o.Repository
@@ -166,6 +167,7 @@ func (o *Options) Run() error {
 		if err != nil {
 			return errors.Wrapf(err, "failed to update preview %s", preview.Name)
 		}
+		log.Logger().Infof("updated preview %s with URL %s", preview.Name, url)
 	} else {
 		log.Logger().Infof("could not detect a preview URL")
 	}
@@ -556,6 +558,23 @@ func (o *Options) DiscoverPreviewHelmfile() error {
 	_, err = o.CommandRunner(c)
 	if err != nil {
 		return errors.Wrapf(err, "failed to get the preview helmfile: %s via kpt", o.PreviewHelmfile)
+	}
+
+	// lets add the files
+	if o.GitClient == nil {
+		o.GitClient = cli.NewCLIClient("", o.CommandRunner)
+	}
+	_, err = o.GitClient.Command(o.Dir, "add", "*")
+	if err != nil {
+		return errors.Wrapf(err, "failed to add the preview helmfile files to git")
+	}
+	_, err = o.GitClient.Command(o.Dir, "commit", "-a", "-m", "fix: add preview helmfile")
+	if err != nil {
+		return errors.Wrapf(err, "failed to commit the preview helmfile files to git")
+	}
+	_, err = o.GitClient.Command(o.Dir, "push")
+	if err != nil {
+		return errors.Wrapf(err, "failed to push the changes to git")
 	}
 	return nil
 }

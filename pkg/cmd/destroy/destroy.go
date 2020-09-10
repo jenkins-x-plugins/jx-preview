@@ -39,8 +39,7 @@ var (
 
 // Options the CLI options for
 type Options struct {
-	Name          string
-	Args          []string
+	Names         []string
 	PreviewClient versioned.Interface
 	KubeClient    kubernetes.Interface
 	Namespace     string
@@ -59,7 +58,7 @@ func NewCmdPreviewDestroy() (*cobra.Command, *Options) {
 		Long:    cmdLong,
 		Example: fmt.Sprintf(cmdExample, rootcmd.BinaryName),
 		Run: func(cmd *cobra.Command, args []string) {
-			o.Args = args
+			o.Names = args
 			err := o.Run()
 			helper.CheckErr(err)
 		},
@@ -74,8 +73,20 @@ func (o *Options) Run() error {
 		return errors.Wrapf(err, "failed to validate options")
 	}
 
+	if len(o.Names) == 0 {
+		return errors.Errorf("missing preview name")
+	}
+
+	for _, name := range o.Names {
+		err = o.Destroy(name)
+	}
+	return nil
+}
+
+// Destroy destroys a preview environment
+func (o *Options) Destroy(name string) error {
 	ns := o.Namespace
-	name := o.Name
+
 	log.Logger().Infof("destroying preview: %s in namespace %s", info(name), info(ns))
 
 	previewInterface := o.PreviewClient.PreviewV1alpha1().Previews(ns)
@@ -121,14 +132,6 @@ func (o *Options) Validate() error {
 		return errors.Wrapf(err, "failed to create kube client")
 	}
 
-	if o.Name == "" {
-		if len(o.Args) > 0 {
-			o.Name = o.Args[0]
-		}
-		if o.Name == "" {
-			return errors.Errorf("missing preview name")
-		}
-	}
 	if o.CommandRunner == nil {
 		o.CommandRunner = cmdrunner.DefaultCommandRunner
 	}

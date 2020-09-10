@@ -183,7 +183,7 @@ func TestPreviewCreate(t *testing.T) {
 
 		assert.Equal(t, previewNamespace, preview.Spec.PreviewNamespace, "preview.Spec.PreviewNamespace")
 
-		assert.NotEmpty(t, preview.Spec.DestroyCommand.Args, "preview.Spec.DestroyCommand.Args")
+		assert.NotEmpty(t, preview.Spec.DestroyCommand.Args, "preview.Spec.DestroyCommand.Names")
 		assert.NotEmpty(t, preview.Spec.DestroyCommand.Env, "preview.Spec.DestroyCommand.Env")
 
 		assert.Equal(t, previewURL, preview.Status.ApplicationURL, "preview.Status.ApplicationURL")
@@ -217,7 +217,7 @@ func TestPreviewCreate(t *testing.T) {
 	_, do := destroy.NewCmdPreviewDestroy()
 	do.PreviewClient = previewClient
 	do.Namespace = ns
-	do.Name = previewName
+	do.Names = []string{previewName}
 
 	runner := &fakerunner.FakeRunner{}
 	do.CommandRunner = runner.Run

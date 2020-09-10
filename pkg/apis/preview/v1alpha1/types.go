@@ -8,6 +8,7 @@ import (
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 // +kubebuilder:object:root=true
 // +kubebuilder:resource:shortName=pvw
+// +kubebuilder:subresource:status
 
 // Preview contains the definition of a preview environment
 type Preview struct {
@@ -31,10 +32,10 @@ type PreviewList struct {
 
 // PreviewStatus represents the status of a preview
 type PreviewStatus struct {
-	BuildStatus     string `json:"buildStatus,omitempty" protobuf:"bytes,6,opt,name=buildStatus"`
-	BuildStatusURL  string `json:"buildStatusUrl,omitempty" protobuf:"bytes,7,opt,name=buildStatusUrl"`
-	ApplicationName string `json:"appName,omitempty" protobuf:"bytes,8,opt,name=appName"`
-	ApplicationURL  string `json:"applicationURL,omitempty" protobuf:"bytes,9,opt,name=applicationURL"`
+	BuildStatus     string `json:"buildStatus,omitempty" protobuf:"bytes,1,opt,name=buildStatus"`
+	BuildStatusURL  string `json:"buildStatusUrl,omitempty" protobuf:"bytes,2,opt,name=buildStatusUrl"`
+	ApplicationName string `json:"appName,omitempty" protobuf:"bytes,3,opt,name=appName"`
+	ApplicationURL  string `json:"applicationURL,omitempty" protobuf:"bytes,4,opt,name=applicationURL"`
 }
 
 // PreviewSpec the spec of a pipeline request
