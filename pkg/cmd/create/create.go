@@ -156,11 +156,6 @@ func (o *Options) Run() error {
 		return errors.Wrapf(err, "failed to detect the preview URL")
 	}
 
-	err = o.updatePipelineActivity(url, preview.Spec.PullRequest.URL)
-	if err != nil {
-		return errors.Wrapf(err, "failed to update PipelineActivity")
-	}
-
 	if url != "" {
 		log.Logger().Infof("the preview %s is now running at %s", info(preview.Name), info(url))
 
@@ -171,7 +166,15 @@ func (o *Options) Run() error {
 		if err != nil {
 			return errors.Wrapf(err, "failed to update preview %s", preview.Name)
 		}
+	} else {
+		log.Logger().Infof("could not detect a preview URL")
 	}
+
+	err = o.updatePipelineActivity(url, preview.Spec.PullRequest.URL)
+	if err != nil {
+		log.Logger().Warnf("failed to update the PipelineActivity - are you using Jenkins X? %s", err.Error())
+	}
+
 	if o.NoComment {
 		return nil
 	}
