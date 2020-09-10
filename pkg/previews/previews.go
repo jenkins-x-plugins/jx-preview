@@ -50,7 +50,10 @@ func GetOrCreatePreview(client versioned.Interface, ns string, pr *scm.PullReque
 		found.Namespace = ns
 	}
 	src := &found.Spec.Source
-	src.URL = gitURL
+	src.CloneURL = gitURL
+	if repo.Link != "" {
+		src.URL = repo.Link
+	}
 	if src.Ref == "" {
 		src.Ref = pr.Sha
 	}

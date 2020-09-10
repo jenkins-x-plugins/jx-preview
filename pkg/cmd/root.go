@@ -5,6 +5,7 @@ import (
 	"github.com/jenkins-x/jx-logging/pkg/log"
 	"github.com/jenkins-x/jx-preview/pkg/cmd/create"
 	"github.com/jenkins-x/jx-preview/pkg/cmd/destroy"
+	"github.com/jenkins-x/jx-preview/pkg/cmd/get"
 	"github.com/jenkins-x/jx-preview/pkg/cmd/version"
 	"github.com/jenkins-x/jx-preview/pkg/rootcmd"
 	"github.com/spf13/cobra"
@@ -24,6 +25,7 @@ func Main() *cobra.Command {
 	}
 	cmd.AddCommand(cobras.SplitCommand(create.NewCmdPreviewCreate()))
 	cmd.AddCommand(cobras.SplitCommand(destroy.NewCmdPreviewDestroy()))
+	cmd.AddCommand(cobras.SplitCommand(get.NewCmdGetPreview()))
 	cmd.AddCommand(cobras.SplitCommand(version.NewCmdVersion()))
 	return cmd
 }
