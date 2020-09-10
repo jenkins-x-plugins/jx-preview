@@ -584,6 +584,9 @@ func (o *Options) DiscoverPreviewHelmfile() error {
 	po.SourceURL = o.SourceURL
 	po.Number = o.Number
 	po.Branch = o.Branch
+
+	log.Logger().Infof("discovered PR number %s and branch %s", po.Number, po.Branch)
+
 	err = po.Run()
 	if err != nil {
 		return errors.Wrapf(err, "failed to push the changes to git")
