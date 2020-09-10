@@ -182,12 +182,11 @@ func TestPreviewCreate(t *testing.T) {
 		previewName = preview.Name
 		t.Logf("found preview %s in namespace %s for test %s", previewName, ns, testName)
 
-		assert.Equal(t, previewNamespace, preview.Spec.PreviewNamespace, "preview.Spec.PreviewNamespace")
+		assert.Equal(t, previewNamespace, preview.Spec.Resources.Namespace, "preview.Spec.Resources.Namespace")
+		assert.Equal(t, previewURL, preview.Spec.Resources.URL, "preview.Spec.Resources.URL")
 
 		assert.NotEmpty(t, preview.Spec.DestroyCommand.Args, "preview.Spec.DestroyCommand.Names")
 		assert.NotEmpty(t, preview.Spec.DestroyCommand.Env, "preview.Spec.DestroyCommand.Env")
-
-		assert.Equal(t, previewURL, preview.Status.ApplicationURL, "preview.Status.ApplicationURL")
 
 		prs := &preview.Spec.PullRequest
 		assert.Equal(t, prNumber, prs.Number, "preview.Spec.PullRequest.Number")

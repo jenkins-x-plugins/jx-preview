@@ -62,7 +62,9 @@ func CreateTestPreviewAndPullRequest(data *fakescm.Data, ns, owner, repo string,
 				Title:       prTitle,
 				Description: prBody,
 			},
-			PreviewNamespace: previewNamespace,
+			Resources: v1alpha1.Resources{
+				Namespace: previewNamespace,
+			},
 		},
 	}
 

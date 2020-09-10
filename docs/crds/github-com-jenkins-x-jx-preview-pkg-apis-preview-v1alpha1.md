@@ -5,8 +5,8 @@
 - [Preview](#Preview)
 - [PreviewSource](#PreviewSource)
 - [PreviewSpec](#PreviewSpec)
-- [PreviewStatus](#PreviewStatus)
 - [PullRequest](#PullRequest)
+- [Resources](#Resources)
 - [UserSpec](#UserSpec)
 
 
@@ -55,7 +55,6 @@ Preview contains the definition of a preview environment
 | `clusterName` | string | No | The name of the cluster which the object belongs to.<br />This is used to distinguish resources with same name and namespace in different clusters.<br />This field is not set anywhere right now and apiserver is going to ignore it if set in create or update request.<br />+optional |
 | `managedFields` | [][ManagedFieldsEntry](./k8s-io-apimachinery-pkg-apis-meta-v1.md#ManagedFieldsEntry) | No | ManagedFields maps workflow-id and version to the set of fields<br />that are managed by that workflow. This is mostly for internal<br />housekeeping, and users typically shouldn't need to set or<br />understand this field. A workflow can be the user's name, a<br />controller's name, or the name of a specific apply path like<br />"ci-cd". The set of fields is always in the version that the<br />workflow used when modifying the object.<br /><br />+optional |
 | `spec` | [PreviewSpec](./github-com-jenkins-x-jx-preview-pkg-apis-preview-v1alpha1.md#PreviewSpec) | No |  |
-| `status` | [PreviewStatus](./github-com-jenkins-x-jx-preview-pkg-apis-preview-v1alpha1.md#PreviewStatus) | No |  |
 
 ## PreviewSource
 
@@ -76,19 +75,8 @@ PreviewSpec the spec of a pipeline request
 |---|---|---|---|
 | `source` | [PreviewSource](./github-com-jenkins-x-jx-preview-pkg-apis-preview-v1alpha1.md#PreviewSource) | No | Source the source of the pull request |
 | `pullRequest` | [PullRequest](./github-com-jenkins-x-jx-preview-pkg-apis-preview-v1alpha1.md#PullRequest) | No | PullRequest the pull request which triggered it |
+| `resources` | [Resources](./github-com-jenkins-x-jx-preview-pkg-apis-preview-v1alpha1.md#Resources) | No | Resources information about the deployed resources |
 | `destroyCommand` | [Command](./github-com-jenkins-x-jx-preview-pkg-apis-preview-v1alpha1.md#Command) | No | DestroyCommand the command to destroy the preview |
-| `previewNamespace` | string | No | PreviewNamespace the optional namespace unique for the pull request to deploy into |
-
-## PreviewStatus
-
-PreviewStatus represents the status of a preview
-
-| Stanza | Type | Required | Description |
-|---|---|---|---|
-| `buildStatus` | string | No |  |
-| `buildStatusUrl` | string | No |  |
-| `appName` | string | No |  |
-| `applicationURL` | string | No |  |
 
 ## PullRequest
 
@@ -103,6 +91,16 @@ PullRequest the pull request information which triggered the preview
 | `user` | [UserSpec](./github-com-jenkins-x-jx-preview-pkg-apis-preview-v1alpha1.md#UserSpec) | No |  |
 | `title` | string | No |  |
 | `description` | string | No |  |
+
+## Resources
+
+Resources represents details of the preview application
+
+| Stanza | Type | Required | Description |
+|---|---|---|---|
+| `name` | string | No | Name the name of the preview if different from the repository name |
+| `url` | string | No | URL the URL to test out the preview if applicable |
+| `namespace` | string | No | Namespace the optional namespace unique for the pull request to deploy into |
 
 ## UserSpec
 

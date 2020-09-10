@@ -84,7 +84,7 @@ func (o *Options) Run() error {
 	t.AddRow("PULL REQUEST", "NAMESPACE", "APPLICATION")
 
 	for _, preview := range resources {
-		t.AddRow(preview.Spec.PullRequest.URL, preview.Spec.PreviewNamespace, preview.Status.ApplicationURL)
+		t.AddRow(preview.Spec.PullRequest.URL, preview.Spec.Resources.Namespace, preview.Spec.Resources.URL)
 	}
 	t.Render()
 	return nil

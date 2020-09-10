@@ -167,8 +167,8 @@ func (o *Options) Run() error {
 		log.Logger().Infof("preview %s is now running at %s", info(preview.Name), info(url))
 
 		// lets modify the preview
-		preview.Status.ApplicationName = o.Repository
-		preview.Status.ApplicationURL = url
+		preview.Spec.Resources.Name = o.Repository
+		preview.Spec.Resources.URL = url
 		preview, err = o.PreviewClient.PreviewV1alpha1().Previews(o.Namespace).Update(preview)
 		if err != nil {
 			return errors.Wrapf(err, "failed to update preview %s", preview.Name)

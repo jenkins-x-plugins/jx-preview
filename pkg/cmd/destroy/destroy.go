@@ -164,7 +164,7 @@ func (o *Options) runDeletePreviewCommand(preview *v1alpha1.Preview, dir string)
 }
 
 func (o *Options) deletePreviewNamespace(preview *v1alpha1.Preview) error {
-	previewNamespace := preview.Spec.PreviewNamespace
+	previewNamespace := preview.Spec.Resources.Namespace
 	if previewNamespace == "" {
 		return errors.Errorf("no preview.Spec.PreviewNamespace is defined for preview %s", preview.Name)
 	}
