@@ -585,7 +585,7 @@ func (o *Options) DiscoverPreviewHelmfile() error {
 	po.Number = o.Number
 	po.Branch = o.Branch
 
-	log.Logger().Infof("discovered PR number %s and branch %s", po.Number, po.Branch)
+	log.Logger().Infof("discovered PR number %d and branch %s", po.Number, po.Branch)
 
 	err = po.Run()
 	if err != nil {
