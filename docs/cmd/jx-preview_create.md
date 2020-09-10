@@ -20,7 +20,6 @@ Creates a preview
 ### Options
 
 ```
-      --app string                     the name of the app or repository (default ".")
       --dir string                     the directory to search for the .git to discover the git source URL (default ".")
   -f, --file string                    the Preview helmfile.yaml file to use. If not specified it is discovered in charts/preview/helmfile.yaml and created from a template if needed
       --git-kind string                the kind of git server to connect to

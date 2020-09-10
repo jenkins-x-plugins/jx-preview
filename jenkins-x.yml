@@ -34,6 +34,9 @@ pipelineConfig:
                     value: ""
                   - name: DOCKER_REGISTRY_ORG
                     value: jenkinsxio
+              - name: release-chart
+                command: make release
+                image: gcr.io/jenkinsxio-labs/helm:0.0.21
               - name: changelog
                 command: jx step changelog --verbose --header-file=hack/changelog-header.md --version=$VERSION --rev=$PULL_BASE_SHA --output-markdown=changelog.md --update-release=false
               - name: upload-binaries
