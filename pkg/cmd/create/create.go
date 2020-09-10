@@ -145,6 +145,9 @@ func (o *Options) Run() error {
 	if err != nil {
 		return errors.Wrapf(err, "failed to upsert the Preview resource in namespace %s", o.Namespace)
 	}
+	if preview == nil {
+		return errors.Errorf("no upserted Preview resource in namespace %s", o.Namespace)
+	}
 	log.Logger().Infof("upserted preview %s", preview.Name)
 
 	err = o.helmfileSyncPreview(envVars)
@@ -343,7 +346,7 @@ func (o *Options) createPreviewNamespace() (string, error) {
 		log.Logger().Warnf("Due the name of the organisation and repository being too long (%s) we are going to trim it to make the preview namespace: %s", prName, prNamespace)
 	}
 	if len(prNamespace) > 63 {
-		return "", fmt.Errorf("Preview namespace %s is too long. Must be no more than 63 character", prNamespace)
+		return "", fmt.Errorf("preview namespace %s is too long. Must be no more than 63 character", prNamespace)
 	}
 	prNamespace = naming.ToValidName(prNamespace)
 	return prNamespace, nil
