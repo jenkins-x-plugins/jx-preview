@@ -84,18 +84,6 @@ func (c *FakePreviews) Update(preview *v1alpha1.Preview) (result *v1alpha1.Previ
 	return obj.(*v1alpha1.Preview), err
 }
 
-// UpdateStatus was generated because the type contains a Status member.
-// Add a +genclient:noStatus comment above the type to avoid generating UpdateStatus().
-func (c *FakePreviews) UpdateStatus(preview *v1alpha1.Preview) (*v1alpha1.Preview, error) {
-	obj, err := c.Fake.
-		Invokes(testing.NewUpdateSubresourceAction(previewsResource, "status", c.ns, preview), &v1alpha1.Preview{})
-
-	if obj == nil {
-		return nil, err
-	}
-	return obj.(*v1alpha1.Preview), err
-}
-
 // Delete takes name of the preview and deletes it. Returns an error if one occurs.
 func (c *FakePreviews) Delete(name string, options *v1.DeleteOptions) error {
 	_, err := c.Fake.

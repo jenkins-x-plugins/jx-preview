@@ -80,7 +80,7 @@ func GetOrCreatePreview(client versioned.Interface, ns string, pr *scm.PullReque
 		prr.Description = pr.Body
 	}
 	if previewNamespace != "" {
-		found.Spec.PreviewNamespace = previewNamespace
+		found.Spec.Resources.Namespace = previewNamespace
 	}
 	found.Spec.DestroyCommand = destroyCmd
 	if create {

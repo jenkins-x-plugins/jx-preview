@@ -1,0 +1,3 @@
+FROM gcr.io/jenkinsxio/jx-cli:3.0.214	
+
+COPY ./build/linux/jx-preview /usr/bin/jx-preview

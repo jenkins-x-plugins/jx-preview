@@ -8,15 +8,13 @@ import (
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 // +kubebuilder:object:root=true
 // +kubebuilder:resource:shortName=pvw
-// +kubebuilder:subresource:status
 
 // Preview contains the definition of a preview environment
 type Preview struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   PreviewSpec   `json:"spec,omitempty"`
-	Status PreviewStatus `json:"status,omitempty"`
+	Spec PreviewSpec `json:"spec,omitempty"`
 }
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
@@ -30,12 +28,16 @@ type PreviewList struct {
 	Items           []Preview `json:"items"`
 }
 
-// PreviewStatus represents the status of a preview
-type PreviewStatus struct {
-	BuildStatus     string `json:"buildStatus,omitempty" protobuf:"bytes,1,opt,name=buildStatus"`
-	BuildStatusURL  string `json:"buildStatusUrl,omitempty" protobuf:"bytes,2,opt,name=buildStatusUrl"`
-	ApplicationName string `json:"appName,omitempty" protobuf:"bytes,3,opt,name=appName"`
-	ApplicationURL  string `json:"applicationURL,omitempty" protobuf:"bytes,4,opt,name=applicationURL"`
+// Resources represents details of the preview application
+type Resources struct {
+	// Name the name of the preview if different from the repository name
+	Name string `json:"name,omitempty" protobuf:"bytes,1,opt,name=name"`
+
+	// URL the URL to test out the preview if applicable
+	URL string `json:"url,omitempty" protobuf:"bytes,2,opt,name=url"`
+
+	// Namespace the optional namespace unique for the pull request to deploy into
+	Namespace string `json:"namespace,omitempty" protobuf:"bytes,3,opt,name=namespace"`
 }
 
 // PreviewSpec the spec of a pipeline request
@@ -46,11 +48,11 @@ type PreviewSpec struct {
 	// PullRequest the pull request which triggered it
 	PullRequest PullRequest `json:"pullRequest,omitempty" protobuf:"bytes,2,opt,name=pullRequest"`
 
-	// DestroyCommand the command to destroy the preview
-	DestroyCommand Command `json:"destroyCommand,omitempty" protobuf:"bytes,3,opt,name=destroyCommand"`
+	// Resources information about the deployed resources
+	Resources Resources `json:"resources,omitempty" protobuf:"bytes,3,opt,name=resources"`
 
-	// PreviewNamespace the optional namespace unique for the pull request to deploy into
-	PreviewNamespace string `json:"previewNamespace,omitempty" protobuf:"bytes,4,opt,name=previewNamespace"`
+	// DestroyCommand the command to destroy the preview
+	DestroyCommand Command `json:"destroyCommand,omitempty" protobuf:"bytes,4,opt,name=destroyCommand"`
 }
 
 // PreviewSource the location of the preview

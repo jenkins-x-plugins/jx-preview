@@ -13,6 +13,7 @@ import (
 	"github.com/jenkins-x/go-scm/scm"
 	jxc "github.com/jenkins-x/jx-api/pkg/client/clientset/versioned"
 	"github.com/jenkins-x/jx-gitops/pkg/cmd/git/get"
+	"github.com/jenkins-x/jx-gitops/pkg/cmd/pr/push"
 	"github.com/jenkins-x/jx-helpers/pkg/cmdrunner"
 	"github.com/jenkins-x/jx-helpers/pkg/cobras/helper"
 	"github.com/jenkins-x/jx-helpers/pkg/cobras/templates"
@@ -56,12 +57,14 @@ var (
 type Options struct {
 	scmhelpers.Options
 
-	PreviewHelmfile   string
-	PreviewNamespace  string
-	Number            int
-	Namespace         string
-	DockerRegistry    string
-	BuildNumber       string
+	PreviewHelmfile  string
+	PreviewNamespace string
+	Number           int
+	Namespace        string
+	DockerRegistry   string
+	BuildNumber      string
+	// PullRequestBranch used for testing to fake out the pull request branch name
+	PullRequestBranch string
 	PreviewURLTimeout time.Duration
 	NoComment         bool
 	Debug             bool
@@ -164,8 +167,8 @@ func (o *Options) Run() error {
 		log.Logger().Infof("preview %s is now running at %s", info(preview.Name), info(url))
 
 		// lets modify the preview
-		preview.Status.ApplicationName = o.Repository
-		preview.Status.ApplicationURL = url
+		preview.Spec.Resources.Name = o.Repository
+		preview.Spec.Resources.URL = url
 		preview, err = o.PreviewClient.PreviewV1alpha1().Previews(o.Namespace).Update(preview)
 		if err != nil {
 			return errors.Wrapf(err, "failed to update preview %s", preview.Name)
@@ -575,7 +578,16 @@ func (o *Options) DiscoverPreviewHelmfile() error {
 	if err != nil {
 		return errors.Wrapf(err, "failed to commit the preview helmfile files to git")
 	}
-	_, err = o.GitClient.Command(o.Dir, "push")
+
+	// lets push the changes to git
+	_, po := push.NewCmdPullRequestPush()
+	po.CommandRunner = o.CommandRunner
+	po.ScmClient = o.ScmClient
+	po.SourceURL = o.SourceURL
+	po.Number = o.Number
+	po.Branch = o.PullRequestBranch
+
+	err = po.Run()
 	if err != nil {
 		return errors.Wrapf(err, "failed to push the changes to git")
 	}

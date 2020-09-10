@@ -17,6 +17,7 @@ import (
 	"github.com/jenkins-x/jx-helpers/pkg/kube/jxenv"
 	"github.com/jenkins-x/jx-preview/pkg/client/clientset/versioned/fake"
 	"github.com/jenkins-x/jx-preview/pkg/cmd/destroy"
+	"github.com/jenkins-x/jx-preview/pkg/fakescms"
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -181,12 +182,11 @@ func TestPreviewCreate(t *testing.T) {
 		previewName = preview.Name
 		t.Logf("found preview %s in namespace %s for test %s", previewName, ns, testName)
 
-		assert.Equal(t, previewNamespace, preview.Spec.PreviewNamespace, "preview.Spec.PreviewNamespace")
+		assert.Equal(t, previewNamespace, preview.Spec.Resources.Namespace, "preview.Spec.Resources.Namespace")
+		assert.Equal(t, previewURL, preview.Spec.Resources.URL, "preview.Spec.Resources.URL")
 
 		assert.NotEmpty(t, preview.Spec.DestroyCommand.Args, "preview.Spec.DestroyCommand.Names")
 		assert.NotEmpty(t, preview.Spec.DestroyCommand.Env, "preview.Spec.DestroyCommand.Env")
-
-		assert.Equal(t, previewURL, preview.Status.ApplicationURL, "preview.Status.ApplicationURL")
 
 		prs := &preview.Spec.PullRequest
 		assert.Equal(t, prNumber, prs.Number, "preview.Spec.PullRequest.Number")
@@ -252,6 +252,13 @@ func TestPreviewCreateHelmfileDiscovery(t *testing.T) {
 	}
 
 	runner := &fakerunner.FakeRunner{}
+	scmClient, fakeData := fakescm.NewDefault()
+
+	owner := "myowner"
+	repo := "myrepo"
+	sourceURL := "https://github.com/" + owner + "/" + repo
+
+	fakescms.CreatePullRequest(fakeData, owner, repo, 1)
 
 	for _, tc := range testCases {
 		tmpDir, err := ioutil.TempDir("", "")
@@ -264,6 +271,14 @@ func TestPreviewCreateHelmfileDiscovery(t *testing.T) {
 		_, o := create.NewCmdPreviewCreate()
 		o.CommandRunner = runner.Run
 		o.Dir = tmpDir
+
+		// values for PR discovery
+		o.Number = 1
+		o.ScmClient = scmClient
+		o.Branch = "PR-1"
+		o.SourceURL = sourceURL
+		o.PullRequestBranch = "master"
+
 		if tc.relPath != "" {
 			o.Dir = filepath.Join(tmpDir, tc.relPath)
 		}
