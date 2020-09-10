@@ -8,11 +8,13 @@ HELMDOCS := $(GOPATH)/bin/helm-docs
 $(HELMDOCS):
 	pushd /tmp; $(GO_MOD) get -u github.com/norwoodj/helm-docs/cmd/helm-docs@v0.15.0; popd
 
-build: clean $(HELMDOCS)
+docs: clean $(HELMDOCS)
+	$(HELMDOCS)
+
+build: clean
 	rm -rf requirements.lock
 	helm dependency build
 	helm lint
-	$(HELMDOCS)
 
 install: clean build
 	helm install . --name ${NAME}
@@ -30,7 +32,7 @@ clean:
 .PHONY: snapshot
 snapshot: update-version release
 
-release: clean
+release:
 	sed -i -e "s/version:.*/version: $(VERSION)/" Chart.yaml
 
 	helm dependency build
