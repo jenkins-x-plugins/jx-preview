@@ -63,7 +63,8 @@ PreviewSource the location of the preview
 
 | Stanza | Type | Required | Description |
 |---|---|---|---|
-| `url` | string | No | URL the git URL to clone the source |
+| `url` | string | No | URL the git URL of the source |
+| `cloneURL` | string | No | CloneURL the git URL to clone the source which should include user and password<br />so that the garbage collection jobs can properly clone the repository |
 | `ref` | string | No | Ref the git reference (sha / branch / tag) to clone the source |
 | `path` | string | No | Path the location of the helmfile.yaml file (defaults to charts/preview/helmfile.yaml) |
 
