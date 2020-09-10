@@ -582,6 +582,7 @@ func (o *Options) DiscoverPreviewHelmfile() error {
 	po.CommandRunner = cmdrunner.DefaultCommandRunner
 	po.ScmClient = o.ScmClient
 	po.SourceURL = o.SourceURL
+	po.Number = o.Number
 
 	err = po.Run()
 	if err != nil {
