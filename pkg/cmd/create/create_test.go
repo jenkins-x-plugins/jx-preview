@@ -252,6 +252,7 @@ func TestPreviewCreateHelmfileDiscovery(t *testing.T) {
 	}
 
 	runner := &fakerunner.FakeRunner{}
+	scmClient, _ := fakescm.NewDefault()
 
 	for _, tc := range testCases {
 		tmpDir, err := ioutil.TempDir("", "")
@@ -264,6 +265,12 @@ func TestPreviewCreateHelmfileDiscovery(t *testing.T) {
 		_, o := create.NewCmdPreviewCreate()
 		o.CommandRunner = runner.Run
 		o.Dir = tmpDir
+
+		// values for PR discovery
+		o.Number = 1
+		o.ScmClient = scmClient
+		o.Branch = "PR-1"
+
 		if tc.relPath != "" {
 			o.Dir = filepath.Join(tmpDir, tc.relPath)
 		}
