@@ -26,7 +26,7 @@ gcJobs:
 
   image:
     # gcJobs.image.repository -- Template for computing the gc job docker image repository
-    repository: "{{ .Values.image.parentRepository }}/lighthouse-gc-jobs"
+    repository: "{{ .Values.image.parentRepository }}/jx-preview"
 
     # gcJobs.image.tag -- Template for computing the gc job docker image tag
     tag: "{{ .Values.image.tag }}"
