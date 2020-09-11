@@ -93,7 +93,7 @@ func NewCmdPreviewCreate() (*cobra.Command, *Options) {
 			helper.CheckErr(err)
 		},
 	}
-	cmd.Flags().StringVarP(&o.PreviewHelmfile, "file", "f", "", "the Preview helmfile.yaml file to use. If not specified it is discovered in charts/preview/helmfile.yaml and created from a template if needed")
+	cmd.Flags().StringVarP(&o.PreviewHelmfile, "file", "f", "", "the Preview helmfile.yaml file to use. If not specified it is discovered in preview/helmfile.yaml and created from a template if needed")
 	cmd.Flags().StringVarP(&o.Repository, "app", "", "", "the name of the app or repository")
 	cmd.Flags().IntVarP(&o.Number, "pr", "", 0, "the Pull Request number. If not specified we will use $BRANCH_NAME")
 	cmd.Flags().DurationVarP(&o.PreviewURLTimeout, "preview-url-timeout", "", time.Minute+5, "the time to wait for the preview URL to be available")
@@ -532,7 +532,7 @@ func (o *Options) DiscoverPreviewHelmfile() error {
 			}
 		}
 
-		o.PreviewHelmfile = filepath.Join(chartsDir, "preview", "helmfile.yaml")
+		o.PreviewHelmfile = filepath.Join(chartsDir, "..", "preview", "helmfile.yaml")
 	}
 
 	exists, err := files.FileExists(o.PreviewHelmfile)
@@ -545,14 +545,14 @@ func (o *Options) DiscoverPreviewHelmfile() error {
 
 	// lets make the preview dir
 	previewDir := filepath.Dir(o.PreviewHelmfile)
-	chartsDir := filepath.Dir(previewDir)
-	relDir, err := filepath.Rel(o.Dir, chartsDir)
+	parentDir := filepath.Dir(previewDir)
+	relDir, err := filepath.Rel(o.Dir, parentDir)
 	if err != nil {
-		return errors.Wrapf(err, "failed to find preview dir in %s of %s", o.Dir, chartsDir)
+		return errors.Wrapf(err, "failed to find preview dir in %s of %s", o.Dir, parentDir)
 	}
-	err = os.MkdirAll(chartsDir, files.DefaultDirWritePermissions)
+	err = os.MkdirAll(parentDir, files.DefaultDirWritePermissions)
 	if err != nil {
-		return errors.Wrapf(err, "failed to make preview dir %s", chartsDir)
+		return errors.Wrapf(err, "failed to make preview dir %s", parentDir)
 	}
 
 	// now lets grab the template preview

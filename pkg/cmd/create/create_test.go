@@ -44,7 +44,6 @@ func TestPreviewCreate(t *testing.T) {
 
 	t.Logf("preview in namespace %s", previewNamespace)
 
-	helmFile := filepath.Join("test_data", "charts", "preview", "helmfile.yaml")
 	repoLink := "https://" + gitUser + ":" + gitToken + "@fake.com/" + owner + "/" + repo
 
 	previewClient := fake.NewSimpleClientset()
@@ -143,13 +142,13 @@ func TestPreviewCreate(t *testing.T) {
 		o.BuildNumber = buildNumber
 		o.SourceURL = repoLink + ".git"
 		o.Number = prNumber
-		o.PreviewHelmfile = helmFile
+		o.Dir = "test_data"
 		o.DockerRegistry = containerRegistry
 
 		runner := &fakerunner.FakeRunner{
 			CommandRunner: func(c *cmdrunner.Command) (string, error) {
 				// lets mock running:
-				//   helmfile -f charts/preview/helmfile.yaml list --output json
+				//   helmfile -f preview/helmfile.yaml list --output json
 				// after a helm install
 				if c.Name == "helmfile" && len(c.Args) > 2 && c.Args[2] == "list" {
 					return `[{"name":"preview","namespace":"jx-myowner-myrepo-pr-5","enabled":true,"labels":""}]`, nil
@@ -166,10 +165,10 @@ func TestPreviewCreate(t *testing.T) {
 
 		runner.ExpectResults(t,
 			fakerunner.FakeResult{
-				CLI: `helmfile --file test_data/charts/preview/helmfile.yaml sync`,
+				CLI: `helmfile --file test_data/preview/helmfile.yaml sync`,
 			},
 			fakerunner.FakeResult{
-				CLI: `helmfile --file test_data/charts/preview/helmfile.yaml list --output json`,
+				CLI: `helmfile --file test_data/preview/helmfile.yaml list --output json`,
 			},
 		)
 
@@ -228,7 +227,7 @@ func TestPreviewCreate(t *testing.T) {
 	require.NoError(t, err, "failed to delete preview %s", previewName)
 
 	require.Len(t, runner.OrderedCommands, 2, "should have 2 commands")
-	assert.Equal(t, `helmfile --file test_data/charts/preview/helmfile.yaml destroy`, runner.OrderedCommands[1].CLI(), "second command")
+	assert.Equal(t, `helmfile --file test_data/preview/helmfile.yaml destroy`, runner.OrderedCommands[1].CLI(), "second command")
 
 	// now lets check we removed the preview namespace
 	namespaceList, err := do.KubeClient.CoreV1().Namespaces().List(metav1.ListOptions{})
@@ -286,7 +285,7 @@ func TestPreviewCreateHelmfileDiscovery(t *testing.T) {
 		err = o.DiscoverPreviewHelmfile()
 		require.NoError(t, err, "failed to run for test %s", tc.name)
 
-		assert.Equal(t, filepath.Join(tmpDir, "charts", "preview", "helmfile.yaml"), o.PreviewHelmfile, "for test %s", tc.name)
+		assert.Equal(t, filepath.Join(tmpDir, "preview", "helmfile.yaml"), o.PreviewHelmfile, "for test %s", tc.name)
 		//require.FileExists(t, filepath.Join(tmpDir, "charts", "preview", "helmfile.yaml"), "should have created helmfile.yaml")
 	}
 
