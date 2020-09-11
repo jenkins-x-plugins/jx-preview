@@ -26,7 +26,14 @@ For reference see the [Preview.Spec](https://github.com/jenkins-x/jx-preview/blo
 
 If you are using [Jenkins X 3.x](https://jenkins-x.io/docs/v3/) then its already included by default so there's nothing to install.
 
-If you are not using [Jenkins X 3.x](https://jenkins-x.io/docs/v3/)  then here's how you can install it on a vanilla kubernetes cluster using [helm 3.x](https://helm.sh/):
+If you are not using [Jenkins X 3.x](https://jenkins-x.io/docs/v3/) then you need to install the `jx3/jx-preview` chart to:
+
+* install the [Preview](https://github.com/jenkins-x/jx-preview/blob/master/docs/crds/github-com-jenkins-x-jx-preview-pkg-apis-preview-v1alpha1.md#Preview) custom resource used to track the Preview environments
+* setups a `CronJob`  to garbage collect `Preview` environments when the Pull Requests have been closed or merged 
+
+
+
+To install the `jx3/jx-preview` chart using [helm 3.x](https://helm.sh/) try the following::
 
 
 - Add jx3 helm charts repo
