@@ -93,11 +93,12 @@ func NewCmdPreviewCreate() (*cobra.Command, *Options) {
 			helper.CheckErr(err)
 		},
 	}
-	cmd.Flags().StringVarP(&o.PreviewHelmfile, "file", "f", "", "the Preview helmfile.yaml file to use. If not specified it is discovered in preview/helmfile.yaml and created from a template if needed")
-	cmd.Flags().StringVarP(&o.Repository, "app", "", "", "the name of the app or repository")
-	cmd.Flags().IntVarP(&o.Number, "pr", "", 0, "the Pull Request number. If not specified we will use $BRANCH_NAME")
-	cmd.Flags().DurationVarP(&o.PreviewURLTimeout, "preview-url-timeout", "", time.Minute+5, "the time to wait for the preview URL to be available")
+	cmd.Flags().StringVarP(&o.PreviewHelmfile, "file", "f", "", "Preview helmfile.yaml path to use. If not specified it is discovered in preview/helmfile.yaml and created from a template if needed")
+	cmd.Flags().StringVarP(&o.Repository, "app", "", "", "Name of the app or repository")
+	cmd.Flags().IntVarP(&o.Number, "pr", "", 0, "Pull Request number. If not specified we will use $BRANCH_NAME")
+	cmd.Flags().DurationVarP(&o.PreviewURLTimeout, "preview-url-timeout", "", time.Minute+5, "Time to wait for the preview URL to be available")
 	cmd.Flags().BoolVarP(&o.NoComment, "no-comment", "", false, "Disables commenting on the Pull Request after preview is created")
+	cmd.Flags().BoolVarP(&o.Debug, "debug", "", false, "Enables debug logging in helmfile")
 
 	o.Options.AddFlags(cmd)
 	return cmd, o
@@ -272,6 +273,8 @@ func (o *Options) createDestroyCommand(envVars map[string]string) v1alpha1.Comma
 }
 
 func (o *Options) helmfileSyncPreview(envVars map[string]string) error {
+	log.Logger().Infof("passing env vars into helmfile: %#v", envVars)
+
 	args := []string{"--file", o.PreviewHelmfile}
 	if o.Debug {
 		args = append(args, "--debug")
