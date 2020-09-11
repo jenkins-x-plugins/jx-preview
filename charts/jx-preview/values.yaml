@@ -9,10 +9,7 @@ image:
   pullPolicy: IfNotPresent
 
 gcJobs:
-  # gcJobs.maxAge -- Max age from which `LighthouseJob`s will be deleted
-  maxAge: 168h
-
-  # gcJobs.schedule -- Cron expression to periodically delete `LighthouseJob`s
+  # gcJobs.schedule -- Cron expression to periodically delete `Preview`s
   schedule: "0/30 * * * *"
 
   # gcJobs.failedJobsHistoryLimit -- Drives the failed jobs history limit
