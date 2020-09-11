@@ -272,6 +272,8 @@ func (o *Options) createDestroyCommand(envVars map[string]string) v1alpha1.Comma
 }
 
 func (o *Options) helmfileSyncPreview(envVars map[string]string) error {
+	log.Logger().Infof("passing env vars into helmfile: %#v", envVars)
+
 	args := []string{"--file", o.PreviewHelmfile}
 	if o.Debug {
 		args = append(args, "--debug")
