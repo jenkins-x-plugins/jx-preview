@@ -52,7 +52,7 @@ func NewCmdGCPreviews() (*cobra.Command, *Options) {
 
 	cmd := &cobra.Command{
 		Use:     "gc",
-		Short:   "garbage collect Preview environments for closed Pull Requests",
+		Short:   "Garbage collect Preview environments for closed or merged Pull Requests",
 		Long:    cmdLong,
 		Example: cmdExample,
 		Run: func(cmd *cobra.Command, args []string) {
