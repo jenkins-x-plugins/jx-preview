@@ -4,8 +4,8 @@ require (
 	github.com/cenkalti/backoff v2.2.1+incompatible
 	github.com/cpuguy83/go-md2man v1.0.10
 	github.com/jenkins-x/go-scm v1.5.164
-	github.com/jenkins-x/jx-api v0.0.17
-	github.com/jenkins-x/jx-gitops v0.0.282
+	github.com/jenkins-x/jx-api v0.0.18
+	github.com/jenkins-x/jx-gitops v0.0.288
 	github.com/jenkins-x/jx-helpers v1.0.58
 	github.com/jenkins-x/jx-kube-client v0.0.8
 	github.com/jenkins-x/jx-logging v0.0.11

@@ -915,10 +915,12 @@ github.com/jenkins-x/golang-jenkins v0.0.0-20180919102630-65b83ad42314/go.mod h1
 github.com/jenkins-x/jx-api v0.0.13/go.mod h1:/TyG05VMeX2hydFPHh6nDfPPXTBCQaFCuet/pdPvjUA=
 github.com/jenkins-x/jx-api v0.0.17 h1:DXfR76lH3s7K2CaSJBzq/S7zRtKFfbKpnNyY4n8plUQ=
 github.com/jenkins-x/jx-api v0.0.17/go.mod h1:QKLHk4VzI+sDBPSzN4K+QdEjNIBnCHS3DKY5YbGeCdY=
+github.com/jenkins-x/jx-api v0.0.18 h1:ncOG3hsdimAJhdwyo+b8v+RHZPUWgDrWE7pMcCyrnvk=
+github.com/jenkins-x/jx-api v0.0.18/go.mod h1:QKLHk4VzI+sDBPSzN4K+QdEjNIBnCHS3DKY5YbGeCdY=
 github.com/jenkins-x/jx-apps v0.0.4 h1:pLQ9cY+nX8xMXiJxb09lOv6r21vvw9VLB+ixy1larJU=
 github.com/jenkins-x/jx-apps v0.0.4/go.mod h1:aazqQIaAsaJjsFL1NdilvQ9l41hjVT6L+dWe9ULravM=
-github.com/jenkins-x/jx-gitops v0.0.282 h1:hIG1Dj3m1ezRNWbnFfx6tKSTnM/4nVYJWFkV5EyL0kY=
-github.com/jenkins-x/jx-gitops v0.0.282/go.mod h1:/mbmigTyNcjGG+RTarQsaEErrwZRQY2rt8SX25RPmr0=
+github.com/jenkins-x/jx-gitops v0.0.288 h1:nUQT2mSFME6/AHqJG07w1u0f9SXF8Lu/oUEvEmigTBs=
+github.com/jenkins-x/jx-gitops v0.0.288/go.mod h1:s3MSa7VE6htWUtR4fCDEnMTjS5wOW3hFXH+iLyphe+M=
 github.com/jenkins-x/jx-helpers v1.0.9/go.mod h1:JldgSKYWU4cwWGynlLHtR4BhhEjjppoKG8TKaaiiumY=
 github.com/jenkins-x/jx-helpers v1.0.58 h1:SRLCiV1VHm0KXZ3zjOtDj53Odl7/3hbJqfdBbg7WLR8=
 github.com/jenkins-x/jx-helpers v1.0.58/go.mod h1:GcR4f3e1183/StDPUbU9I3ie2ZtWkg+sq+oPb3RotRg=
