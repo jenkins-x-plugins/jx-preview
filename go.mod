@@ -5,8 +5,8 @@ require (
 	github.com/cpuguy83/go-md2man v1.0.10
 	github.com/jenkins-x/go-scm v1.5.164
 	github.com/jenkins-x/jx-api v0.0.18
-	github.com/jenkins-x/jx-gitops v0.0.288
-	github.com/jenkins-x/jx-helpers v1.0.58
+	github.com/jenkins-x/jx-gitops v0.0.290
+	github.com/jenkins-x/jx-helpers v1.0.59
 	github.com/jenkins-x/jx-kube-client v0.0.8
 	github.com/jenkins-x/jx-logging v0.0.11
 	github.com/jenkins-x/jx/v2 v2.1.143
