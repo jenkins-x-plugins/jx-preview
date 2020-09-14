@@ -25,7 +25,6 @@ import (
 	"github.com/jenkins-x/jx-helpers/pkg/kube/jxclient"
 	"github.com/jenkins-x/jx-helpers/pkg/kube/naming"
 	"github.com/jenkins-x/jx-helpers/pkg/kube/services"
-	"github.com/jenkins-x/jx-helpers/pkg/options"
 	"github.com/jenkins-x/jx-helpers/pkg/scmhelpers"
 	"github.com/jenkins-x/jx-helpers/pkg/stringhelpers"
 	"github.com/jenkins-x/jx-helpers/pkg/termcolor"
@@ -55,11 +54,10 @@ var (
 
 // Options the CLI options for
 type Options struct {
-	scmhelpers.Options
+	scmhelpers.PullRequestOptions
 
 	PreviewHelmfile  string
 	PreviewNamespace string
-	Number           int
 	Namespace        string
 	DockerRegistry   string
 	BuildNumber      string
@@ -95,12 +93,11 @@ func NewCmdPreviewCreate() (*cobra.Command, *Options) {
 	}
 	cmd.Flags().StringVarP(&o.PreviewHelmfile, "file", "f", "", "Preview helmfile.yaml path to use. If not specified it is discovered in preview/helmfile.yaml and created from a template if needed")
 	cmd.Flags().StringVarP(&o.Repository, "app", "", "", "Name of the app or repository")
-	cmd.Flags().IntVarP(&o.Number, "pr", "", 0, "Pull Request number. If not specified we will use $BRANCH_NAME")
 	cmd.Flags().DurationVarP(&o.PreviewURLTimeout, "preview-url-timeout", "", time.Minute+5, "Time to wait for the preview URL to be available")
 	cmd.Flags().BoolVarP(&o.NoComment, "no-comment", "", false, "Disables commenting on the Pull Request after preview is created")
 	cmd.Flags().BoolVarP(&o.Debug, "debug", "", false, "Enables debug logging in helmfile")
 
-	o.Options.AddFlags(cmd)
+	o.PullRequestOptions.AddFlags(cmd)
 	return cmd, o
 }
 
@@ -111,7 +108,7 @@ func (o *Options) Run() error {
 		return errors.Wrapf(err, "failed to validate options")
 	}
 
-	pr, err := o.discoverPullRequest()
+	pr, err := o.DiscoverPullRequest()
 	if err != nil {
 		return errors.Wrapf(err, "failed to discover pull request")
 	}
@@ -196,7 +193,7 @@ func (o *Options) Validate() error {
 	if o.CommandRunner == nil {
 		o.CommandRunner = cmdrunner.DefaultCommandRunner
 	}
-	err := o.Options.Validate()
+	err := o.PullRequestOptions.Validate()
 	if err != nil {
 		return errors.Wrapf(err, "failed to validate repository options")
 	}
@@ -204,20 +201,6 @@ func (o *Options) Validate() error {
 	err = o.DiscoverPreviewHelmfile()
 	if err != nil {
 		return errors.Wrapf(err, "failed to discover the preview helmfile")
-	}
-
-	if o.Number <= 0 {
-		prName := os.Getenv("PULL_NUMBER")
-		if prName != "" {
-			o.Number, err = strconv.Atoi(prName)
-			if err != nil {
-				log.Logger().Warnf(
-					"Unable to convert PR " + prName + " to a number")
-			}
-		}
-		if o.Number <= 0 {
-			return options.MissingOption("pr")
-		}
 	}
 
 	o.PreviewClient, o.Namespace, err = previews.LazyCreatePreviewClientAndNamespace(o.PreviewClient, o.Namespace)
@@ -238,15 +221,6 @@ func (o *Options) Validate() error {
 		o.PreviewNamespace, err = o.createPreviewNamespace()
 	}
 	return nil
-}
-
-func (o *Options) discoverPullRequest() (*scm.PullRequest, error) {
-	ctx := context.Background()
-	pr, _, err := o.ScmClient.PullRequests.Find(ctx, o.FullRepositoryName, o.Number)
-	if err != nil {
-		return nil, errors.Wrapf(err, "failed to find PR %d in repo %s", o.Number, o.Repository)
-	}
-	return pr, nil
 }
 
 func (o *Options) createDestroyCommand(envVars map[string]string) v1alpha1.Command {
