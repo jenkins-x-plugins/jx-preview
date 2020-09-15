@@ -11,14 +11,14 @@ import (
 	"github.com/pkg/errors"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 
-	"github.com/jenkins-x/jx/v2/pkg/cmd/helper"
+	"github.com/jenkins-x/jx-helpers/pkg/cobras/helper"
+	"github.com/jenkins-x/jx-helpers/pkg/cobras/templates"
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"strings"
 
 	"github.com/jenkins-x/jx-logging/pkg/log"
-	"github.com/jenkins-x/jx/v2/pkg/cmd/templates"
 )
 
 // Options the command line options
