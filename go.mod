@@ -6,7 +6,7 @@ require (
 	github.com/jenkins-x/go-scm v1.5.165
 	github.com/jenkins-x/jx-api v0.0.20
 	github.com/jenkins-x/jx-gitops v0.0.294
-	github.com/jenkins-x/jx-helpers v1.0.62
+	github.com/jenkins-x/jx-helpers v1.0.74
 	github.com/jenkins-x/jx-kube-client v0.0.8
 	github.com/jenkins-x/jx-logging v0.0.11
 	github.com/pkg/errors v0.9.1
