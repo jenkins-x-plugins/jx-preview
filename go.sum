@@ -784,6 +784,8 @@ github.com/jenkins-x/go-scm v1.5.165/go.mod h1:wJgj7PfgsCs+YAXC0vEj43g48HKf94apS
 github.com/jenkins-x/jx-api v0.0.17/go.mod h1:QKLHk4VzI+sDBPSzN4K+QdEjNIBnCHS3DKY5YbGeCdY=
 github.com/jenkins-x/jx-api v0.0.20 h1:mguvXhbzW6aQ7zaBwInhVp44dAum98+Dqc3eTFhxxtg=
 github.com/jenkins-x/jx-api v0.0.20/go.mod h1:QKLHk4VzI+sDBPSzN4K+QdEjNIBnCHS3DKY5YbGeCdY=
+github.com/jenkins-x/jx-api v0.0.24 h1:i39bsG8lJpKsFBqXOjSXxTR++/OEX9uKAdgaeGKUpyc=
+github.com/jenkins-x/jx-api v0.0.24/go.mod h1:QKLHk4VzI+sDBPSzN4K+QdEjNIBnCHS3DKY5YbGeCdY=
 github.com/jenkins-x/jx-gitops v0.0.294 h1:s2GZNHL5G6MLJ08o1uxY4kmsuPUeZqEb8SeHzAVzfWU=
 github.com/jenkins-x/jx-gitops v0.0.294/go.mod h1:of+LcjrDaI1l2UxyrlQGqDiVy7oIGMVrfQ2vUm+9JiY=
 github.com/jenkins-x/jx-helpers v1.0.62 h1:OfAEQXZD6VqKLYoMaEGnVL9noVahUqyH4oXh8sWG7gw=
