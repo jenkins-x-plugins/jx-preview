@@ -40,9 +40,9 @@ var (
 // Options the CLI options for
 type Options struct {
 	Names         []string
+	Namespace     string
 	PreviewClient versioned.Interface
 	KubeClient    kubernetes.Interface
-	Namespace     string
 	GitClient     gitclient.Interface
 	CommandRunner cmdrunner.CommandRunner
 }

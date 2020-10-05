@@ -4,7 +4,9 @@ import (
 	"testing"
 
 	fakescm "github.com/jenkins-x/go-scm/scm/driver/fake"
+	jxfake "github.com/jenkins-x/jx-api/pkg/client/clientset/versioned/fake"
 	"github.com/jenkins-x/jx-helpers/pkg/cmdrunner/fakerunner"
+	"github.com/jenkins-x/jx-helpers/pkg/kube/jxenv"
 	"github.com/jenkins-x/jx-preview/pkg/client/clientset/versioned/fake"
 	"github.com/jenkins-x/jx-preview/pkg/cmd/gc"
 	"github.com/jenkins-x/jx-preview/pkg/previews/fakepreviews"
@@ -28,6 +30,12 @@ func TestPreviewGC(t *testing.T) {
 
 	previewClient := fake.NewSimpleClientset(preview1, preview2, preview3)
 	kubeClient := fakekube.NewSimpleClientset()
+
+	devEnv := jxenv.CreateDefaultDevEnvironment(ns)
+	devEnv.Namespace = ns
+	devEnv.Spec.Source.URL = "https://github.com/myorg/my-gitops-repo.git"
+
+	jxClient := jxfake.NewSimpleClientset(devEnv)
 
 	testCases := []struct {
 		name            string
@@ -66,6 +74,7 @@ func TestPreviewGC(t *testing.T) {
 
 		o.PreviewClient = previewClient
 		o.KubeClient = kubeClient
+		o.JXClient = jxClient
 		o.Namespace = ns
 		o.ScmClient = scmClient
 		o.CommandRunner = runner.Run

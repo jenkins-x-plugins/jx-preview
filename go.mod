@@ -3,10 +3,10 @@ module github.com/jenkins-x/jx-preview
 require (
 	github.com/cenkalti/backoff v2.2.1+incompatible
 	github.com/cpuguy83/go-md2man v1.0.10
-	github.com/jenkins-x/go-scm v1.5.175
+	github.com/jenkins-x/go-scm v1.5.178
 	github.com/jenkins-x/jx-api v0.0.24
-	github.com/jenkins-x/jx-gitops v0.0.332
-	github.com/jenkins-x/jx-helpers v1.0.75
+	github.com/jenkins-x/jx-gitops v0.0.366
+	github.com/jenkins-x/jx-helpers v1.0.88
 	github.com/jenkins-x/jx-kube-client v0.0.8
 	github.com/jenkins-x/jx-logging v0.0.11
 	github.com/pkg/errors v0.9.1

@@ -400,7 +400,10 @@ func (o *Options) updatePipelineActivity(applicationURL, pullRequestURL string) 
 		return nil
 	}
 	if o.BuildNumber == "" {
-		o.BuildNumber = os.Getenv("BUILD_NUMBER")
+		o.BuildNumber = os.Getenv("BUILD_ID")
+		if o.BuildNumber == "" {
+			o.BuildNumber = os.Getenv("BUILD_NUMBER")
+		}
 	}
 	pipeline := fmt.Sprintf("%s/%s/%s", o.Owner, o.Repository, o.Branch)
 
