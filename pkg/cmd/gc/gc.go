@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/jenkins-x/go-scm/scm"
+	jxc "github.com/jenkins-x/jx-api/pkg/client/clientset/versioned"
 	"github.com/jenkins-x/jx-helpers/pkg/scmhelpers"
 	"github.com/jenkins-x/jx-preview/pkg/cmd/destroy"
 	"github.com/jenkins-x/jx-preview/pkg/previews"
@@ -28,6 +29,7 @@ type Options struct {
 	Deleted []string
 
 	// only needed for testing
+	JXClient  jxc.Interface
 	ScmClient *scm.Client
 }
 
@@ -106,11 +108,12 @@ func (o *Options) Run() error {
 		}
 
 		so := &scmhelpers.Options{
-			SourceURL: gitURL,
-			ScmClient: o.ScmClient,
-
 			// lets avoid detecting the branch
-			Branch: "master",
+			Branch:    "master",
+			ScmClient: o.ScmClient,
+			SourceURL: gitURL,
+			Namespace: o.Namespace,
+			JXClient:  o.JXClient,
 		}
 		err = so.Validate()
 		if err != nil {

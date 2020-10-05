@@ -136,6 +136,7 @@ func TestPreviewCreate(t *testing.T) {
 		o.PreviewClient = previewClient
 		o.KubeClient = kubeClient
 		o.JXClient = jxClient
+		o.PullRequestOptions.Options.JXClient = jxClient
 		o.Namespace = ns
 		o.Branch = branch
 		o.GitToken = gitToken
