@@ -1,12 +1,13 @@
 package get
 
 import (
+	"context"
 	"fmt"
 	"os"
 
-	"github.com/jenkins-x/jx-helpers/pkg/cobras/helper"
-	"github.com/jenkins-x/jx-helpers/pkg/cobras/templates"
-	"github.com/jenkins-x/jx-helpers/pkg/table"
+	"github.com/jenkins-x/jx-helpers/v3/pkg/cobras/helper"
+	"github.com/jenkins-x/jx-helpers/v3/pkg/cobras/templates"
+	"github.com/jenkins-x/jx-helpers/v3/pkg/table"
 	"github.com/jenkins-x/jx-preview/pkg/client/clientset/versioned"
 	"github.com/jenkins-x/jx-preview/pkg/previews"
 	"github.com/jenkins-x/jx-preview/pkg/rootcmd"
@@ -69,8 +70,9 @@ func (o *Options) Run() error {
 		return o.CurrentPreviewUrl()
 	}
 
+	ctx := context.Background()
 	ns := o.Namespace
-	resourceList, err := o.PreviewClient.PreviewV1alpha1().Previews(ns).List(metav1.ListOptions{})
+	resourceList, err := o.PreviewClient.PreviewV1alpha1().Previews(ns).List(ctx, metav1.ListOptions{})
 	if err != nil {
 		if !apierrors.IsNotFound(err) {
 			return errors.Wrapf(err, "failed to list Previews in namespace %s", ns)

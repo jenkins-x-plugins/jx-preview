@@ -1,16 +1,17 @@
 package destroy
 
 import (
+	"context"
 	"path/filepath"
 
-	"github.com/jenkins-x/jx-helpers/pkg/cmdrunner"
-	"github.com/jenkins-x/jx-helpers/pkg/cobras/helper"
-	"github.com/jenkins-x/jx-helpers/pkg/cobras/templates"
-	"github.com/jenkins-x/jx-helpers/pkg/gitclient"
-	"github.com/jenkins-x/jx-helpers/pkg/gitclient/cli"
-	"github.com/jenkins-x/jx-helpers/pkg/kube"
-	"github.com/jenkins-x/jx-helpers/pkg/termcolor"
-	"github.com/jenkins-x/jx-logging/pkg/log"
+	"github.com/jenkins-x/jx-helpers/v3/pkg/cmdrunner"
+	"github.com/jenkins-x/jx-helpers/v3/pkg/cobras/helper"
+	"github.com/jenkins-x/jx-helpers/v3/pkg/cobras/templates"
+	"github.com/jenkins-x/jx-helpers/v3/pkg/gitclient"
+	"github.com/jenkins-x/jx-helpers/v3/pkg/gitclient/cli"
+	"github.com/jenkins-x/jx-helpers/v3/pkg/kube"
+	"github.com/jenkins-x/jx-helpers/v3/pkg/termcolor"
+	"github.com/jenkins-x/jx-logging/v3/pkg/log"
 	"github.com/jenkins-x/jx-preview/pkg/apis/preview/v1alpha1"
 	"github.com/jenkins-x/jx-preview/pkg/client/clientset/versioned"
 	"github.com/jenkins-x/jx-preview/pkg/previews"
@@ -89,9 +90,10 @@ func (o *Options) Destroy(name string) error {
 
 	log.Logger().Infof("destroying preview: %s in namespace %s", info(name), info(ns))
 
+	ctx := context.Background()
 	previewInterface := o.PreviewClient.PreviewV1alpha1().Previews(ns)
 
-	preview, err := previewInterface.Get(name, metav1.GetOptions{})
+	preview, err := previewInterface.Get(ctx, name, metav1.GetOptions{})
 	if err != nil {
 		return errors.Wrapf(err, "failed to find preview %s in namespace %s", name, ns)
 	}
@@ -111,7 +113,7 @@ func (o *Options) Destroy(name string) error {
 		return errors.Wrapf(err, "failed to delete preview namespace")
 	}
 
-	err = previewInterface.Delete(name, &metav1.DeleteOptions{})
+	err = previewInterface.Delete(ctx, name, metav1.DeleteOptions{})
 	if err != nil {
 		return errors.Wrapf(err, "failed to delete preview %s in namespace %s", name, ns)
 	}
@@ -164,13 +166,15 @@ func (o *Options) runDeletePreviewCommand(preview *v1alpha1.Preview, dir string)
 }
 
 func (o *Options) deletePreviewNamespace(preview *v1alpha1.Preview) error {
+	ctx := context.Background()
+
 	previewNamespace := preview.Spec.Resources.Namespace
 	if previewNamespace == "" {
 		return errors.Errorf("no preview.Spec.PreviewNamespace is defined for preview %s", preview.Name)
 	}
 
 	namespaceInterface := o.KubeClient.CoreV1().Namespaces()
-	_, err := namespaceInterface.Get(previewNamespace, metav1.GetOptions{})
+	_, err := namespaceInterface.Get(ctx, previewNamespace, metav1.GetOptions{})
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			log.Logger().Infof("there is no preview namespace %s to be removed", info(previewNamespace))
@@ -179,7 +183,7 @@ func (o *Options) deletePreviewNamespace(preview *v1alpha1.Preview) error {
 		return errors.Wrapf(err, "failed to find preview namespace %s", previewNamespace)
 	}
 
-	err = namespaceInterface.Delete(previewNamespace, &metav1.DeleteOptions{})
+	err = namespaceInterface.Delete(ctx, previewNamespace, metav1.DeleteOptions{})
 	if err != nil {
 		return errors.Wrapf(err, "failed to delete preview namespace %s", previewNamespace)
 	}
