@@ -14,18 +14,24 @@ if [[ -z "${GOPATH:-}" ]]; then
   fi
 fi
 
-# Useful environment variables
-readonly REPO_ROOT_DIR="${REPO_ROOT_DIR:-$(git rev-parse --show-toplevel 2> /dev/null)}"
-readonly REPO_NAME="${REPO_NAME:-$(basename ${REPO_ROOT_DIR} 2> /dev/null)}"
+GENERATOR_VERSION=v0.19.2
+(
+  # To support running this script from anywhere, we have to first cd into this directory
+  # so we can install the tools.
+  cd "$(dirname "${0}")"
+  go get k8s.io/code-generator/cmd/{defaulter-gen,client-gen,lister-gen,informer-gen,deepcopy-gen}@$GENERATOR_VERSION
+)
 
+SCRIPT_ROOT=$(dirname "${BASH_SOURCE[0]}")/..
+rm -rf "${SCRIPT_ROOT}"/pkg/client
 # generate the code with:
 # --output-base    because this script should also be able to run inside the vendor dir of
 #                  k8s.io/kubernetes. The output-base is needed for the generators to output into the vendor dir
 #                  instead of the $GOPATH directly. For normal projects this can be dropped.
-# This generates deepcopy,client,informer and lister for the resource package (v1alpha1)
-# This is separate from the pipeline package as resource are staying in v1alpha1 and they
-# need to be separated (at least in terms of go package) from the pipeline's packages to
-# not having dependency cycle.
-bash ${REPO_ROOT_DIR}/hack/generate-groups.sh "deepcopy,client,informer,lister" \
+bash hack/generate-groups.sh all \
   github.com/jenkins-x/jx-preview/pkg/client github.com/jenkins-x/jx-preview/pkg/apis \
-  "preview:v1alpha1"
+  preview:v1alpha1 \
+  --output-base "$(dirname "${BASH_SOURCE[0]}")/../../../.." \
+  --go-header-file "${SCRIPT_ROOT}"/hack/custom-boilerplate.go.txt
+
+

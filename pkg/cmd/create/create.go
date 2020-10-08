@@ -11,24 +11,24 @@ import (
 
 	"github.com/cenkalti/backoff"
 	"github.com/jenkins-x/go-scm/scm"
-	jxc "github.com/jenkins-x/jx-api/pkg/client/clientset/versioned"
+	jxc "github.com/jenkins-x/jx-api/v3/pkg/client/clientset/versioned"
 	"github.com/jenkins-x/jx-gitops/pkg/cmd/git/get"
 	"github.com/jenkins-x/jx-gitops/pkg/cmd/pr/push"
-	"github.com/jenkins-x/jx-helpers/pkg/cmdrunner"
-	"github.com/jenkins-x/jx-helpers/pkg/cobras/helper"
-	"github.com/jenkins-x/jx-helpers/pkg/cobras/templates"
-	"github.com/jenkins-x/jx-helpers/pkg/files"
-	"github.com/jenkins-x/jx-helpers/pkg/gitclient/cli"
-	"github.com/jenkins-x/jx-helpers/pkg/gitclient/giturl"
-	"github.com/jenkins-x/jx-helpers/pkg/kube"
-	"github.com/jenkins-x/jx-helpers/pkg/kube/activities"
-	"github.com/jenkins-x/jx-helpers/pkg/kube/jxclient"
-	"github.com/jenkins-x/jx-helpers/pkg/kube/naming"
-	"github.com/jenkins-x/jx-helpers/pkg/kube/services"
-	"github.com/jenkins-x/jx-helpers/pkg/scmhelpers"
-	"github.com/jenkins-x/jx-helpers/pkg/stringhelpers"
-	"github.com/jenkins-x/jx-helpers/pkg/termcolor"
-	"github.com/jenkins-x/jx-logging/pkg/log"
+	"github.com/jenkins-x/jx-helpers/v3/pkg/cmdrunner"
+	"github.com/jenkins-x/jx-helpers/v3/pkg/cobras/helper"
+	"github.com/jenkins-x/jx-helpers/v3/pkg/cobras/templates"
+	"github.com/jenkins-x/jx-helpers/v3/pkg/files"
+	"github.com/jenkins-x/jx-helpers/v3/pkg/gitclient/cli"
+	"github.com/jenkins-x/jx-helpers/v3/pkg/gitclient/giturl"
+	"github.com/jenkins-x/jx-helpers/v3/pkg/kube"
+	"github.com/jenkins-x/jx-helpers/v3/pkg/kube/activities"
+	"github.com/jenkins-x/jx-helpers/v3/pkg/kube/jxclient"
+	"github.com/jenkins-x/jx-helpers/v3/pkg/kube/naming"
+	"github.com/jenkins-x/jx-helpers/v3/pkg/kube/services"
+	"github.com/jenkins-x/jx-helpers/v3/pkg/scmhelpers"
+	"github.com/jenkins-x/jx-helpers/v3/pkg/stringhelpers"
+	"github.com/jenkins-x/jx-helpers/v3/pkg/termcolor"
+	"github.com/jenkins-x/jx-logging/v3/pkg/log"
 	"github.com/jenkins-x/jx-preview/pkg/apis/preview/v1alpha1"
 	"github.com/jenkins-x/jx-preview/pkg/client/clientset/versioned"
 	"github.com/jenkins-x/jx-preview/pkg/helmfiles"
@@ -36,6 +36,7 @@ import (
 	"github.com/jenkins-x/jx-preview/pkg/rootcmd"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 )
 
@@ -167,7 +168,7 @@ func (o *Options) Run() error {
 		// lets modify the preview
 		preview.Spec.Resources.Name = o.Repository
 		preview.Spec.Resources.URL = url
-		preview, err = o.PreviewClient.PreviewV1alpha1().Previews(o.Namespace).Update(preview)
+		preview, err = o.PreviewClient.PreviewV1alpha1().Previews(o.Namespace).Update(ctx, preview, metav1.UpdateOptions{})
 		if err != nil {
 			return errors.Wrapf(err, "failed to update preview %s", preview.Name)
 		}
@@ -407,6 +408,7 @@ func (o *Options) updatePipelineActivity(applicationURL, pullRequestURL string) 
 	}
 	pipeline := fmt.Sprintf("%s/%s/%s", o.Owner, o.Repository, o.Branch)
 
+	ctx := context.Background()
 	build := o.BuildNumber
 	if pipeline != "" && build != "" {
 		ns := o.Namespace
@@ -439,7 +441,7 @@ func (o *Options) updatePipelineActivity(applicationURL, pullRequestURL string) 
 				updated = true
 			}
 			if updated {
-				_, err = acts.PatchUpdate(a)
+				_, err = acts.Update(ctx, a, metav1.UpdateOptions{})
 				if err != nil {
 					log.Logger().Warnf("Failed to update PipelineActivities %s: %s", name, err)
 				} else {

@@ -1,10 +1,11 @@
 package previews
 
 import (
+	"context"
 	"strconv"
 
 	"github.com/jenkins-x/go-scm/scm"
-	"github.com/jenkins-x/jx-helpers/pkg/kube/naming"
+	"github.com/jenkins-x/jx-helpers/v3/pkg/kube/naming"
 	"github.com/jenkins-x/jx-preview/pkg/apis/preview/v1alpha1"
 	"github.com/jenkins-x/jx-preview/pkg/client/clientset/versioned"
 	"github.com/pkg/errors"
@@ -16,8 +17,9 @@ import (
 func GetOrCreatePreview(client versioned.Interface, ns string, pr *scm.PullRequest, destroyCmd v1alpha1.Command, gitURL, previewNamespace, path string) (*v1alpha1.Preview, bool, error) {
 	create := false
 
+	ctx := context.Background()
 	previewInterface := client.PreviewV1alpha1().Previews(ns)
-	previews, err := previewInterface.List(metav1.ListOptions{})
+	previews, err := previewInterface.List(ctx, metav1.ListOptions{})
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			err = nil
@@ -84,13 +86,13 @@ func GetOrCreatePreview(client versioned.Interface, ns string, pr *scm.PullReque
 	}
 	found.Spec.DestroyCommand = destroyCmd
 	if create {
-		found, err = previewInterface.Create(found)
+		found, err = previewInterface.Create(ctx, found, metav1.CreateOptions{})
 		if err != nil {
 			return found, create, errors.Wrapf(err, "failed to create Preview %s", found.Name)
 		}
 		return found, create, nil
 	}
-	found, err = previewInterface.Update(found)
+	found, err = previewInterface.Update(ctx, found, metav1.UpdateOptions{})
 	if err != nil {
 		return found, create, errors.Wrapf(err, "failed to update Preview %s", found.Name)
 	}
