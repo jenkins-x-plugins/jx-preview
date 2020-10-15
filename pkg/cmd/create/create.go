@@ -62,6 +62,7 @@ type Options struct {
 	Namespace        string
 	DockerRegistry   string
 	BuildNumber      string
+	Version          string
 	// PullRequestBranch used for testing to fake out the pull request branch name
 	PullRequestBranch string
 	PreviewURLTimeout time.Duration
@@ -296,6 +297,9 @@ func (o *Options) createHelmfileEnvVars() (map[string]string, error) {
 		},
 		{
 			Name: "VERSION",
+			DefaultValue: func() string {
+				return o.Version
+			},
 		},
 	}
 
