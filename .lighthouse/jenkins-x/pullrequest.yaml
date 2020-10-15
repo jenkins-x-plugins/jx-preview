@@ -8,7 +8,7 @@ metadata:
     jenkins.io/pipelineType: build
     owner: jenkins-x
     repository: jx-preview
-  name: jenkins-x-jx-preview-master-4pdwm-1
+  name: jenkins-x-jx-preview-master-jptxl-1
 spec:
   pipelineSpec:
     params:
@@ -168,8 +168,6 @@ spec:
               cpu: 400m
               memory: 600Mi
           volumeMounts:
-          - mountPath: /home/jenkins
-            name: workspace-volume
           - mountPath: /etc/podinfo
             name: podinfo
             readOnly: true
