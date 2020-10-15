@@ -277,7 +277,7 @@ spec:
         - image: jnorwood/helm-docs:latest
           name: chart-docs
           resources: {}
-          workingDir: /workspace/source/charts/$REPO_NAME
+          workingDir: /workspace/source/charts/$(params.REPO_NAME)
         - args:
           - source .jx/variables.sh && cd /workspace/source/charts/$REPO_NAME && make
             release
