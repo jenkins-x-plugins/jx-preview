@@ -274,7 +274,7 @@ spec:
           image: gcr.io/kaniko-project/executor:debug-9912ccbf8d22bbafbf971124600fbb0b13b9cbd6
           name: build-and-push-image
           resources: {}
-        - image: https://github.com/jenkins-x/jx-preview
+        - image: jnorwood/helm-docs:latest
           name: chart-docs
           resources: {}
           workingDir: /workspace/source/charts/$REPO_NAME
