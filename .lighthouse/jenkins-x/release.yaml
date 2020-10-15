@@ -274,14 +274,10 @@ spec:
           image: gcr.io/kaniko-project/executor:debug-9912ccbf8d22bbafbf971124600fbb0b13b9cbd6
           name: build-and-push-image
           resources: {}
-        - args:
-          - cd /workspace/source/charts/$REPO_NAME && make docs
-          command:
-          - /bin/sh
-          - -c
-          image: gcr.io/jenkinsxio/builder-go:2.1.142-761
+        - image: https://github.com/jenkins-x/jx-preview
           name: chart-docs
           resources: {}
+          workingDir: /workspace/source/charts/$REPO_NAME
         - args:
           - source .jx/variables.sh && cd /workspace/source/charts/$REPO_NAME && make
             release
