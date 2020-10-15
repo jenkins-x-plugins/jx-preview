@@ -258,7 +258,7 @@ spec:
         - args:
           - source .jx/variables.sh && make release
           command:
-          - /bin/sh
+          - /bin/bash
           - -c
           image: golang:1.15
           name: release-binary
