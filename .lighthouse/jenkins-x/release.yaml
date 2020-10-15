@@ -296,7 +296,7 @@ spec:
           name: changelog
           resources: {}
         - args:
-          - make goreleaser
+          - source .jx/variables.sh && make goreleaser
           command:
           - /bin/sh
           - -c
