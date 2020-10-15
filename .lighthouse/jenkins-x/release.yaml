@@ -298,7 +298,7 @@ spec:
         - args:
           - source .jx/variables.sh && make goreleaser
           command:
-          - /bin/sh
+          - /bin/bash
           - -c
           image: gcr.io/jenkinsxio/step-go-releaser:0.0.14
           name: upload-binaries
