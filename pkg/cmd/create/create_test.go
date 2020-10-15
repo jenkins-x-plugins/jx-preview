@@ -162,6 +162,7 @@ func TestPreviewCreate(t *testing.T) {
 		o.CommandRunner = runner.Run
 		o.ScmClient = scmClient
 		o.PreviewURLTimeout = time.Millisecond
+		o.Version = "0.0.0-SNAPSHOT-PR-1"
 
 		err := o.Run()
 		require.NoError(t, err, "failed to run command in test %s", testName)
