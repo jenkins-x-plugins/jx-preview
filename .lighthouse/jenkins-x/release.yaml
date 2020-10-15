@@ -280,11 +280,11 @@ spec:
           name: chart-docs
           resources: {}
         - args:
-          - cd /workspace/source/charts/jx-preview && make release
+          - source .jx/variables.sh && cd /workspace/source/charts/jx-preview && make release
           command:
-          - /bin/sh
+          - /bin/bash
           - -c
-          image: gcr.io/jenkinsxio-labs/helm:0.0.21
+          image: gcr.io/jenkinsxio/jx-cli:latest
           name: release-chart
           resources: {}
         - args:

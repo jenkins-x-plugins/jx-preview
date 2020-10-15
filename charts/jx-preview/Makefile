@@ -33,6 +33,8 @@ clean:
 snapshot: update-version release
 
 release:
+	sed -i -e "s/version:.*/version: $(VERSION)/" Chart.yaml
+
 	helm dependency build
 	helm lint
 	helm package .
