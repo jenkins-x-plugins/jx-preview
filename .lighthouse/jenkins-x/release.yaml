@@ -256,7 +256,7 @@ spec:
           name: jx-variables
           resources: {}
         - args:
-          - make release
+          - source .jx/variables.sh && make release
           command:
           - /bin/sh
           - -c
