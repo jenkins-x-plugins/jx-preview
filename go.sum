@@ -833,6 +833,7 @@ github.com/jenkins-x/jx-api/v3 v3.0.1 h1:kB3f6r/xUzwdMjeh/R+nE72bLHLaQHCB8Cxs96l
 github.com/jenkins-x/jx-api/v3 v3.0.1/go.mod h1:T/Q15bSgPAq9+4k5gMZIuVVmj6rfCDqF4XYLJXkM3Q8=
 github.com/jenkins-x/jx-gitops v0.0.392 h1:NbfsUvsawzk75sNm1JiKkIbUfG+PrnQtgR4BT4lvd3Y=
 github.com/jenkins-x/jx-gitops v0.0.392/go.mod h1:GgmrJQ2JFluPLouWcbMgoqtVc5xgdwnFxoA5ohz8/4E=
+github.com/jenkins-x/jx-gitops v0.0.396/go.mod h1:WNLxCaCkc+MmkfQULL9dSIGRJTAFtawR8uofJv4tF7w=
 github.com/jenkins-x/jx-helpers/v3 v3.0.5/go.mod h1:gwTYDwvCi4qduS2qRSbn6P/isyObDDxmOeM5CTMfn+s=
 github.com/jenkins-x/jx-helpers/v3 v3.0.6/go.mod h1:r3QYErQdwy+5ceg9/ipwPJLLsdwipjL8tRFwZR7SZSY=
 github.com/jenkins-x/jx-helpers/v3 v3.0.8 h1:apVEJ+4yIyfR+XncHSjld0jtorfXyw+LLIQjdWiB1K8=
@@ -846,7 +847,9 @@ github.com/jenkins-x/jx-logging/v3 v3.0.0/go.mod h1:bOYlj+Cdd9v7/vDXjkwlUylxGs5s
 github.com/jenkins-x/jx-logging/v3 v3.0.2 h1:9IEeySM86yECc520Spaq38xO8JIpb6QDl1jFBEQHAwg=
 github.com/jenkins-x/jx-logging/v3 v3.0.2/go.mod h1:Vp2ER2SYgGhAgEEHlLwfi2ZB54tz6ya1qExq0A4CKMI=
 github.com/jenkins-x/jx-secret v0.0.164/go.mod h1:LiAbgafyk+F1mqTxdaB+BdknRwAGoO9mGCbr/apKlAo=
+github.com/jenkins-x/jx-secret v0.0.171/go.mod h1:2SEyGLytO12I7MoCwmggerKExKQg4yY0MOHRbCTzqqc=
 github.com/jenkins-x/lighthouse v0.0.851/go.mod h1:JhijN16AuL5Y7gyYw6t9ZOW2MbAxlnd5djp3WXBsqBo=
+github.com/jenkins-x/lighthouse v0.0.854/go.mod h1:0fZogTuRV3npYgg4gbR7XCXyJ06kLmhtKlzAC/vKtvc=
 github.com/jenkins-x/logrus-stackdriver-formatter v0.2.3 h1:NuRWKUPCEX1wKlXA8ZYSG28qGKd41R7BK11YDQkPwqo=
 github.com/jenkins-x/logrus-stackdriver-formatter v0.2.3/go.mod h1:litPp7VZWDRCl8LvXuqGngy+65kkg/+T23TgFnDmfTk=
 github.com/jessevdk/go-flags v1.4.0/go.mod h1:4FA24M0QyGHXBuZZK/XkWh8h0e1EYbRYJSGM75WSRxI=
