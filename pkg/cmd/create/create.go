@@ -510,7 +510,7 @@ func (o *Options) createImagePullSecretsFile() error {
 	getOpts.Path = "imagePullSecrets.yaml"
 	getOpts.JXClient = o.JXClient
 	getOpts.Namespace = o.Namespace
-	getOpts.To = filepath.Join(filepath.Dir(o.PreviewHelmfile), "imagePullSecretsyaml")
+	getOpts.To = filepath.Join(filepath.Dir(o.PreviewHelmfile), "imagePullSecrets.yaml")
 	err := getOpts.Run()
 	if err != nil {
 		return errors.Wrapf(err, "failed to get the file %s from Environment %s", getOpts.Path, getOpts.Env)
