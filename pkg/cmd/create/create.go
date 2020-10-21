@@ -144,6 +144,11 @@ func (o *Options) Run() error {
 		return errors.Wrapf(err, "failed to create the jx-values.yaml file")
 	}
 
+	err = o.createImagePullSecretsFile()
+	if err != nil {
+		return errors.Wrapf(err, "failed to create the imagePullSecrets.yaml file")
+	}
+
 	preview, _, err := previews.GetOrCreatePreview(o.PreviewClient, o.Namespace, pr, destroyCmd, gitURL, o.PreviewNamespace, o.PreviewHelmfile)
 	if err != nil {
 		return errors.Wrapf(err, "failed to upsert the Preview resource in namespace %s", o.Namespace)
@@ -490,6 +495,22 @@ func (o *Options) createJXValuesFile() error {
 	getOpts.JXClient = o.JXClient
 	getOpts.Namespace = o.Namespace
 	getOpts.To = filepath.Join(filepath.Dir(o.PreviewHelmfile), "jx-values.yaml")
+	err := getOpts.Run()
+	if err != nil {
+		return errors.Wrapf(err, "failed to get the file %s from Environment %s", getOpts.Path, getOpts.Env)
+	}
+	return nil
+}
+
+func (o *Options) createImagePullSecretsFile() error {
+	_, getOpts := get.NewCmdGitGet()
+
+	getOpts.Options = o.Options
+	getOpts.Env = "dev"
+	getOpts.Path = "imagePullSecrets.yaml"
+	getOpts.JXClient = o.JXClient
+	getOpts.Namespace = o.Namespace
+	getOpts.To = filepath.Join(filepath.Dir(o.PreviewHelmfile), "imagePullSecretsyaml")
 	err := getOpts.Run()
 	if err != nil {
 		return errors.Wrapf(err, "failed to get the file %s from Environment %s", getOpts.Path, getOpts.Env)
