@@ -25,9 +25,11 @@ import (
 	"github.com/jenkins-x/jx-helpers/v3/pkg/kube/jxclient"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/kube/naming"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/kube/services"
+	"github.com/jenkins-x/jx-helpers/v3/pkg/maps"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/scmhelpers"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/stringhelpers"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/termcolor"
+	"github.com/jenkins-x/jx-helpers/v3/pkg/yamls"
 	"github.com/jenkins-x/jx-logging/v3/pkg/log"
 	"github.com/jenkins-x/jx-preview/pkg/apis/preview/v1alpha1"
 	"github.com/jenkins-x/jx-preview/pkg/client/clientset/versioned"
@@ -494,10 +496,25 @@ func (o *Options) createJXValuesFile() error {
 	getOpts.Path = "jx-values.yaml"
 	getOpts.JXClient = o.JXClient
 	getOpts.Namespace = o.Namespace
-	getOpts.To = filepath.Join(filepath.Dir(o.PreviewHelmfile), "jx-values.yaml")
+	fileName := filepath.Join(filepath.Dir(o.PreviewHelmfile), "jx-values.yaml")
+	getOpts.To = fileName
 	err := getOpts.Run()
 	if err != nil {
 		return errors.Wrapf(err, "failed to get the file %s from Environment %s", getOpts.Path, getOpts.Env)
+	}
+
+	// lets modify the ingress sub domain
+	m := map[string]interface{}{}
+	err = yamls.LoadFile(fileName, &m)
+	if err != nil {
+		return errors.Wrapf(err, "failed to load file %s", fileName)
+	}
+	subDomain := "-" + o.PreviewNamespace + "."
+	log.Logger().Infof("using ingress sub domain %s", info(subDomain))
+	maps.SetMapValueViaPath(m, "jxRequirements.ingress.namespaceSubDomain", subDomain)
+	err = yamls.SaveFile(m, fileName)
+	if err != nil {
+		return errors.Wrapf(err, "failed to save file %s", fileName)
 	}
 	return nil
 }
