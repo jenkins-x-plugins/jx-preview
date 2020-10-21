@@ -20,11 +20,11 @@ spec:
         spec:
           containers:
             - command:
-                - jx-preview
+              - /bin/sh
+              - -c
+              - jx gitops git setup && jx preview gc
               image: {{ tpl .Values.gcJobs.image.repository . }}:{{ tpl .Values.gcJobs.image.tag . }}
               imagePullPolicy: {{ tpl .Values.gcJobs.image.pullPolicy . }}
-              args:
-                - gc
               name: {{ template "gcJobs.name" . }}
               resources: {}
               terminationMessagePath: /dev/termination-log
