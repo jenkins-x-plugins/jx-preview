@@ -22,7 +22,7 @@ spec:
             - command:
               - /bin/sh
               - -c
-              - jx gitops git setup -n {{ .Release.Namespace }} --secret tekton-git && jx preview gc
+              - jx gitops git setup --namespace {{ .Release.Namespace }} --secret tekton-git && jx preview gc
               image: {{ tpl .Values.gcJobs.image.repository . }}:{{ tpl .Values.gcJobs.image.tag . }}
               imagePullPolicy: {{ tpl .Values.gcJobs.image.pullPolicy . }}
               name: {{ template "gcJobs.name" . }}
