@@ -9,8 +9,8 @@ image:
   pullPolicy: IfNotPresent
 
 gcJobs:
-  # gcJobs.schedule -- Cron expression to periodically delete `Preview`s
-  schedule: "0/30 * * * *"
+  # gcJobs.schedule -- Cron expression to periodically garbage collect `Preview` resources; every 10 minutes by default
+  schedule: "*/10 * * * *"
 
   # gcJobs.failedJobsHistoryLimit -- Drives the failed jobs history limit
   failedJobsHistoryLimit: 1
