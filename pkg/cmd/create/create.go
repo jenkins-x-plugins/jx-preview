@@ -452,17 +452,14 @@ func (o *Options) updatePipelineActivity(applicationURL, pullRequestURL string) 
 				updated = true
 			}
 			if updated {
-				_, err = acts.Update(ctx, a, metav1.UpdateOptions{})
+				a, err = acts.Update(ctx, a, metav1.UpdateOptions{})
 				if err != nil {
-					log.Logger().Warnf("Failed to update PipelineActivities %s: %s", name, err)
+					log.Logger().Warnf("Failed to update PipelineActivity %s: %s", name, err.Error())
 				} else {
-					log.Logger().Infof("Updating PipelineActivities %s which has status %s", name, string(a.Spec.Status))
+					log.Logger().Infof("Updated PipelineActivity %s which has status %s", name, string(a.Spec.Status))
 				}
 			}
 		}
-
-		log.Logger().Infof("TODO update PipelineActivity %s/%s", ns, name)
-
 	} else {
 		log.Logger().Warnf("No pipeline and build number available on $JOB_NAME and $BUILD_NUMBER so cannot update PipelineActivities with the preview URLs")
 	}
