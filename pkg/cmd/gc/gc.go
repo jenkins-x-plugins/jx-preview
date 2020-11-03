@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/jenkins-x/go-scm/scm"
-	jxc "github.com/jenkins-x/jx-api/v3/pkg/client/clientset/versioned"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/scmhelpers"
 	"github.com/jenkins-x/jx-preview/pkg/cmd/destroy"
 	"github.com/jenkins-x/jx-preview/pkg/previews"
@@ -27,10 +26,6 @@ type Options struct {
 	destroy.Options
 
 	Deleted []string
-
-	// only needed for testing
-	JXClient  jxc.Interface
-	ScmClient *scm.Client
 }
 
 var (

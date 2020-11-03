@@ -4,14 +4,14 @@ import (
 	"context"
 	"path/filepath"
 
-	"github.com/jenkins-x/jx-gitops/pkg/cmd/git/get"
+	jxc "github.com/jenkins-x/jx-api/v3/pkg/client/clientset/versioned"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/cmdrunner"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/cobras/helper"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/cobras/templates"
-	"github.com/jenkins-x/jx-helpers/v3/pkg/files"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/gitclient"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/gitclient/cli"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/kube"
+	"github.com/jenkins-x/jx-helpers/v3/pkg/kube/jxclient"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/scmhelpers"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/termcolor"
 	"github.com/jenkins-x/jx-logging/v3/pkg/log"
@@ -43,13 +43,13 @@ var (
 
 // Options the CLI options for
 type Options struct {
-	scmhelpers.PullRequestOptions
-
+	scmhelpers.Options
 	Names           []string
 	Namespace       string
-	PreviewClient   versioned.Interface
 	PreviewHelmfile string
+	PreviewClient   versioned.Interface
 	KubeClient      kubernetes.Interface
+	JXClient        jxc.Interface
 	GitClient       gitclient.Interface
 	CommandRunner   cmdrunner.CommandRunner
 }
@@ -70,6 +70,7 @@ func NewCmdPreviewDestroy() (*cobra.Command, *Options) {
 			helper.CheckErr(err)
 		},
 	}
+	cmd.Flags().StringVarP(&o.PreviewHelmfile, "file", "f", "", "Preview helmfile.yaml path to use. If not specified it is discovered in preview/helmfile.yaml and created from a template if needed")
 	return cmd, o
 }
 
@@ -86,6 +87,9 @@ func (o *Options) Run() error {
 
 	for _, name := range o.Names {
 		err = o.Destroy(name)
+		if err != nil {
+			return errors.Wrapf(err, "failed to destroy preview %s", name)
+		}
 	}
 	return nil
 }
@@ -109,7 +113,15 @@ func (o *Options) Destroy(name string) error {
 		return errors.Wrapf(err, "failed to git clone preview source")
 	}
 
-	err = o.createJXValuesFile()
+	previewNamespace := preview.Spec.Resources.Namespace
+
+	if o.PreviewHelmfile == "" {
+		o.PreviewHelmfile, err = previews.DiscoverHelmfile(dir)
+		if err != nil {
+			return errors.Wrapf(err, "failed to discover the helmfile in the dir")
+		}
+	}
+	err = previews.CreateJXValuesFile(o.Options, o.JXClient, o.Namespace, o.PreviewHelmfile, previewNamespace)
 	if err != nil {
 		return errors.Wrapf(err, "failed to create the jx-values.yaml file")
 	}
@@ -144,10 +156,9 @@ func (o *Options) Validate() error {
 	if err != nil {
 		return errors.Wrapf(err, "failed to create kube client")
 	}
-
-	err = o.DiscoverPreviewHelmfile()
+	o.JXClient, err = jxclient.LazyCreateJXClient(o.JXClient)
 	if err != nil {
-		return errors.Wrapf(err, "failed to discover the preview helmfile")
+		return errors.Wrapf(err, "failed to create jx client")
 	}
 
 	if o.CommandRunner == nil {
@@ -216,118 +227,4 @@ func (o *Options) gitCloneSource(preview *v1alpha1.Preview) (string, error) {
 		return "", errors.Errorf("no preview.Spec.Source.URL to clone for preview %s", preview.Name)
 	}
 	return gitclient.CloneToDir(o.GitClient, gitURL, "")
-}
-
-func (o *Options) createJXValuesFile() error {
-	_, getOpts := get.NewCmdGitGet()
-
-	getOpts.Options = o.Options
-	getOpts.Env = "dev"
-	getOpts.Path = "jx-values.yaml"
-	//getOpts.JXClient = o.JXClient
-	getOpts.Namespace = o.Namespace
-	fileName := filepath.Join(filepath.Dir(o.PreviewHelmfile), "jx-values.yaml")
-	getOpts.To = fileName
-	err := getOpts.Run()
-	if err != nil {
-		return errors.Wrapf(err, "failed to get the file %s from Environment %s", getOpts.Path, getOpts.Env)
-	}
-
-	// // lets modify the ingress sub domain
-	// m := map[string]interface{}{}
-	// err = yamls.LoadFile(fileName, &m)
-	// if err != nil {
-	// 	return errors.Wrapf(err, "failed to load file %s", fileName)
-	// }
-	// subDomain := "-" + o.PreviewNamespace + "."
-	// log.Logger().Infof("using ingress sub domain %s", info(subDomain))
-	// maps.SetMapValueViaPath(m, "jxRequirements.ingress.namespaceSubDomain", subDomain)
-	// err = yamls.SaveFile(m, fileName)
-	// if err != nil {
-	// 	return errors.Wrapf(err, "failed to save file %s", fileName)
-	// }
-	return nil
-}
-
-// DiscoverPreviewHelmfile if there is no helmfile configured
-// lets find the charts folder and default the preview helmfile to that
-// then generate a helmfile.yaml if its missing
-func (o *Options) DiscoverPreviewHelmfile() error {
-	if o.PreviewHelmfile == "" {
-		chartsDir := filepath.Join(o.Dir, "charts")
-		exists, err := files.DirExists(chartsDir)
-		if err != nil {
-			return errors.Wrapf(err, "failed to check if dir %s exists", chartsDir)
-		}
-		if !exists {
-			chartsDir = filepath.Join(o.Dir, "..")
-			exists, err = files.DirExists(chartsDir)
-			if err != nil {
-				return errors.Wrapf(err, "failed to check if dir %s exists", chartsDir)
-			}
-			if !exists {
-				return errors.Wrapf(err, "could not detect the helm charts folder in dir %s", o.Dir)
-			}
-		}
-
-		o.PreviewHelmfile = filepath.Join(chartsDir, "..", "preview", "helmfile.yaml")
-	}
-
-	exists, err := files.FileExists(o.PreviewHelmfile)
-	if err != nil {
-		return errors.Wrapf(err, "failed to check for file %s", o.PreviewHelmfile)
-	}
-	if exists {
-		return nil
-	}
-
-	// // lets make the preview dir
-	// previewDir := filepath.Dir(o.PreviewHelmfile)
-	// parentDir := filepath.Dir(previewDir)
-	// relDir, err := filepath.Rel(o.Dir, parentDir)
-	// if err != nil {
-	// 	return errors.Wrapf(err, "failed to find preview dir in %s of %s", o.Dir, parentDir)
-	// }
-	// err = os.MkdirAll(parentDir, files.DefaultDirWritePermissions)
-	// if err != nil {
-	// 	return errors.Wrapf(err, "failed to make preview dir %s", parentDir)
-	// }
-
-	// // now lets grab the template preview
-	// c := &cmdrunner.Command{
-	// 	Dir:  o.Dir,
-	// 	Name: "kpt",
-	// 	Args: []string{"pkg", "get", "https://github.com/jenkins-x/jx3-gitops-template.git/charts/preview", relDir},
-	// }
-	// _, err = o.CommandRunner(c)
-	// if err != nil {
-	// 	return errors.Wrapf(err, "failed to get the preview helmfile: %s via kpt", o.PreviewHelmfile)
-	// }
-
-	// // lets add the files
-	// if o.GitClient == nil {
-	// 	o.GitClient = cli.NewCLIClient("", o.CommandRunner)
-	// }
-	// _, err = o.GitClient.Command(o.Dir, "add", "*")
-	// if err != nil {
-	// 	return errors.Wrapf(err, "failed to add the preview helmfile files to git")
-	// }
-	// _, err = o.GitClient.Command(o.Dir, "commit", "-a", "-m", "fix: add preview helmfile")
-	// if err != nil {
-	// 	return errors.Wrapf(err, "failed to commit the preview helmfile files to git")
-	// }
-
-	// // lets push the changes to git
-	// _, po := push.NewCmdPullRequestPush()
-	// po.CommandRunner = o.CommandRunner
-	// po.ScmClient = o.ScmClient
-	// po.SourceURL = o.SourceURL
-	// po.Number = o.Number
-	// po.Branch = o.PullRequestBranch
-
-	// err = po.Run()
-	// if err != nil {
-	// 	return errors.Wrapf(err, "failed to push the changes to git")
-	// }
-	return nil
 }
