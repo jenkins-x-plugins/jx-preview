@@ -19,6 +19,7 @@ import (
 	"github.com/jenkins-x/jx-preview/pkg/client/clientset/versioned/fake"
 	"github.com/jenkins-x/jx-preview/pkg/cmd/destroy"
 	"github.com/jenkins-x/jx-preview/pkg/fakescms"
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -222,10 +223,27 @@ func TestPreviewCreate(t *testing.T) {
 	do.Namespace = ns
 	do.Names = []string{previewName}
 
-	runner := &fakerunner.FakeRunner{}
+	runner := &fakerunner.FakeRunner{
+		CommandRunner: func(c *cmdrunner.Command) (string, error) {
+			if c.Name == "git" && len(c.Args) > 0 && c.Args[0] == "clone" {
+				dir := c.Args[len(c.Args)-1]
+				// lets copy the sample project
+				srcDir := filepath.Join("test_data", "sample_project")
+				err := files.CopyDirOverwrite(srcDir, dir)
+				if err != nil {
+					return "", errors.Wrapf(err, "failed to copy files from %s to %s", srcDir, dir)
+				}
+				return "", nil
+			}
+			t.Logf("faking command %s in dir %s\n", c.CLI(), c.Dir)
+			return "", nil
+		},
+	}
 	do.CommandRunner = runner.Run
 
 	do.KubeClient = kubeClient
+	do.JXClient = jxClient
+	do.ScmClient = scmClient
 
 	err = do.Run()
 	require.NoError(t, err, "failed to delete preview %s", previewName)
