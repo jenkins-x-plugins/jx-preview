@@ -24,7 +24,9 @@ func CreateJXValuesFile(scmOptions scmhelpers.Options, jxClient jxc.Interface, n
 	getOpts.Path = "jx-values.yaml"
 	getOpts.JXClient = jxClient
 	getOpts.Namespace = namespace
-	fileName := filepath.Join(filepath.Dir(helmfile), "jx-values.yaml")
+	dir := filepath.Dir(helmfile)
+	getOpts.Dir = dir
+	fileName := filepath.Join(dir, "jx-values.yaml")
 	getOpts.To = fileName
 	err := getOpts.Run()
 	if err != nil {

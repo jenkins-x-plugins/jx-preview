@@ -244,6 +244,7 @@ func TestPreviewCreate(t *testing.T) {
 	do.KubeClient = kubeClient
 	do.JXClient = jxClient
 	do.ScmClient = scmClient
+	do.Branch = "master"
 
 	err = do.Run()
 	require.NoError(t, err, "failed to delete preview %s", previewName)
