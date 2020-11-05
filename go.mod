@@ -20,7 +20,7 @@ require (
 
 replace (
 	k8s.io/client-go => k8s.io/client-go v0.19.2
-	github.com/jenkins-x/jx-gitops => github.com/jstrachan/jx-gitops v0.0.0-20201105110630-83a0331427ad
+	github.com/jenkins-x/jx-gitops => github.com/jstrachan/jx-gitops v0.0.0-20201105112349-35ee40c788f7
 )
 
 go 1.15
