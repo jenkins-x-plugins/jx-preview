@@ -18,8 +18,6 @@ require (
 	k8s.io/client-go v11.0.1-0.20190805182717-6502b5e7b1b5+incompatible
 )
 
-replace (
-	k8s.io/client-go => k8s.io/client-go v0.19.2
-)
+replace k8s.io/client-go => k8s.io/client-go v0.19.2
 
 go 1.15

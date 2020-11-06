@@ -47,6 +47,7 @@ type Options struct {
 	Names           []string
 	Namespace       string
 	PreviewHelmfile string
+	FailOnHelmError bool
 	PreviewClient   versioned.Interface
 	KubeClient      kubernetes.Interface
 	JXClient        jxc.Interface
@@ -71,6 +72,7 @@ func NewCmdPreviewDestroy() (*cobra.Command, *Options) {
 		},
 	}
 	cmd.Flags().StringVarP(&o.PreviewHelmfile, "file", "f", "", "Preview helmfile.yaml path to use. If not specified it is discovered in preview/helmfile.yaml and created from a template if needed")
+	cmd.Flags().BoolVarP(&o.FailOnHelmError, "fail-on-helm", "", false, "If enabled do not try to remove the namespace or Preview resource if we fail to destroy helmfile resources")
 	return cmd, o
 }
 
@@ -128,7 +130,10 @@ func (o *Options) Destroy(name string) error {
 
 	err = o.runDeletePreviewCommand(preview, dir)
 	if err != nil {
-		return errors.Wrapf(err, "failed to delete preview resources")
+		if o.FailOnHelmError {
+			return errors.Wrapf(err, "failed to delete preview resources")
+		}
+		log.Logger().Warnf("could not delete preview resources: %s", err.Error())
 	}
 
 	err = o.deletePreviewNamespace(preview)
