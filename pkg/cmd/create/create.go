@@ -168,6 +168,8 @@ func (o *Options) Run() error {
 		return errors.Wrapf(err, "failed to detect the preview URL")
 	}
 
+	toAuthor(&preview.Spec.PullRequest.User, &pr.Author)
+
 	if url != "" {
 		log.Logger().Infof("preview %s is now running at %s", info(preview.Name), info(url))
 
@@ -193,6 +195,21 @@ func (o *Options) Run() error {
 	}
 
 	return o.commentOnPullRequest(preview, url)
+}
+
+func toAuthor(to *v1alpha1.UserSpec, from *scm.User) {
+	if from == nil {
+		return
+	}
+	if from.Login != "" {
+		to.Username = from.Login
+	}
+	if from.Name != "" {
+		to.Name = from.Name
+	}
+	if from.Avatar != "" {
+		to.ImageURL = from.Avatar
+	}
 }
 
 // Validate validates the inputs are valid
