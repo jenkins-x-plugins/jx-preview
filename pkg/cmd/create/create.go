@@ -277,13 +277,25 @@ func (o *Options) helmfileSyncPreview(envVars map[string]string) error {
 	if o.Debug {
 		args = append(args, "--debug")
 	}
-	args = append(args, "sync")
+
+	// first lets always make sure we have the latest helm repo updates
 	c := &cmdrunner.Command{
 		Name: "helmfile",
-		Args: args,
+		Args: append(args, "repos"),
 		Env:  envVars,
 	}
 	_, err := o.CommandRunner(c)
+	if err != nil {
+		return errors.Wrapf(err, "failed to run helmfile repos")
+	}
+
+	// now install the charts using sync
+	c = &cmdrunner.Command{
+		Name: "helmfile",
+		Args: append(args, "sync"),
+		Env:  envVars,
+	}
+	_, err = o.CommandRunner(c)
 	if err != nil {
 		return errors.Wrapf(err, "failed to run helmfile sync")
 	}

@@ -170,6 +170,9 @@ func TestPreviewCreate(t *testing.T) {
 
 		runner.ExpectResults(t,
 			fakerunner.FakeResult{
+				CLI: `helmfile --file test_data/preview/helmfile.yaml repos`,
+			},
+			fakerunner.FakeResult{
 				CLI: `helmfile --file test_data/preview/helmfile.yaml sync`,
 			},
 			fakerunner.FakeResult{
