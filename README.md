@@ -6,7 +6,6 @@
 [![Apache](https://img.shields.io/badge/license-Apache-blue.svg)](https://github.com/jenkins-x/jx-preview/blob/master/LICENSE)
 [![Slack Status](https://img.shields.io/badge/slack-join_chat-white.svg?logo=slack&style=social)](https://slack.k8s.io/)
 
-
 `jx-preview` is a small command line tool for creating Preview Environments in [Jenkins X](https://jenkins-x.io/)
 
 ## Overview
