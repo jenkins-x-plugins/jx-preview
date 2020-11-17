@@ -14,6 +14,7 @@ The [jx preview create](https://github.com/jenkins-x/jx-preview/blob/master/docs
 
 New projects created with [Jenkins X 3.x](https://jenkins-x.io/docs/v3/) already have the `preview/helmfile.yaml` included. If your repository does not include this file it will be added into git in the Pull Request as an extra commit.
  
+ 
 ## How it works
 
 Creating a new preview environment creates a [Preview](https://github.com/jenkins-x/jx-preview/blob/master/docs/crds/github-com-jenkins-x-jx-preview-pkg-apis-preview-v1alpha1.md#Preview) custom resource for each Pull Request on each repository so that we can track the resources and cleanly remove them when you run [jx preview destroy](https://github.com/jenkins-x/jx-preview/blob/master/docs/cmd/jx-preview_destroy.md) pr [jx preview gc](https://github.com/jenkins-x/jx-preview/blob/master/docs/cmd/jx-preview_gc.md)
