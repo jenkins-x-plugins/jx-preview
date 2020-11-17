@@ -32,7 +32,6 @@ If you are not using [Jenkins X 3.x](https://jenkins-x.io/docs/v3/) then you nee
 * setups a `CronJob`  to garbage collect `Preview` environments when the Pull Requests have been closed or merged 
 
 
-
 To install the `jx3/jx-preview` chart using [helm 3.x](https://helm.sh/) try the following::
 
 
