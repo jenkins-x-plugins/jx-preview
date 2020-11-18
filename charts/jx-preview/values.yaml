@@ -2,6 +2,8 @@ image:
   # image.parentRepository -- Docker registry to pull images from
   parentRepository: gcr.io/jenkinsxio
 
+  repository: gcr.io/jenkinsxio/jx-preview
+
   # image.tag -- Docker images tag
   tag: 0.0.750
 
@@ -20,15 +22,4 @@ gcJobs:
 
   # gcJobs.concurrencyPolicy -- Drives the job's concurrency policy
   concurrencyPolicy: Forbid
-
-  image:
-    # gcJobs.image.repository -- Template for computing the gc job docker image repository
-    repository: "{{ .Values.image.parentRepository }}/jx-cli"
-
-    # gcJobs.image.tag -- Template for computing the gc job docker image tag
-    tag: "latest"
-
-    # gcJobs.image.pullPolicy -- Template for computing the gc job docker image pull policy
-    pullPolicy: "{{ .Values.image.pullPolicy }}"
-
 
