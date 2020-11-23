@@ -832,9 +832,11 @@ github.com/jenkins-x/jx-api/v3 v3.0.3 h1:jiRlPKn5hebsfHDi+Pq3IPKGPcTnvyfLXTQYuMF
 github.com/jenkins-x/jx-api/v3 v3.0.3/go.mod h1:8akIl/53O1P/DfyXz6ZysWl/9AfdVlJpZK/xOajgXos=
 github.com/jenkins-x/jx-gitops v0.0.436 h1:p/5HGcyENI7747nF9fRDYgeXCMz6PX4LclnOSHd/RA0=
 github.com/jenkins-x/jx-gitops v0.0.436/go.mod h1:fA1zU3AcMBcrrc/x8ZDTobgNe3/e8sQExxi4zd3qO2Y=
+github.com/jenkins-x/jx-gitops v0.0.438/go.mod h1:fM7EFPIt0aaaAjrWMiaFcOaNYMV48q/eXfXjVkydPH0=
 github.com/jenkins-x/jx-helpers/v3 v3.0.9/go.mod h1:YulZCWgM+W49nkW7juaOwIEOyXkmwfaMdsC6/W5b+H8=
 github.com/jenkins-x/jx-helpers/v3 v3.0.18 h1:oJiovIIjdKl5FTkP9xeTO5dQROMvabKhX/STudjmrWs=
 github.com/jenkins-x/jx-helpers/v3 v3.0.18/go.mod h1:YulZCWgM+W49nkW7juaOwIEOyXkmwfaMdsC6/W5b+H8=
+github.com/jenkins-x/jx-helpers/v3 v3.0.24/go.mod h1:UEnvjBpO7QzoIwjyq0FeSt79jj8Xtv9OEEzdUb4Gvb8=
 github.com/jenkins-x/jx-kube-client/v3 v3.0.1 h1:zMnxoLRXJJ85PAd9OVPlgXT5T8xHgbmxSMhpYPTF5mw=
 github.com/jenkins-x/jx-kube-client/v3 v3.0.1/go.mod h1:0CYp1ACEgSmOxul1bx5qbZgQGEcyAeGdBOBa+u62zZY=
 github.com/jenkins-x/jx-logging/v3 v3.0.0/go.mod h1:bOYlj+Cdd9v7/vDXjkwlUylxGs5sfQJvYnuYbCL0IrY=
@@ -842,6 +844,7 @@ github.com/jenkins-x/jx-logging/v3 v3.0.2 h1:9IEeySM86yECc520Spaq38xO8JIpb6QDl1j
 github.com/jenkins-x/jx-logging/v3 v3.0.2/go.mod h1:Vp2ER2SYgGhAgEEHlLwfi2ZB54tz6ya1qExq0A4CKMI=
 github.com/jenkins-x/jx-secret v0.0.178 h1:QsnyO6Tr/GhR04Xs8Z0k8mqquAslKgSDSsgVFqWlZmE=
 github.com/jenkins-x/jx-secret v0.0.178/go.mod h1:rnYVkNJ9Xc+GDEuwTBHBM5vzyIyvrdX0qXlhbZ0JR1o=
+github.com/jenkins-x/jx-secret v0.0.179/go.mod h1:rnYVkNJ9Xc+GDEuwTBHBM5vzyIyvrdX0qXlhbZ0JR1o=
 github.com/jenkins-x/lighthouse v0.0.876 h1:jPU+Bkt5abNjEo8/kv75YZZQsckgeTkUJK2wNzwWdI0=
 github.com/jenkins-x/lighthouse v0.0.876/go.mod h1:6bxtTkLu6Yj5MOqZrMd6ueFDNlMxcpeDDMT6Xjh4/SE=
 github.com/jenkins-x/logrus-stackdriver-formatter v0.2.3 h1:NuRWKUPCEX1wKlXA8ZYSG28qGKd41R7BK11YDQkPwqo=
@@ -938,6 +941,7 @@ github.com/mattn/go-colorable v0.0.9/go.mod h1:9vuHe8Xs5qXnSaW/c/ABM9alt+Vo+STaO
 github.com/mattn/go-colorable v0.1.2/go.mod h1:U0ppj6V5qS13XJ6of8GYAs25YV2eR4EVcfRqFIhoBtE=
 github.com/mattn/go-colorable v0.1.4 h1:snbPLB8fVfU9iwbbo30TPtbLRzwWu6aJS6Xh4eaaviA=
 github.com/mattn/go-colorable v0.1.4/go.mod h1:U0ppj6V5qS13XJ6of8GYAs25YV2eR4EVcfRqFIhoBtE=
+github.com/mattn/go-colorable v0.1.7/go.mod h1:u6P/XSegPjTcexA+o6vUJrdnUu04hMope9wVRipJSqc=
 github.com/mattn/go-ieproxy v0.0.0-20190610004146-91bb50d98149/go.mod h1:31jz6HNzdxOmlERGGEc4v/dMssOfmp2p5bT/okiKFFc=
 github.com/mattn/go-isatty v0.0.3/go.mod h1:M+lRXTBqGeGNdLjl/ufCoiOlB5xdOkqRJdNxMWT7Zi4=
 github.com/mattn/go-isatty v0.0.4/go.mod h1:M+lRXTBqGeGNdLjl/ufCoiOlB5xdOkqRJdNxMWT7Zi4=
@@ -1685,6 +1689,7 @@ golang.org/x/xerrors v0.0.0-20190717185122-a985d3407aa7/go.mod h1:I/5z698sn9Ka8T
 golang.org/x/xerrors v0.0.0-20191011141410-1b5146add898/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
 golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543 h1:E7g+9GITq07hpfrRu66IVDexMakfv52eLZ2CXBWiKr4=
 golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
+golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
 gomodules.xyz/jsonpatch/v2 v2.0.1/go.mod h1:IhYNNY4jnS53ZnfE4PAmpKtDpTCj1JFXc+3mwe7XcUU=
 gomodules.xyz/jsonpatch/v2 v2.1.0/go.mod h1:IhYNNY4jnS53ZnfE4PAmpKtDpTCj1JFXc+3mwe7XcUU=
 gonum.org/v1/gonum v0.0.0-20181121035319-3f7ecaa7e8ca/go.mod h1:Y+Yx5eoAFn32cQvJDxZx5Dpnq+c3wtXuadVZAcxbbBo=
@@ -1870,6 +1875,7 @@ gopkg.in/yaml.v3 v3.0.0-20191120175047-4206685974f2/go.mod h1:K4uyk7z7BCEPqu6E+C
 gopkg.in/yaml.v3 v3.0.0-20200121175148-a6ecf24a6d71/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
 gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c h1:dUUwHk2QECo/6vqA44rthZ8ie2QXMNeKRTHCNY2nXvo=
 gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
+gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
 gotest.tools v2.2.0+incompatible/go.mod h1:DsYFclhRJ6vuDpmuTbkuFWG+y2sxOXAzmJt81HFBacw=
 gotest.tools/v3 v3.0.3-0.20200410202438-4e4a41b7851a/go.mod h1:Z7Lb0S5l+klDB31fvDQX8ss/FlKDxtlFlw3Oa8Ymbl8=
 grpc.go4.org v0.0.0-20170609214715-11d0a25b4919/go.mod h1:77eQGdRu53HpSqPFJFmuJdjuHRquDANNeA4x7B8WQ9o=
