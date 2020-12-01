@@ -11,7 +11,7 @@ import (
 
 	"github.com/jenkins-x/go-scm/scm"
 	fakescm "github.com/jenkins-x/go-scm/scm/driver/fake"
-	jxfake "github.com/jenkins-x/jx-api/v3/pkg/client/clientset/versioned/fake"
+	jxfake "github.com/jenkins-x/jx-api/v4/pkg/client/clientset/versioned/fake"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/cmdrunner"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/cmdrunner/fakerunner"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/files"
@@ -211,7 +211,7 @@ func TestPreviewCreate(t *testing.T) {
 	}
 
 	// verify pipeline activity
-	actList, err := jxClient.JenkinsV1().PipelineActivities(ns).List(ctx, metav1.ListOptions{})
+	actList, err := jxClient.CoreV4beta1().PipelineActivities(ns).List(ctx, metav1.ListOptions{})
 	require.NoError(t, err, "failed to list PipelineActivity in %s", ns)
 	require.Len(t, actList.Items, 1, "should have one PipelineActivity")
 	activity := actList.Items[0]

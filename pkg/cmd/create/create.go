@@ -11,7 +11,7 @@ import (
 
 	"github.com/cenkalti/backoff"
 	"github.com/jenkins-x/go-scm/scm"
-	jxc "github.com/jenkins-x/jx-api/v3/pkg/client/clientset/versioned"
+	jxc "github.com/jenkins-x/jx-api/v4/pkg/client/clientset/versioned"
 	"github.com/jenkins-x/jx-gitops/pkg/cmd/git/get"
 	"github.com/jenkins-x/jx-gitops/pkg/cmd/pr/push"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/cmdrunner"
@@ -462,7 +462,7 @@ func (o *Options) updatePipelineActivity(applicationURL, pullRequestURL string) 
 		jxClient := o.JXClient
 
 		// lets see if we can update the pipeline
-		acts := jxClient.JenkinsV1().PipelineActivities(ns)
+		acts := jxClient.CoreV4beta1().PipelineActivities(ns)
 		key := &activities.PromoteStepActivityKey{
 			PipelineActivityKey: activities.PipelineActivityKey{
 				Name:     name,
