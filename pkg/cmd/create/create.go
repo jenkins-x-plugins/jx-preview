@@ -419,7 +419,7 @@ func (o *Options) findPreviewURL(envVars map[string]string) (string, error) {
 			url, _ = services.FindServiceURL(o.KubeClient, releaseNamespace, n)
 			if url == "" {
 				var err error
-				url, _, err = kserving.FindServiceURL(ctx, o.KServeClient, o.KubeClient, o.Namespace, n)
+				url, _, err = kserving.FindServiceURL(ctx, o.KServeClient, o.KubeClient, releaseNamespace, n)
 				if err != nil {
 					return errors.Wrapf(err, "failed to ")
 				}
