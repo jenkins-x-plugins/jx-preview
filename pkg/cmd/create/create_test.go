@@ -24,6 +24,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	fakekube "k8s.io/client-go/kubernetes/fake"
+	kservefake "knative.dev/serving/pkg/client/clientset/versioned/fake"
 
 	"github.com/jenkins-x/jx-preview/pkg/cmd/create"
 	"github.com/stretchr/testify/require"
@@ -139,6 +140,7 @@ func TestPreviewCreate(t *testing.T) {
 		o.PreviewClient = previewClient
 		o.KubeClient = kubeClient
 		o.JXClient = jxClient
+		o.KServeClient = kservefake.NewSimpleClientset()
 		o.PullRequestOptions.Options.JXClient = jxClient
 		o.Namespace = ns
 		o.Branch = branch
