@@ -32,12 +32,14 @@ import (
 	"github.com/jenkins-x/jx-preview/pkg/apis/preview/v1alpha1"
 	"github.com/jenkins-x/jx-preview/pkg/client/clientset/versioned"
 	"github.com/jenkins-x/jx-preview/pkg/helmfiles"
+	"github.com/jenkins-x/jx-preview/pkg/kserving"
 	"github.com/jenkins-x/jx-preview/pkg/previews"
 	"github.com/jenkins-x/jx-preview/pkg/rootcmd"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+	kserve "knative.dev/serving/pkg/client/clientset/versioned"
 )
 
 var (
@@ -71,6 +73,7 @@ type Options struct {
 	PreviewClient     versioned.Interface
 	KubeClient        kubernetes.Interface
 	JXClient          jxc.Interface
+	KServeClient      kserve.Interface
 	CommandRunner     cmdrunner.CommandRunner
 }
 
@@ -241,6 +244,11 @@ func (o *Options) Validate() error {
 		return errors.Wrapf(err, "failed to create jx client")
 	}
 
+	o.KServeClient, err = kserving.LazyCreateKServeClient(o.KServeClient)
+	if err != nil {
+		return errors.Wrapf(err, "failed to create jx client")
+	}
+
 	if o.PreviewNamespace == "" {
 		o.PreviewNamespace, err = o.createPreviewNamespace()
 	}
@@ -403,20 +411,19 @@ func (o *Options) findPreviewURL(envVars map[string]string) (string, error) {
 
 	appNames := []string{app, releaseName, o.Namespace + "-preview", releaseName + "-" + app}
 
+	ctx := context.Background()
+
 	url := ""
 	fn := func() error {
 		for _, n := range appNames {
 			url, _ = services.FindServiceURL(o.KubeClient, releaseNamespace, n)
-			/*
-				TODO support kserve too
-				if url == "" {
-					var err error
-					url, _, err = kserving.FindServiceURL(kserveClient, kubeClient, o.Namespace, n)
-					if err != nil {
-					  return errors.Wrapf(err, "failed to ")
-					}
+			if url == "" {
+				var err error
+				url, _, err = kserving.FindServiceURL(ctx, o.KServeClient, o.KubeClient, o.Namespace, n)
+				if err != nil {
+					return errors.Wrapf(err, "failed to ")
 				}
-			*/
+			}
 			if url != "" {
 				return nil
 			}
