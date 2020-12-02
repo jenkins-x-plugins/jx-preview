@@ -168,7 +168,7 @@ func (o *Options) Run() error {
 
 	url, err := o.findPreviewURL(envVars)
 	if err != nil {
-		return errors.Wrapf(err, "failed to detect the preview URL")
+		log.Logger().Warnf("failed to detect the preview URL %+v", err)
 	}
 
 	toAuthor(&preview.Spec.PullRequest.User, &pr.Author)
