@@ -2,6 +2,7 @@ package kserving
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/jenkins-x/jx-kube-client/v3/pkg/kubeclient"
 	"github.com/pkg/errors"
@@ -27,11 +28,15 @@ func FindServiceURL(ctx context.Context, client kserve.Interface, kubeClient kub
 // GetServiceURL returns the URL for the given knative service
 func GetServiceURL(ctx context.Context, service *v1.Service, kubeClient kubernetes.Interface, namespace string) string {
 	if service == nil {
+		fmt.Printf("nil service\n")
 		return ""
 	}
+	fmt.Printf("%s\n", service.Status)
 	if service.Status.URL != nil {
+		fmt.Printf("url found\n")
 		return service.Status.URL.String()
 	}
+	fmt.Printf("nil url\n")
 	return ""
 	/* TODO old v1alpha1 code before we had a URL
 	domain := service.Status.DeprecatedDomain
