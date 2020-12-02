@@ -3,7 +3,7 @@ package previews
 import (
 	"path/filepath"
 
-	jxc "github.com/jenkins-x/jx-api/v3/pkg/client/clientset/versioned"
+	jxc "github.com/jenkins-x/jx-api/v4/pkg/client/clientset/versioned"
 	"github.com/jenkins-x/jx-gitops/pkg/cmd/git/get"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/maps"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/scmhelpers"
