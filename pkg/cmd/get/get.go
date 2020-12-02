@@ -115,7 +115,7 @@ func (o *Options) CurrentPreviewUrl() error {
 		return err
 	}
 
-	envList, err := client.CoreV4beta1().Environments(ns).List(metav1.ListOptions{})
+	envList, err := client.JenkinsV1().Environments(ns).List(metav1.ListOptions{})
 	if err != nil {
 		return err
 	}
