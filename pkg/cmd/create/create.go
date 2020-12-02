@@ -462,7 +462,7 @@ func (o *Options) updatePipelineActivity(applicationURL, pullRequestURL string) 
 		jxClient := o.JXClient
 
 		// lets see if we can update the pipeline
-		acts := jxClient.CoreV4beta1().PipelineActivities(ns)
+		acts := jxClient.JenkinsV1().PipelineActivities(ns)
 		key := &activities.PromoteStepActivityKey{
 			PipelineActivityKey: activities.PipelineActivityKey{
 				Name:     name,

@@ -211,7 +211,7 @@ func TestPreviewCreate(t *testing.T) {
 	}
 
 	// verify pipeline activity
-	actList, err := jxClient.CoreV4beta1().PipelineActivities(ns).List(ctx, metav1.ListOptions{})
+	actList, err := jxClient.JenkinsV1().PipelineActivities(ns).List(ctx, metav1.ListOptions{})
 	require.NoError(t, err, "failed to list PipelineActivity in %s", ns)
 	require.Len(t, actList.Items, 1, "should have one PipelineActivity")
 	activity := actList.Items[0]
