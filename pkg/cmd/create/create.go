@@ -12,7 +12,6 @@ import (
 	"github.com/cenkalti/backoff"
 	"github.com/jenkins-x/go-scm/scm"
 	jxc "github.com/jenkins-x/jx-api/v4/pkg/client/clientset/versioned"
-	"github.com/jenkins-x/jx-gitops/pkg/cmd/git/get"
 	"github.com/jenkins-x/jx-gitops/pkg/cmd/pr/push"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/cmdrunner"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/cobras/helper"
@@ -145,11 +144,6 @@ func (o *Options) Run() error {
 	err = previews.CreateJXValuesFile(o.Options, o.JXClient, o.Namespace, o.PreviewHelmfile, o.PreviewNamespace)
 	if err != nil {
 		return errors.Wrapf(err, "failed to create the jx-values.yaml file")
-	}
-
-	err = o.createImagePullSecretsFile()
-	if err != nil {
-		return errors.Wrapf(err, "failed to create the imagePullSecrets.yaml file")
 	}
 
 	preview, _, err := previews.GetOrCreatePreview(o.PreviewClient, o.Namespace, pr, destroyCmd, gitURL, o.PreviewNamespace, o.PreviewHelmfile)
@@ -516,22 +510,6 @@ func (o *Options) commentOnPullRequest(preview *v1alpha1.Preview, url string) er
 		return errors.Wrapf(err, "failed to comment on pull request %s on repository %s", prName, o.FullRepositoryName)
 	}
 	log.Logger().Infof("commented on pull request %s on repository %s", info(prName), info(o.FullRepositoryName))
-	return nil
-}
-
-func (o *Options) createImagePullSecretsFile() error {
-	_, getOpts := get.NewCmdGitGet()
-
-	getOpts.Options = o.Options
-	getOpts.Env = "dev"
-	getOpts.Path = "imagePullSecrets.yaml"
-	getOpts.JXClient = o.JXClient
-	getOpts.Namespace = o.Namespace
-	getOpts.To = filepath.Join(filepath.Dir(o.PreviewHelmfile), "imagePullSecrets.yaml")
-	err := getOpts.Run()
-	if err != nil {
-		return errors.Wrapf(err, "failed to get the file %s from Environment %s", getOpts.Path, getOpts.Env)
-	}
 	return nil
 }
 
