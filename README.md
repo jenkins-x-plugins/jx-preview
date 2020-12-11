@@ -62,7 +62,44 @@ To uninstall the chart, simply delete the release.
 helm uninstall jx-preview --namespace jx
 ```
 
+## Debug
+To debug jx preview inside a Running container:
+First modify you pipeline by editing `pullrequest.yaml`  in your project,
+before jx preview add:
+```shell script
+while true
+do
+  echo "waiting for debug"
+  sleep 30
+done
+```
+build your version of jx preview locally, and copy it inside the container
+```shell script
+make build
+kubectl cp ./build/jx-preview pr-xxxxxxxx:/ -c step-promote-jx-preview
+```
+once the pipeline reaches the promote-jx-preview step, exec into the container:
+```shell script
+kubectl exec -it pr-xxxxxxxx -c step-promote-jx-preview -- sh
+```
+and run:
+```shell script
+apk update
+apk add go
+go get github.com/go-delve/delve/cmd/dlv
+```
+then debug your binary using dlv (you can change create with gc...)
+```shell script
+source /workspace/source/.jx/variables.sh # copied from pipeline
+/tekton/home/go/bin/dlv --listen=:2345 --headless=true --api-version=2 exec /jx-preview create
+```
+redirect traffic from your port 2345 to the container in another terminal
+```shell script
+kubectl port-forward pr-xxxxxxxx 2345
+```
+attach your debugger and happy debugging.
 
+Do not forget to `make build` and `kubectl cp` after each change
 
 ## Commands
 
