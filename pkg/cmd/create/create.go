@@ -445,6 +445,9 @@ func (o *Options) updatePipelineActivity(applicationURL, pullRequestURL string) 
 			o.BuildNumber = os.Getenv("BUILD_ID")
 		}
 	}
+	if o.Branch == "" || o.Branch == "HEAD" {
+		o.Branch = os.Getenv("PULL_BASE_REF")
+	}
 	pipeline := fmt.Sprintf("%s/%s/%s", o.Owner, o.Repository, o.Branch)
 
 	ctx := context.Background()
