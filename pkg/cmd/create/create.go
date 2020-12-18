@@ -95,6 +95,8 @@ func NewCmdPreviewCreate() (*cobra.Command, *Options) {
 			helper.CheckErr(err)
 		},
 	}
+	o.Options.DiscoverFromGit = true
+
 	cmd.Flags().StringVarP(&o.PreviewHelmfile, "file", "f", "", "Preview helmfile.yaml path to use. If not specified it is discovered in preview/helmfile.yaml and created from a template if needed")
 	cmd.Flags().StringVarP(&o.Repository, "app", "", "", "Name of the app or repository")
 	cmd.Flags().DurationVarP(&o.PreviewURLTimeout, "preview-url-timeout", "", time.Minute+5, "Time to wait for the preview URL to be available")
