@@ -17,7 +17,7 @@ require (
 	k8s.io/apimachinery v0.19.4
 	k8s.io/client-go v11.0.1-0.20190805182717-6502b5e7b1b5+incompatible
 	k8s.io/kube-openapi v0.0.0-20200923155610-8b5066479488 // indirect
-	knative.dev/serving v0.19.0
+	knative.dev/serving v0.20.0
 )
 
 replace k8s.io/client-go => k8s.io/client-go v0.19.2
