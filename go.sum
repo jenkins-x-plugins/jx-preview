@@ -49,6 +49,7 @@ code.gitea.io/sdk/gitea v0.13.0 h1:iHognp8ZMhMFLooUUNZFpm8IHaC9qoHJDvAE5vTm5aw=
 code.gitea.io/sdk/gitea v0.13.0/go.mod h1:z3uwDV/b9Ls47NGukYM9XhnHtqPh/J+t40lsUrR6JDY=
 code.gitea.io/sdk/gitea v0.13.1-0.20201217044651-7ddbf1a0151e h1:b9kfpt/mPttLy1szZhI2ZqL6FV8DKTXtwHvjyydHQRs=
 code.gitea.io/sdk/gitea v0.13.1-0.20201217044651-7ddbf1a0151e/go.mod h1:89WiyOX1KEcvjP66sRHdu0RafojGo60bT9UqW17VbWs=
+code.gitea.io/sdk/gitea v0.13.2/go.mod h1:lee2y8LeV3kQb2iK+hHlMqoadL4bp27QOkOV/hawLKg=
 contrib.go.opencensus.io/exporter/aws v0.0.0-20181029163544-2befc13012d0/go.mod h1:uu1P0UCM/6RbsMrgPa98ll8ZcHM858i/AD06a9aLRCA=
 contrib.go.opencensus.io/exporter/ocagent v0.4.12/go.mod h1:450APlNTSR6FrvC3CTRqYosuDstRB9un7SOx2k/9ckA=
 contrib.go.opencensus.io/exporter/ocagent v0.5.0/go.mod h1:ImxhfLRpxoYiSq891pBrLVhN+qmP8BTVvdH2YLs7Gl0=
@@ -840,6 +841,7 @@ github.com/jenkins-x/go-scm v1.5.79/go.mod h1:PCT338UhP/pQ0IeEeMEf/hoLTYKcH7qjGE
 github.com/jenkins-x/go-scm v1.5.117/go.mod h1:PCT338UhP/pQ0IeEeMEf/hoLTYKcH7qjGEKd7jPkeYg=
 github.com/jenkins-x/go-scm v1.5.209 h1:Me6lEJ7TmAYf26qwLRUJVP6Mt+92AAwmJWQ5ztHzcVE=
 github.com/jenkins-x/go-scm v1.5.209/go.mod h1:pTp8HHrCEVGs24H/8Cy+X/CDXFlKv9VC6zmrXBYNkfE=
+github.com/jenkins-x/go-scm v1.5.211/go.mod h1:Iuk0V0mt0QGIt50TZyChHqRIiXTnp1ink9RyNoe7o7c=
 github.com/jenkins-x/jx-api/v4 v4.0.20 h1:zusFMviPwFYeHM/EyB29aeGqRA9WmdJ3bAPQBXM8tZE=
 github.com/jenkins-x/jx-api/v4 v4.0.20/go.mod h1:e98SpJGhOodGShusrGhMqSzRsyZbVsPjWGpEQ2hC0Mk=
 github.com/jenkins-x/jx-api/v4 v4.0.21 h1:OGmGNh8X/VZXg7ptFd4sj2tbXvowUz9XvxnMVkpR9Hk=
