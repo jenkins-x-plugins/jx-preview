@@ -2,6 +2,9 @@ package destroy
 
 import (
 	"context"
+	"github.com/jenkins-x/jx-helpers/v3/pkg/input"
+	"github.com/jenkins-x/jx-helpers/v3/pkg/input/inputfactory"
+	"github.com/jenkins-x/jx-helpers/v3/pkg/options"
 	"path/filepath"
 
 	jxc "github.com/jenkins-x/jx-api/v4/pkg/client/clientset/versioned"
@@ -43,16 +46,20 @@ var (
 
 // Options the CLI options for
 type Options struct {
+	options.BaseOptions
 	scmhelpers.Options
 	Names           []string
 	Namespace       string
 	PreviewHelmfile string
+	Filter          string
 	FailOnHelmError bool
+	SelectAll       bool
 	PreviewClient   versioned.Interface
 	KubeClient      kubernetes.Interface
 	JXClient        jxc.Interface
 	GitClient       gitclient.Interface
 	CommandRunner   cmdrunner.CommandRunner
+	Input           input.Interface
 }
 
 // NewCmdPreviewDestroy creates a command object for the command
@@ -72,6 +79,8 @@ func NewCmdPreviewDestroy() (*cobra.Command, *Options) {
 		},
 	}
 	cmd.Flags().StringVarP(&o.PreviewHelmfile, "file", "f", "", "Preview helmfile.yaml path to use. If not specified it is discovered in preview/helmfile.yaml and created from a template if needed")
+	cmd.Flags().StringVarP(&o.Filter, "filter", "", "", "The filter to use to find a preview to delete")
+	cmd.Flags().BoolVarP(&o.SelectAll, "all", "", false, "Select all the filters by default to remove")
 	cmd.Flags().BoolVarP(&o.FailOnHelmError, "fail-on-helm", "", false, "If enabled do not try to remove the namespace or Preview resource if we fail to destroy helmfile resources")
 	return cmd, o
 }
@@ -83,8 +92,32 @@ func (o *Options) Run() error {
 		return errors.Wrapf(err, "failed to validate options")
 	}
 
+	if len(o.Names) == 0 && !o.BatchMode {
+		ctx := context.Background()
+		ns := o.Namespace
+		resourceList, err := o.PreviewClient.PreviewV1alpha1().Previews(ns).List(ctx, metav1.ListOptions{})
+		if err != nil {
+			if !apierrors.IsNotFound(err) {
+				return errors.Wrapf(err, "failed to list Previews in namespace %s", ns)
+			}
+		}
+
+		resources := resourceList.Items
+		previews.SortPreviews(resources)
+
+		var names []string
+		for _, r := range resources {
+			names = append(names, r.Name)
+		}
+
+		o.Names, err = o.Input.SelectNamesWithFilter(names, "select preview(s) to delete: ", o.SelectAll, o.Filter, "pick the names of the previews to remove")
+		if err != nil {
+			return errors.Wrapf(err, "failed to select names to delete")
+		}
+	}
 	if len(o.Names) == 0 {
 		return errors.Errorf("missing preview name")
+
 	}
 
 	for _, name := range o.Names {
@@ -151,7 +184,13 @@ func (o *Options) Destroy(name string) error {
 
 // Validate validates the inputs are valid
 func (o *Options) Validate() error {
-	var err error
+	err := o.BaseOptions.Validate()
+	if err != nil {
+		return errors.Wrapf(err, "failed to validate base options")
+	}
+	if o.Input == nil {
+		o.Input = inputfactory.NewInput(&o.BaseOptions)
+	}
 	o.PreviewClient, o.Namespace, err = previews.LazyCreatePreviewClientAndNamespace(o.PreviewClient, o.Namespace)
 	if err != nil {
 		return errors.Wrapf(err, "failed to create Preview client")
