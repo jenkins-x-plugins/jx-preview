@@ -1,0 +1,38 @@
+{{- if .Capabilities.APIVersions.Has "jenkins.io/v1/Release" }}
+apiVersion: jenkins.io/v1
+kind: Release
+metadata:
+  creationTimestamp: "2021-01-28T19:19:35Z"
+  deletionTimestamp: null
+  name: '{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}'
+spec:
+  commits:
+  - author:
+      email: pat@patscott.io
+      name: Patrick Lee Scott
+    branch: master
+    committer:
+      email: pat@patscott.io
+      name: Patrick Lee Scott
+    message: |
+      fix: set XDG_CONFIG_HOME
+
+      Signed-off-by: Patrick Lee Scott <pat@patscott.io>
+    sha: ecce1bb2da94b25af0ad9f26c163c4a6eccb4c78
+  - author:
+      email: james.strachan@gmail.com
+      name: James Strachan
+    branch: master
+    committer:
+      email: noreply@github.com
+      name: GitHub
+    message: 'chore: smaller timeout'
+    sha: 4aae2278d6a5df6febc53186e7604645ce7d2a0c
+  gitHttpUrl: https://github.com/jenkins-x/jx-preview
+  gitOwner: jenkins-x
+  gitRepository: jx-preview
+  name: '{{ .Chart.Name }}'
+  version: 0.0.151
+status: {}
+ 
+{{- end }}
