@@ -27,6 +27,9 @@ spec:
               - /bin/sh
               - -c
               - jx gitops git setup --namespace {{ .Release.Namespace }} --secret tekton-git && jx preview gc
+              env:
+              - name: XDG_CONFIG_HOME
+                value: /home
               image: {{ tpl .Values.image.repository . }}:{{ tpl .Values.image.tag . }}
               imagePullPolicy: {{ tpl .Values.image.pullPolicy . }}
               name: {{ template "gcJobs.name" . }}
