@@ -1,0 +1,39 @@
+{{- if .Capabilities.APIVersions.Has "jenkins.io/v1/Release" }}
+apiVersion: jenkins.io/v1
+kind: Release
+metadata:
+  creationTimestamp: "2021-02-01T10:41:02Z"
+  deletionTimestamp: null
+  name: '{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}'
+spec:
+  commits:
+  - author:
+      email: james.strachan@gmail.com
+      name: James Strachan
+    branch: master
+    committer:
+      email: james.strachan@gmail.com
+      name: James Strachan
+    message: |
+      chore: migrate to GHA pipeline
+
+      as cloud build has stopped working for multi-arch images
+    sha: be716b14125f6900d8315c61e27b93c631eafa53
+  - author:
+      email: james.strachan@gmail.com
+      name: James Strachan
+    branch: master
+    committer:
+      email: james.strachan@gmail.com
+      name: James Strachan
+    message: |
+      chore: upgrade deps
+    sha: 6eeb03d8720d839a49734ff97ad8835c9e4f8f5b
+  gitHttpUrl: https://github.com/jenkins-x/jx-preview
+  gitOwner: jenkins-x
+  gitRepository: jx-preview
+  name: '{{ .Chart.Name }}'
+  version: 0.0.154
+status: {}
+ 
+{{- end }}
