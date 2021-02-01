@@ -57,15 +57,11 @@ Creates a preview
 
 .PP
 \fB\-\-pr\fP=0
-    Pull Request number. If not specified we will use $BRANCH\_NAME
+    the Pull Request number. If not specified we detect it via $PULL\_NUMBER or $BRANCH\_NAME environment variables
 
 .PP
 \fB\-\-preview\-url\-timeout\fP=1m0.000000005s
     Time to wait for the preview URL to be available
-
-.PP
-\fB\-r\fP, \fB\-\-repo\fP=""
-    the full git repository name of the form 'owner/name'
 
 
 .SH EXAMPLE

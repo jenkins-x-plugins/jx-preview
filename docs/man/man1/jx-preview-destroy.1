@@ -20,6 +20,22 @@ Destroys a preview environment
 
 .SH OPTIONS
 .PP
+\fB\-\-all\fP[=false]
+    Select all the filters by default to remove
+
+.PP
+\fB\-\-fail\-on\-helm\fP[=false]
+    If enabled do not try to remove the namespace or Preview resource if we fail to destroy helmfile resources
+
+.PP
+\fB\-f\fP, \fB\-\-file\fP=""
+    Preview helmfile.yaml path to use. If not specified it is discovered in preview/helmfile.yaml and created from a template if needed
+
+.PP
+\fB\-\-filter\fP=""
+    The filter to use to find a preview to delete
+
+.PP
 \fB\-h\fP, \fB\-\-help\fP[=false]
     help for destroy
 
