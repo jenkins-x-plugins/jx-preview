@@ -739,6 +739,7 @@ github.com/jenkins-x/jx-api/v4 v4.0.24 h1:REuDkac0UCB/rAlbLt/Jd8LpaGGnGctr5dee8m
 github.com/jenkins-x/jx-api/v4 v4.0.24/go.mod h1:IC88X+24Nmexuj7lRNRgzfrchzlo0qysfwkICpqDmMQ=
 github.com/jenkins-x/jx-gitops v0.0.548 h1:mKMThbM+Mic6pfAbgNWC6gY2AA/648hOtqJ9fbHcKo0=
 github.com/jenkins-x/jx-gitops v0.0.548/go.mod h1:s/JXKW2ehWXrHvTrZ60txlni8vzHuQKdoIbJdlp2RJk=
+github.com/jenkins-x/jx-gitops v0.1.0/go.mod h1:zFoW70G2q8vXWKIrVj0Z/rKjjSOJT0OP0PmlGqq1N90=
 github.com/jenkins-x/jx-helpers/v3 v3.0.73 h1:MdobaXNE4MyihIhXvzYoSTRKhEDlJ9loZo9uOzWKOQ4=
 github.com/jenkins-x/jx-helpers/v3 v3.0.73/go.mod h1:Q7L5HjVuaIsog3ZC731wOiTaK79cmFcQ/e7jOyTc5yE=
 github.com/jenkins-x/jx-kube-client/v3 v3.0.2 h1:sJs6FaIwycDYwE4UsA7j9tpdXOxXEta9KNUJp6s45VI=
@@ -1055,6 +1056,7 @@ github.com/remyoudompheng/bigfft v0.0.0-20170806203942-52369c62f446/go.mod h1:uY
 github.com/rickar/props v0.0.0-20170718221555-0b06aeb2f037 h1:HFsTO5S+nnw/Xs9lRYF+UUJvH8wMSRMRal321W0hfdY=
 github.com/rickar/props v0.0.0-20170718221555-0b06aeb2f037/go.mod h1:F1p8BNM4IXv2UcptwSp8HJOapKurodd/PYu1D6Gtn9Y=
 github.com/roboll/helmfile v0.135.1-0.20201213020320-54eb73b4239a/go.mod h1:FN/KWtPfyp2tVBylTrBcEu1255rZzBcUVb2lci2I6S8=
+github.com/roboll/helmfile v0.138.4/go.mod h1:gi0BzSw6HH0c7t0v/zaxIlU3cOJuREF6K1XEpy7hZX0=
 github.com/rogpeppe/fastuuid v0.0.0-20150106093220-6724a57986af/go.mod h1:XWv6SoW27p1b0cqNHllgS5HIMJraePCO15w5zCzIWYg=
 github.com/rogpeppe/fastuuid v1.2.0/go.mod h1:jVj6XXZzXRy/MSR5jhDC/2q6DgLz+nrA6LYCDYWNEvQ=
 github.com/rogpeppe/go-internal v1.1.0/go.mod h1:M8bDsm7K2OlrFYOpmOWEs/qY81heoFRclV5y23lUDJ4=
@@ -1187,8 +1189,10 @@ github.com/valyala/fasthttp v1.2.0/go.mod h1:4vX61m6KN+xDduDNwXrhIAVZaZaZiQ1luJk
 github.com/valyala/quicktemplate v1.2.0/go.mod h1:EH+4AkTd43SvgIbQHYu59/cJyxDoOVRUAfrukLPuGJ4=
 github.com/valyala/tcplisten v0.0.0-20161114210144-ceec8f93295a/go.mod h1:v3UYOV9WzVtRmSR+PDvWpU/qWl4Wa5LApYYX4ZtKbio=
 github.com/variantdev/chartify v0.5.0/go.mod h1:jqlUJIzcrIVSfg8FC4g+IoC5WB83TBl8rnVVEv6g8MQ=
+github.com/variantdev/chartify v0.6.0/go.mod h1:qF4XzQlkfH/6k2jAi1hLas+lK4zSCa8kY+r5JdmLA68=
 github.com/variantdev/dag v0.0.0-20191028002400-bb0b3c785363/go.mod h1:pH1TQsNSLj2uxMo9NNl9zdGy01Wtn+/2MT96BrKmVyE=
 github.com/variantdev/vals v0.11.0/go.mod h1:pZ0ZJZnOwB5aCJmXZgwrgMMMKMfIYMrhpsHllInRQ8c=
+github.com/variantdev/vals v0.13.0/go.mod h1:pBwm+vPLQALN6otkNqiT1fUKdWHfjAm4070UkrNLsVA=
 github.com/vdemeester/k8s-pkg-credentialprovider v1.18.1-0.20201019120933-f1d16962a4db/go.mod h1:grWy0bkr1XO6hqbaaCKaPXqkBVlMGHYG6PGykktwbJc=
 github.com/vektah/gqlparser v1.1.2/go.mod h1:1ycwN7Ij5njmMkPPAOaRFY4rET2Enx7IkVv3vaXspKw=
 github.com/vektra/mockery v1.1.2/go.mod h1:VcfZjKaFOPO+MpN4ZvwPjs4c48lkq1o3Ym8yHZJu0jU=
