@@ -13,8 +13,30 @@
 The [jx preview create](https://github.com/jenkins-x/jx-preview/blob/master/docs/cmd/jx-preview_create.md) command will create a new Preview environment, by default in its own unique namespace called `jx-$owner-$repo-pr-$number` using a [helmfile](https://github.com/roboll/helmfile) located by default in the `preview/helmfile.yaml` directory.
 
 New projects created with [Jenkins X 3.x](https://jenkins-x.io/docs/v3/) already have the `preview/helmfile.yaml` included. If your repository does not include this file it will be added into git in the Pull Request as an extra commit.
- 
- 
+    
+## System tests in previews
+
+If you wish to use a preview environment to run tests and interacting with the preview you can source the `.jx/variables.sh` file to then be able to interact with the preview via the `PREVIEW_*` environment variables.
+
+e.g.
+
+```yaml 
+- name: test-preview
+  image: golang:1.15
+  script: |
+    #!/usr/bin/env sh
+    source .jx/variables.sh
+    curl -v $PREVIEW_URL
+```
+           
+### Environment variables
+
+The following variables are added to the `.jx/variables.sh` file by the `jx preview create` command:
+   
+* `PREVIEW_URL` the URL of the preview environment if it can be discovered
+* `PREVIEW_NAME` the name of the `Preview` custom resource which has the full metadata
+* `PREVIEW_NAMESPACE` the namespace of the preview environment which you can use via `myservice.$PREVIEW_NAMESPACE.svc.cluster.local` to access services in your preview
+
 ## How it works
 
 Creating a new preview environment creates a [Preview](https://github.com/jenkins-x/jx-preview/blob/master/docs/crds/github-com-jenkins-x-jx-preview-pkg-apis-preview-v1alpha1.md#Preview) custom resource for each Pull Request on each repository so that we can track the resources and cleanly remove them when you run [jx preview destroy](https://github.com/jenkins-x/jx-preview/blob/master/docs/cmd/jx-preview_destroy.md) pr [jx preview gc](https://github.com/jenkins-x/jx-preview/blob/master/docs/cmd/jx-preview_gc.md)

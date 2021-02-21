@@ -135,6 +135,7 @@ func TestPreviewCreate(t *testing.T) {
 
 	ctx := context.Background()
 	previewName := ""
+	tmpDir := ""
 	for _, testName := range []string{"create", "update"} {
 		_, o := create.NewCmdPreviewCreate()
 		o.PreviewClient = previewClient
@@ -148,7 +149,14 @@ func TestPreviewCreate(t *testing.T) {
 		o.BuildNumber = buildNumber
 		o.SourceURL = repoLink + ".git"
 		o.Number = prNumber
-		o.Dir = "test_data"
+
+		var err error
+		tmpDir, err = ioutil.TempDir("", "")
+		require.NoError(t, err, "failed to create temp dir")
+
+		err = files.CopyDirOverwrite("test_data", tmpDir)
+		require.NoError(t, err, "failed to copy test_data to %s", tmpDir)
+		o.Dir = tmpDir
 		o.DockerRegistry = containerRegistry
 
 		runner := &fakerunner.FakeRunner{
@@ -167,18 +175,18 @@ func TestPreviewCreate(t *testing.T) {
 		o.PreviewURLTimeout = time.Millisecond
 		o.Version = "0.0.0-SNAPSHOT-PR-1"
 
-		err := o.Run()
+		err = o.Run()
 		require.NoError(t, err, "failed to run command in test %s", testName)
 
 		runner.ExpectResults(t,
 			fakerunner.FakeResult{
-				CLI: `helmfile --file test_data/preview/helmfile.yaml repos`,
+				CLI: "helmfile --file " + tmpDir + "/preview/helmfile.yaml repos",
 			},
 			fakerunner.FakeResult{
-				CLI: `helmfile --file test_data/preview/helmfile.yaml sync`,
+				CLI: "helmfile --file " + tmpDir + "/preview/helmfile.yaml sync",
 			},
 			fakerunner.FakeResult{
-				CLI: `helmfile --file test_data/preview/helmfile.yaml list --output json`,
+				CLI: "helmfile --file " + tmpDir + "/preview/helmfile.yaml list --output json",
 			},
 		)
 
@@ -255,7 +263,7 @@ func TestPreviewCreate(t *testing.T) {
 	require.NoError(t, err, "failed to delete preview %s", previewName)
 
 	require.Len(t, runner.OrderedCommands, 2, "should have 2 commands")
-	assert.Equal(t, `helmfile --file test_data/preview/helmfile.yaml destroy`, runner.OrderedCommands[1].CLI(), "second command")
+	assert.Equal(t, "helmfile --file "+tmpDir+"/preview/helmfile.yaml destroy", runner.OrderedCommands[1].CLI(), "second command")
 
 	// now lets check we removed the preview namespace
 	namespaceList, err := do.KubeClient.CoreV1().Namespaces().List(ctx, metav1.ListOptions{})

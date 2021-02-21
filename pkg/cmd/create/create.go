@@ -1,9 +1,11 @@
 package create
 
 import (
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"context"
@@ -74,6 +76,7 @@ type Options struct {
 	JXClient          jxc.Interface
 	KServeClient      kserve.Interface
 	CommandRunner     cmdrunner.CommandRunner
+	OutputEnvVars     map[string]string
 }
 
 type envVar struct {
@@ -169,6 +172,11 @@ func (o *Options) Run() error {
 
 	toAuthor(&preview.Spec.PullRequest.User, &pr.Author)
 
+	o.OutputEnvVars["PREVIEW_URL"] = url
+	o.OutputEnvVars["PREVIEW_NAME"] = preview.Name
+	o.OutputEnvVars["PREVIEW_NAMESPACE"] = preview.Spec.Resources.Namespace
+	o.OutputEnvVars["PREVIEW_PULL_REQUEST_URL"] = preview.Spec.PullRequest.URL
+
 	if url != "" {
 		log.Logger().Infof("preview %s is now running at %s", info(preview.Name), info(url))
 
@@ -187,6 +195,11 @@ func (o *Options) Run() error {
 	err = o.updatePipelineActivity(url, preview.Spec.PullRequest.URL)
 	if err != nil {
 		log.Logger().Warnf("failed to update the PipelineActivity - are you using Jenkins X? %s", err.Error())
+	}
+
+	err = o.writeOutputEnvVars()
+	if err != nil {
+		return errors.Wrapf(err, "failed to write output environment variables")
 	}
 
 	if o.NoComment {
@@ -247,6 +260,9 @@ func (o *Options) Validate() error {
 
 	if o.PreviewNamespace == "" {
 		o.PreviewNamespace, err = o.createPreviewNamespace()
+	}
+	if o.OutputEnvVars == nil {
+		o.OutputEnvVars = map[string]string{}
 	}
 	return nil
 }
@@ -598,5 +614,48 @@ func (o *Options) DiscoverPreviewHelmfile() error {
 	if err != nil {
 		return errors.Wrapf(err, "failed to push the changes to git")
 	}
+	return nil
+}
+
+func (o *Options) writeOutputEnvVars() error {
+	path := filepath.Join(o.Dir, ".jx", "variables.sh")
+
+	text := ""
+	exists, err := files.FileExists(path)
+	if err != nil {
+		return errors.Wrapf(err, "failed to check for file exist %s", path)
+	}
+	if exists {
+		data, err := ioutil.ReadFile(path)
+		if err != nil {
+			return errors.Wrapf(err, "failed to read %s", path)
+		}
+		text = string(data)
+	}
+
+	buf := strings.Builder{}
+	buf.WriteString("# preview environment varables\n")
+	for k, v := range o.OutputEnvVars {
+		buf.WriteString(fmt.Sprintf("export %s=\"%s\"\n", k, v))
+	}
+	if text != "" {
+		buf.WriteString("\n\n")
+		buf.WriteString(text)
+	}
+	text = buf.String()
+
+	// make sure dir exists
+	dir := filepath.Dir(path)
+	err = os.MkdirAll(dir, files.DefaultDirWritePermissions)
+	if err != nil {
+		return errors.Wrapf(err, "failed to make dir %s", dir)
+	}
+
+	err = ioutil.WriteFile(path, []byte(text), files.DefaultFileWritePermissions)
+	if err != nil {
+		return errors.Wrapf(err, "failed to save file %s", path)
+	}
+
+	log.Logger().Infof("wrote preview environemnt variables to %s", info(path))
 	return nil
 }
