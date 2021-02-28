@@ -1,0 +1,70 @@
+{{- if .Capabilities.APIVersions.Has "jenkins.io/v1/Release" }}
+apiVersion: jenkins.io/v1
+kind: Release
+metadata:
+  creationTimestamp: "2021-02-28T09:43:53Z"
+  deletionTimestamp: null
+  name: '{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}'
+spec:
+  commits:
+  - author:
+      email: james.strachan@gmail.com
+      name: James Strachan
+    branch: master
+    committer:
+      email: james.strachan@gmail.com
+      name: James Strachan
+    message: |
+      chore: better output
+
+      and use the correct ns
+    sha: 6356654fe215abe1cb376b0418d0c3294c5fffc3
+  - author:
+      email: james.strachan@gmail.com
+      name: James Strachan
+    branch: master
+    committer:
+      email: james.strachan@gmail.com
+      name: James Strachan
+    message: |
+      chore: upgrade deps
+    sha: 8bf46b1ceca92ba594ce532d4d9eb79e66af3a27
+  - author:
+      email: james.strachan@gmail.com
+      name: James Strachan
+    branch: master
+    committer:
+      email: james.strachan@gmail.com
+      name: James Strachan
+    issueIds:
+    - "280"
+    message: |
+      fix: lets watch the preview namespace events
+
+      fixes #280
+    sha: 777e9901f9e0ab681641459bd3fd1593f7438435
+  - author:
+      email: james.strachan@gmail.com
+      name: James Strachan
+    branch: master
+    committer:
+      email: james.strachan@gmail.com
+      name: James Strachan
+    message: |
+      fix: upgrade deps
+    sha: 20e7b88d90f819251f6b4aa98d168ca31df2b6af
+  gitHttpUrl: https://github.com/jenkins-x/jx-preview
+  gitOwner: jenkins-x
+  gitRepository: jx-preview
+  issues:
+  - body: so that we get feedback in the pipeline log of any issues around deploying a preview (e.g. bad image, no cluster capacity, missing volumes or secrets or whatever)
+    creationTimestamp: "2021-02-28T08:30:09Z"
+    id: "280"
+    state: closed
+    title: lets watch events in the preview namespace as we create the preview
+    url: https://github.com/jenkins-x/jx-preview/issues/280
+  name: '{{ .Chart.Name }}'
+  version: 0.0.161
+status: {}
+ 
+{{- end }}
