@@ -81,6 +81,7 @@ type Options struct {
 	CommandRunner         cmdrunner.CommandRunner
 	OutputEnvVars         map[string]string
 	WatchNamespaceCommand *exec.Cmd
+	Preview               *v1alpha1.Preview
 }
 
 type envVar struct {
@@ -165,6 +166,7 @@ func (o *Options) Run() error {
 	}
 	log.Logger().Infof("upserted preview %s", preview.Name)
 
+	o.Preview = preview
 	if !o.NoWatchNamespace {
 		err = o.watchNamespaceStart()
 		if err != nil {
@@ -680,7 +682,8 @@ func (o *Options) writeOutputEnvVars() error {
 }
 
 func (o *Options) watchNamespaceStart() error {
-	cmd := exec.Command("kubectl", "get", "event", "-w", "-n", o.Namespace)
+	previewNamespace := o.Preview.Spec.Resources.Namespace
+	cmd := exec.Command("kubectl", "get", "event", "-w", "-n", previewNamespace)
 	o.WatchNamespaceCommand = cmd
 	stderr, err := cmd.StderrPipe()
 	if err != nil {
@@ -698,19 +701,17 @@ func (o *Options) watchNamespaceStart() error {
 
 	go func() {
 		scanner := bufio.NewScanner(stdout)
-		scanner.Split(bufio.ScanWords)
 		for scanner.Scan() {
 			m := scanner.Text()
-			log.Logger().Infof(termcolor.ColorStatus(fmt.Sprintf("%s: ERROR: %s", o.Namespace, m)))
+			log.Logger().Infof(termcolor.ColorStatus(fmt.Sprintf("%s: %s", previewNamespace, m)))
 		}
 	}()
 
 	go func() {
 		scanner := bufio.NewScanner(stderr)
-		scanner.Split(bufio.ScanWords)
 		for scanner.Scan() {
 			m := scanner.Text()
-			log.Logger().Infof(termcolor.ColorStatus(fmt.Sprintf("%s: %s", o.Namespace, m)))
+			log.Logger().Infof(termcolor.ColorStatus(fmt.Sprintf("%s: ERROR: %s", previewNamespace, m)))
 		}
 	}()
 	return nil
