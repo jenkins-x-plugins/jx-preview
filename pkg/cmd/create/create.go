@@ -1,8 +1,10 @@
 package create
 
 import (
+	"bufio"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -67,16 +69,18 @@ type Options struct {
 	BuildNumber      string
 	Version          string
 	// PullRequestBranch used for testing to fake out the pull request branch name
-	PullRequestBranch string
-	PreviewURLTimeout time.Duration
-	NoComment         bool
-	Debug             bool
-	PreviewClient     versioned.Interface
-	KubeClient        kubernetes.Interface
-	JXClient          jxc.Interface
-	KServeClient      kserve.Interface
-	CommandRunner     cmdrunner.CommandRunner
-	OutputEnvVars     map[string]string
+	PullRequestBranch     string
+	PreviewURLTimeout     time.Duration
+	NoComment             bool
+	NoWatchNamespace      bool
+	Debug                 bool
+	PreviewClient         versioned.Interface
+	KubeClient            kubernetes.Interface
+	JXClient              jxc.Interface
+	KServeClient          kserve.Interface
+	CommandRunner         cmdrunner.CommandRunner
+	OutputEnvVars         map[string]string
+	WatchNamespaceCommand *exec.Cmd
 }
 
 type envVar struct {
@@ -104,6 +108,7 @@ func NewCmdPreviewCreate() (*cobra.Command, *Options) {
 	cmd.Flags().StringVarP(&o.Repository, "app", "", "", "Name of the app or repository")
 	cmd.Flags().DurationVarP(&o.PreviewURLTimeout, "preview-url-timeout", "", time.Minute+5, "Time to wait for the preview URL to be available")
 	cmd.Flags().BoolVarP(&o.NoComment, "no-comment", "", false, "Disables commenting on the Pull Request after preview is created")
+	cmd.Flags().BoolVarP(&o.NoWatchNamespace, "no-watch", "", false, "Disables watching the preview namespace as we deploy the preview")
 	cmd.Flags().BoolVarP(&o.Debug, "debug", "", false, "Enables debug logging in helmfile")
 
 	o.PullRequestOptions.AddFlags(cmd)
@@ -160,9 +165,23 @@ func (o *Options) Run() error {
 	}
 	log.Logger().Infof("upserted preview %s", preview.Name)
 
+	if !o.NoWatchNamespace {
+		err = o.watchNamespaceStart()
+		if err != nil {
+			return errors.Wrapf(err, "failed to watch namespace %s", o.Namespace)
+		}
+	}
+
 	err = o.helmfileSyncPreview(envVars)
 	if err != nil {
 		return errors.Wrapf(err, "failed to helmfile sync")
+	}
+
+	if !o.NoWatchNamespace {
+		err = o.watchNamespaceStop()
+		if err != nil {
+			return errors.Wrapf(err, "failed to watch namespace %s", o.Namespace)
+		}
 	}
 
 	url, err := o.findPreviewURL(envVars)
@@ -657,5 +676,53 @@ func (o *Options) writeOutputEnvVars() error {
 	}
 
 	log.Logger().Infof("wrote preview environemnt variables to %s", info(path))
+	return nil
+}
+
+func (o *Options) watchNamespaceStart() error {
+	cmd := exec.Command("kubectl", "get", "event", "-w", "-n", o.Namespace)
+	o.WatchNamespaceCommand = cmd
+	stderr, err := cmd.StderrPipe()
+	if err != nil {
+		return errors.Wrapf(err, "failed to create stderr for command %s", cmd.String())
+	}
+	stdout, err := cmd.StdoutPipe()
+	if err != nil {
+		return errors.Wrapf(err, "failed to create stdout for command %s", cmd.String())
+	}
+
+	err = cmd.Start()
+	if err != nil {
+		return errors.Wrapf(err, "failed to run %s", cmd.String())
+	}
+
+	go func() {
+		scanner := bufio.NewScanner(stdout)
+		scanner.Split(bufio.ScanWords)
+		for scanner.Scan() {
+			m := scanner.Text()
+			log.Logger().Infof(termcolor.ColorStatus(fmt.Sprintf("%s: ERROR: %s", o.Namespace, m)))
+		}
+	}()
+
+	go func() {
+		scanner := bufio.NewScanner(stderr)
+		scanner.Split(bufio.ScanWords)
+		for scanner.Scan() {
+			m := scanner.Text()
+			log.Logger().Infof(termcolor.ColorStatus(fmt.Sprintf("%s: %s", o.Namespace, m)))
+		}
+	}()
+	return nil
+}
+
+func (o *Options) watchNamespaceStop() error {
+	if o.WatchNamespaceCommand != nil && o.WatchNamespaceCommand.Process != nil {
+		err := o.WatchNamespaceCommand.Process.Kill()
+		if err != nil {
+			return errors.Wrapf(err, "failed to kill watch process")
+		}
+		log.Logger().Infof("killed the kubectl event watch command")
+	}
 	return nil
 }
