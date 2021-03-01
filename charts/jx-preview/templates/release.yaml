@@ -1,0 +1,37 @@
+{{- if .Capabilities.APIVersions.Has "jenkins.io/v1/Release" }}
+apiVersion: jenkins.io/v1
+kind: Release
+metadata:
+  creationTimestamp: "2021-03-01T13:32:14Z"
+  deletionTimestamp: null
+  name: '{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}'
+spec:
+  commits:
+  - author:
+      email: james.strachan@gmail.com
+      name: James Strachan
+    branch: master
+    committer:
+      email: james.strachan@gmail.com
+      name: James Strachan
+    message: |
+      fix: add secret so we can publish to gcs
+    sha: b5a32836624d9a52ea31a330c464dc4d33a65b11
+  - author:
+      email: james.strachan@gmail.com
+      name: James Strachan
+    branch: master
+    committer:
+      email: james.strachan@gmail.com
+      name: James Strachan
+    message: |
+      fix: release the preview chart
+    sha: 4009f4371dee1d0274490348e973dc03b394fea7
+  gitHttpUrl: https://github.com/jenkins-x/jx-preview
+  gitOwner: jenkins-x
+  gitRepository: jx-preview
+  name: '{{ .Chart.Name }}'
+  version: 0.0.165
+status: {}
+ 
+{{- end }}
