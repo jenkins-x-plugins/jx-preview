@@ -77,7 +77,7 @@ jobs:
         JX_REPOSITORY_USERNAME: jenkins-x-bot-test
         VERSION: ${{ steps.prep.outputs.version }}
       name: release-chart
-      uses: docker://ghcr.io/jenkins-x/jx-boot:3.1.284
+      uses: docker://ghcr.io/jenkins-x/jx-cli:3.1.284
       with:
         entrypoint: .github/workflows/jenkins-x/release-chart.sh
     - env:
