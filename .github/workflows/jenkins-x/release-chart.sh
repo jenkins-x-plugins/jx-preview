@@ -10,8 +10,4 @@ echo "setting git user"
 git config --global user.name jenkins-x-bot-test
 git config --global user.email "jenkins-x@googlegroups.com"
 
-#jx gitops helm release
-
-# lets release to gcs
-cd charts/jx-preview
-make release
+jx gitops helm release
