@@ -1,0 +1,15 @@
+apiVersion: v1
+entries:
+  jx-preview:
+  - apiVersion: v1
+    created: "2021-03-01T11:57:12.24424425Z"
+    description: |
+      This chart installs the jx-preview CRD and garbagecollection job
+    digest: 937ba6c846d044351e1bd4d0f2fa5e09e4acf5ae150b6952f097583e48a58f5b
+    home: https://github.com/jenkins-x/jx-preview
+    icon: https://raw.githubusercontent.com/jenkins-x/jenkins-x-website/master/images/logo/jenkinsx-icon-color.svg
+    name: jx-preview
+    urls:
+    - jx-preview-0.0.162.tgz
+    version: 0.0.162
+generated: "2021-03-01T11:57:12.243595743Z"
