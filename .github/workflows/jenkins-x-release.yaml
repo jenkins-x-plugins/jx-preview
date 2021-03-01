@@ -76,6 +76,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GIT_BOT_TOKEN }}
         JX_REPOSITORY_USERNAME: jenkins-x-bot-test
         VERSION: ${{ steps.prep.outputs.version }}
+        GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_JSON }}
       name: release-chart
       uses: docker://ghcr.io/jenkins-x/jx-cli:3.1.284
       with:
