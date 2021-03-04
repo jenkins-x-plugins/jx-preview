@@ -2,6 +2,7 @@ package create_test
 
 import (
 	"context"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -148,6 +149,7 @@ func TestPreviewCreate(t *testing.T) {
 		o.Branch = branch
 		o.GitToken = gitToken
 		o.BuildNumber = buildNumber
+		o.VerifyPreviewURL = false
 		o.SourceURL = repoLink + ".git"
 		o.Number = prNumber
 
@@ -315,6 +317,7 @@ func TestPreviewCreateHelmfileDiscovery(t *testing.T) {
 		o.Branch = "PR-1"
 		o.SourceURL = sourceURL
 		o.PullRequestBranch = "master"
+		o.VerifyPreviewURL = false
 
 		if tc.relPath != "" {
 			o.Dir = filepath.Join(tmpDir, tc.relPath)
@@ -329,5 +332,89 @@ func TestPreviewCreateHelmfileDiscovery(t *testing.T) {
 
 	for _, c := range runner.OrderedCommands {
 		t.Logf("fake command: %s\n", c.CLI())
+	}
+}
+
+func TestOptions_waitForPreviewURLToResolve(t *testing.T) {
+	testCases := []struct {
+		url     string
+		wantErr bool
+	}{
+		{
+			url:     "google.com",
+			wantErr: false,
+		},
+		{
+			url:     "doesnotexist-74yiu214y.com",
+			wantErr: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		previewNamespace := "foo"
+		serviceName := "bar"
+		kubeClient := fakekube.NewSimpleClientset(
+			&corev1.Namespace{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: previewNamespace,
+				},
+			},
+
+			// the preview service and ingress resources
+			&corev1.Service{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      serviceName,
+					Namespace: previewNamespace,
+				},
+			},
+
+			&v1beta1.Ingress{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      serviceName,
+					Namespace: previewNamespace,
+				},
+				Spec: v1beta1.IngressSpec{
+					TLS: []v1beta1.IngressTLS{
+						{
+							Hosts:      []string{tc.url},
+							SecretName: "cheese",
+						},
+					},
+					Rules: []v1beta1.IngressRule{
+						{
+							Host: tc.url,
+							IngressRuleValue: v1beta1.IngressRuleValue{
+								HTTP: &v1beta1.HTTPIngressRuleValue{
+									Paths: []v1beta1.HTTPIngressPath{
+										{
+											Path: "",
+											Backend: v1beta1.IngressBackend{
+												ServiceName: serviceName,
+												ServicePort: intstr.IntOrString{
+													IntVal: 80,
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		)
+
+		_, o := create.NewCmdPreviewCreate()
+		o.PreviewURLTimeout = 1
+		o.KubeClient = kubeClient
+
+		url, err := o.WaitForPreviewURLToResolve([]string{"bar"}, "foo")
+		if tc.wantErr {
+			assert.Error(t, err)
+			assert.Contains(t, err.Error(), fmt.Sprintf("address cannot be resolved https://%s", tc.url))
+		} else {
+			assert.NoError(t, err)
+			assert.Equal(t, url, "https://google.com")
+		}
 	}
 }

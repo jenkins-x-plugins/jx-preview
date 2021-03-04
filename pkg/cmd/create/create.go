@@ -3,6 +3,7 @@ package create
 import (
 	"bufio"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -74,6 +75,7 @@ type Options struct {
 	NoComment             bool
 	NoWatchNamespace      bool
 	Debug                 bool
+	VerifyPreviewURL      bool
 	PreviewClient         versioned.Interface
 	KubeClient            kubernetes.Interface
 	JXClient              jxc.Interface
@@ -107,8 +109,9 @@ func NewCmdPreviewCreate() (*cobra.Command, *Options) {
 
 	cmd.Flags().StringVarP(&o.PreviewHelmfile, "file", "f", "", "Preview helmfile.yaml path to use. If not specified it is discovered in preview/helmfile.yaml and created from a template if needed")
 	cmd.Flags().StringVarP(&o.Repository, "app", "", "", "Name of the app or repository")
-	cmd.Flags().DurationVarP(&o.PreviewURLTimeout, "preview-url-timeout", "", time.Minute+5, "Time to wait for the preview URL to be available")
+	cmd.Flags().DurationVarP(&o.PreviewURLTimeout, "preview-url-timeout", "", time.Minute+10, "Time to wait for the preview URL to be available")
 	cmd.Flags().BoolVarP(&o.NoComment, "no-comment", "", false, "Disables commenting on the Pull Request after preview is created")
+	cmd.Flags().BoolVarP(&o.VerifyPreviewURL, "verify-preview-url", "", true, "Verifies the preview URL is accessible, this can be disabled if using private networks")
 	cmd.Flags().BoolVarP(&o.NoWatchNamespace, "no-watch", "", false, "Disables watching the preview namespace as we deploy the preview")
 	cmd.Flags().BoolVarP(&o.Debug, "debug", "", false, "Enables debug logging in helmfile")
 
@@ -444,6 +447,11 @@ func (o *Options) findPreviewURL(envVars map[string]string) (string, error) {
 
 	appNames := []string{app, releaseName, o.Namespace + "-preview", releaseName + "-" + app}
 
+	return o.WaitForPreviewURLToResolve(appNames, releaseNamespace)
+
+}
+
+func (o *Options) WaitForPreviewURLToResolve(appNames []string, releaseNamespace string) (string, error) {
 	ctx := context.Background()
 
 	url := ""
@@ -458,6 +466,14 @@ func (o *Options) findPreviewURL(envVars map[string]string) (string, error) {
 				}
 			}
 			if url != "" {
+				if o.VerifyPreviewURL {
+					// lets make sure the URL is accessible, if using DNS then this can take ~ 5 mins to propagate
+					_, err := http.Get(url)
+					if err == nil {
+						return nil
+					}
+					return errors.Wrapf(err, "address cannot be resolved %s", url)
+				}
 				return nil
 			}
 		}
@@ -467,7 +483,7 @@ func (o *Options) findPreviewURL(envVars map[string]string) (string, error) {
 	bo := backoff.NewExponentialBackOff()
 	bo.MaxElapsedTime = o.PreviewURLTimeout
 	bo.Reset()
-	err = backoff.Retry(fn, bo)
+	err := backoff.Retry(fn, bo)
 	if err != nil {
 		return "", errors.Wrapf(err, "failed to find preview URL for app names %#v in timeout %v", appNames, o.PreviewURLTimeout)
 	}
@@ -541,7 +557,6 @@ func (o *Options) commentOnPullRequest(preview *v1alpha1.Preview, url string) er
 	if url != "" {
 		comment += fmt.Sprintf(" [here](%s) ", url)
 	}
-
 	ctx := context.Background()
 	commentInput := &scm.CommentInput{
 		Body: comment,
