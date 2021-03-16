@@ -138,6 +138,7 @@ func TestPreviewCreate(t *testing.T) {
 	tmpDir := ""
 	for _, testName := range []string{"create", "update"} {
 		_, o := create.NewCmdPreviewCreate()
+		o.GitUser = "fakeuser"
 		o.NoWatchNamespace = true
 		o.PreviewClient = previewClient
 		o.KubeClient = kubeClient
@@ -310,6 +311,7 @@ func TestPreviewCreateHelmfileDiscovery(t *testing.T) {
 		require.NoError(t, err, "could not create apps chart dir %s", appsDir)
 
 		_, o := create.NewCmdPreviewCreate()
+		o.GitUser = "fakeuser"
 		o.NoWatchNamespace = true
 		o.CommandRunner = runner.Run
 		o.Dir = tmpDir
