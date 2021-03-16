@@ -73,6 +73,8 @@ func TestPreviewGC(t *testing.T) {
 	for _, tc := range testCases {
 		_, o := gc.NewCmdGCPreviews()
 
+		o.GitUser = "fakeuser"
+		o.GitToken = "faketoken"
 		o.PreviewClient = previewClient
 		o.KubeClient = kubeClient
 		o.JXClient = jxClient
