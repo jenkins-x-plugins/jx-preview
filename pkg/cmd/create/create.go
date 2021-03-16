@@ -252,7 +252,7 @@ func toAuthor(to *v1alpha1.UserSpec, from *scm.User) {
 // Validate validates the inputs are valid
 func (o *Options) Validate() error {
 	if o.CommandRunner == nil {
-		o.CommandRunner = cmdrunner.DefaultCommandRunner
+		o.CommandRunner = cmdrunner.QuietCommandRunner
 	}
 	if o.GitClient == nil {
 		o.GitClient = cli.NewCLIClient("", o.CommandRunner)

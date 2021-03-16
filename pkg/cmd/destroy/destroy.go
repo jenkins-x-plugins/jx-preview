@@ -135,10 +135,6 @@ func (o *Options) Run() error {
 func (o *Options) Destroy(name string) error {
 	ns := o.Namespace
 
-	if o.GitClient == nil {
-		o.GitClient = cli.NewCLIClient("", o.CommandRunner)
-	}
-
 	log.Logger().Infof("destroying preview: %s in namespace %s", info(name), info(ns))
 
 	ctx := context.Background()
@@ -212,7 +208,10 @@ func (o *Options) Validate() error {
 	}
 
 	if o.CommandRunner == nil {
-		o.CommandRunner = cmdrunner.DefaultCommandRunner
+		o.CommandRunner = cmdrunner.QuietCommandRunner
+	}
+	if o.GitClient == nil {
+		o.GitClient = cli.NewCLIClient("", o.CommandRunner)
 	}
 	return nil
 }
