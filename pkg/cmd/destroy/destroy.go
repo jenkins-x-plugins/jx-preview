@@ -52,6 +52,7 @@ type Options struct {
 	Namespace       string
 	PreviewHelmfile string
 	Filter          string
+	GitUser         string
 	FailOnHelmError bool
 	SelectAll       bool
 	PreviewClient   versioned.Interface
@@ -80,6 +81,7 @@ func NewCmdPreviewDestroy() (*cobra.Command, *Options) {
 	}
 	cmd.Flags().StringVarP(&o.PreviewHelmfile, "file", "f", "", "Preview helmfile.yaml path to use. If not specified it is discovered in preview/helmfile.yaml and created from a template if needed")
 	cmd.Flags().StringVarP(&o.Filter, "filter", "", "", "The filter to use to find a preview to delete")
+	cmd.Flags().StringVarP(&o.GitUser, "git-user", "", "", "The user name to git clone the environment repository")
 	cmd.Flags().BoolVarP(&o.SelectAll, "all", "", false, "Select all the filters by default to remove")
 	cmd.Flags().BoolVarP(&o.FailOnHelmError, "fail-on-helm", "", false, "If enabled do not try to remove the namespace or Preview resource if we fail to destroy helmfile resources")
 	return cmd, o
@@ -156,7 +158,7 @@ func (o *Options) Destroy(name string) error {
 			return errors.Wrapf(err, "failed to discover the helmfile in the dir")
 		}
 	}
-	err = previews.CreateJXValuesFile(o.Options, o.JXClient, o.Namespace, o.PreviewHelmfile, previewNamespace)
+	err = previews.CreateJXValuesFile(o.GitClient, o.JXClient, o.Namespace, o.PreviewHelmfile, previewNamespace, o.GitUser, o.GitToken)
 	if err != nil {
 		return errors.Wrapf(err, "failed to create the jx-values.yaml file")
 	}
@@ -206,7 +208,10 @@ func (o *Options) Validate() error {
 	}
 
 	if o.CommandRunner == nil {
-		o.CommandRunner = cmdrunner.DefaultCommandRunner
+		o.CommandRunner = cmdrunner.QuietCommandRunner
+	}
+	if o.GitClient == nil {
+		o.GitClient = cli.NewCLIClient("", o.CommandRunner)
 	}
 	return nil
 }

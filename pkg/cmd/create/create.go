@@ -2,6 +2,7 @@ package create
 
 import (
 	"bufio"
+	"github.com/jenkins-x/jx-helpers/v3/pkg/gitclient"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -68,12 +69,14 @@ type Options struct {
 	DockerRegistry   string
 	BuildNumber      string
 	Version          string
+	GitUser          string
 	// PullRequestBranch used for testing to fake out the pull request branch name
 	PullRequestBranch     string
 	PreviewURLTimeout     time.Duration
 	NoComment             bool
 	NoWatchNamespace      bool
 	Debug                 bool
+	GitClient             gitclient.Interface
 	PreviewClient         versioned.Interface
 	KubeClient            kubernetes.Interface
 	JXClient              jxc.Interface
@@ -107,6 +110,7 @@ func NewCmdPreviewCreate() (*cobra.Command, *Options) {
 
 	cmd.Flags().StringVarP(&o.PreviewHelmfile, "file", "f", "", "Preview helmfile.yaml path to use. If not specified it is discovered in preview/helmfile.yaml and created from a template if needed")
 	cmd.Flags().StringVarP(&o.Repository, "app", "", "", "Name of the app or repository")
+	cmd.Flags().StringVarP(&o.GitUser, "git-user", "", "", "The user name to git clone the environment repository")
 	cmd.Flags().DurationVarP(&o.PreviewURLTimeout, "preview-url-timeout", "", time.Minute+5, "Time to wait for the preview URL to be available")
 	cmd.Flags().BoolVarP(&o.NoComment, "no-comment", "", false, "Disables commenting on the Pull Request after preview is created")
 	cmd.Flags().BoolVarP(&o.NoWatchNamespace, "no-watch", "", false, "Disables watching the preview namespace as we deploy the preview")
@@ -152,7 +156,7 @@ func (o *Options) Run() error {
 		return errors.Wrapf(err, "failed to modify the git URL")
 	}
 
-	err = previews.CreateJXValuesFile(o.Options, o.JXClient, o.Namespace, o.PreviewHelmfile, o.PreviewNamespace)
+	err = previews.CreateJXValuesFile(o.GitClient, o.JXClient, o.Namespace, o.PreviewHelmfile, o.PreviewNamespace, o.GitUser, o.GitToken)
 	if err != nil {
 		return errors.Wrapf(err, "failed to create the jx-values.yaml file")
 	}
@@ -248,7 +252,10 @@ func toAuthor(to *v1alpha1.UserSpec, from *scm.User) {
 // Validate validates the inputs are valid
 func (o *Options) Validate() error {
 	if o.CommandRunner == nil {
-		o.CommandRunner = cmdrunner.DefaultCommandRunner
+		o.CommandRunner = cmdrunner.QuietCommandRunner
+	}
+	if o.GitClient == nil {
+		o.GitClient = cli.NewCLIClient("", o.CommandRunner)
 	}
 	err := o.PullRequestOptions.Validate()
 	if err != nil {
