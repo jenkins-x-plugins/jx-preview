@@ -1,0 +1,79 @@
+{{- if .Capabilities.APIVersions.Has "jenkins.io/v1/Release" }}
+apiVersion: jenkins.io/v1
+kind: Release
+metadata:
+  creationTimestamp: "2021-03-16T16:39:04Z"
+  deletionTimestamp: null
+  name: '{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}'
+spec:
+  commits:
+  - author:
+      email: james.strachan@gmail.com
+      name: James Strachan
+    branch: master
+    committer:
+      email: james.strachan@gmail.com
+      name: James Strachan
+    message: |
+      chore: fix CI tests
+    sha: 9a8bf0f3492402f84decf2591586e60ea56032c8
+  - author:
+      email: james.strachan@gmail.com
+      name: James Strachan
+    branch: master
+    committer:
+      email: james.strachan@gmail.com
+      name: James Strachan
+    message: |
+      chore: fix CI tests
+    sha: 30f1ffbca45e7dfae7494574561b47e73027ef1f
+  - author:
+      email: james.strachan@gmail.com
+      name: James Strachan
+    branch: master
+    committer:
+      email: james.strachan@gmail.com
+      name: James Strachan
+    message: |
+      chore: lets use quiet runner
+    sha: 624b8919d490660c250e3faff555435d32045170
+  - author:
+      email: james.strachan@gmail.com
+      name: James Strachan
+    branch: master
+    committer:
+      email: james.strachan@gmail.com
+      name: James Strachan
+    message: |
+      fix: avoid the go-scm for fetching the jx-values.yaml file
+
+      as it does not seem to work very well on gitea and its much easier to just git clone
+    sha: 079f9b65d82ed3915aa9bd98d9b3f7c0e75db0f4
+  - author:
+      email: james.strachan@gmail.com
+      name: James Strachan
+    branch: master
+    committer:
+      email: james.strachan@gmail.com
+      name: James Strachan
+    message: |
+      chore: ugprade dependencies
+    sha: b2b3bef17d41b06efa9785837febc4c583fd82fb
+  - author:
+      email: james.strachan@gmail.com
+      name: James Strachan
+    branch: master
+    committer:
+      email: james.strachan@gmail.com
+      name: James Strachan
+    message: |
+      fix: switch to the github image
+    sha: 5d985e99595360f2f7a3ae19ae3ce9e15608e4e7
+  gitHttpUrl: https://github.com/jenkins-x/jx-preview
+  gitOwner: jenkins-x
+  gitRepository: jx-preview
+  name: '{{ .Chart.Name }}'
+  version: 0.0.169
+status: {}
+ 
+{{- end }}
