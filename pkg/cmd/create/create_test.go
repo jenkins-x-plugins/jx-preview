@@ -139,6 +139,7 @@ func TestPreviewCreate(t *testing.T) {
 	for _, testName := range []string{"create", "update"} {
 		_, o := create.NewCmdPreviewCreate()
 		o.GitUser = "fakeuser"
+		o.GitToken = "faketoken"
 		o.NoWatchNamespace = true
 		o.PreviewClient = previewClient
 		o.KubeClient = kubeClient
@@ -239,6 +240,8 @@ func TestPreviewCreate(t *testing.T) {
 
 	// now lets test deleting the preview
 	_, do := destroy.NewCmdPreviewDestroy()
+	do.GitUser = "fakeuser"
+	do.GitToken = "faketoken"
 	do.PreviewClient = previewClient
 	do.Namespace = ns
 	do.Names = []string{previewName}
@@ -312,6 +315,7 @@ func TestPreviewCreateHelmfileDiscovery(t *testing.T) {
 
 		_, o := create.NewCmdPreviewCreate()
 		o.GitUser = "fakeuser"
+		o.GitToken = "faketoken"
 		o.NoWatchNamespace = true
 		o.CommandRunner = runner.Run
 		o.Dir = tmpDir
