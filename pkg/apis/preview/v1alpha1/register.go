@@ -1,7 +1,7 @@
 package v1alpha1
 
 import (
-	"github.com/jenkins-x/jx-preview/pkg/apis/preview"
+	"github.com/jenkins-x-plugins/jx-preview/pkg/apis/preview"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/runtime/schema"

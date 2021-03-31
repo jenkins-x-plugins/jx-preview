@@ -6,6 +6,6 @@ spec:
         - https://github.com/jenkins-x/jx3-pipeline-catalog
       changes:
         - regex:
-            pattern: "ghcr.io/jenkins-x/jx-preview:(.*)"
+            pattern: "ghcr.io/jenkins-x-plugins/jx-preview:(.*)"
             files:
               - "**/*.yaml"

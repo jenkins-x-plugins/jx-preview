@@ -3,7 +3,7 @@ package previews
 import (
 	"sort"
 
-	"github.com/jenkins-x/jx-preview/pkg/apis/preview/v1alpha1"
+	"github.com/jenkins-x-plugins/jx-preview/pkg/apis/preview/v1alpha1"
 )
 
 // Less compares two previews to sort them in order

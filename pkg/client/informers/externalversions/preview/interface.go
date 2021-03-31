@@ -18,8 +18,8 @@ limitations under the License.
 package preview
 
 import (
-	internalinterfaces "github.com/jenkins-x/jx-preview/pkg/client/informers/externalversions/internalinterfaces"
-	v1alpha1 "github.com/jenkins-x/jx-preview/pkg/client/informers/externalversions/preview/v1alpha1"
+	internalinterfaces "github.com/jenkins-x-plugins/jx-preview/pkg/client/informers/externalversions/internalinterfaces"
+	v1alpha1 "github.com/jenkins-x-plugins/jx-preview/pkg/client/informers/externalversions/preview/v1alpha1"
 )
 
 // Interface provides access to each of this group's versions.

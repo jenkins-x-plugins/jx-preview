@@ -18,7 +18,7 @@ limitations under the License.
 package scheme
 
 import (
-	previewv1alpha1 "github.com/jenkins-x/jx-preview/pkg/apis/preview/v1alpha1"
+	previewv1alpha1 "github.com/jenkins-x-plugins/jx-preview/pkg/apis/preview/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"

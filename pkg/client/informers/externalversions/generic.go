@@ -20,7 +20,7 @@ package externalversions
 import (
 	"fmt"
 
-	v1alpha1 "github.com/jenkins-x/jx-preview/pkg/apis/preview/v1alpha1"
+	v1alpha1 "github.com/jenkins-x-plugins/jx-preview/pkg/apis/preview/v1alpha1"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
 	cache "k8s.io/client-go/tools/cache"
 )

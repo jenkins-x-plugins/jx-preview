@@ -1,4 +1,4 @@
-# Package github.com/jenkins-x/jx-preview/pkg/apis/preview/v1alpha1
+# Package github.com/jenkins-x-plugins/jx-preview/pkg/apis/preview/v1alpha1
 
 - [Command](#Command)
 - [EnvVar](#EnvVar)

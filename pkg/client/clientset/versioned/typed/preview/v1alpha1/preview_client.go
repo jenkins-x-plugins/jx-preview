@@ -18,8 +18,8 @@ limitations under the License.
 package v1alpha1
 
 import (
-	v1alpha1 "github.com/jenkins-x/jx-preview/pkg/apis/preview/v1alpha1"
-	"github.com/jenkins-x/jx-preview/pkg/client/clientset/versioned/scheme"
+	v1alpha1 "github.com/jenkins-x-plugins/jx-preview/pkg/apis/preview/v1alpha1"
+	"github.com/jenkins-x-plugins/jx-preview/pkg/client/clientset/versioned/scheme"
 	rest "k8s.io/client-go/rest"
 )
 

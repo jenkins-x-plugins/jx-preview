@@ -29,7 +29,7 @@ rm -rf "${SCRIPT_ROOT}"/pkg/client
 #                  k8s.io/kubernetes. The output-base is needed for the generators to output into the vendor dir
 #                  instead of the $GOPATH directly. For normal projects this can be dropped.
 bash hack/generate-groups.sh all \
-  github.com/jenkins-x/jx-preview/pkg/client github.com/jenkins-x/jx-preview/pkg/apis \
+  github.com/jenkins-x-plugins/jx-preview/pkg/client github.com/jenkins-x-plugins/jx-preview/pkg/apis \
   preview:v1alpha1 \
   --output-base "$(dirname "${BASH_SOURCE[0]}")/../../../.." \
   --go-header-file "${SCRIPT_ROOT}"/hack/custom-boilerplate.go.txt
