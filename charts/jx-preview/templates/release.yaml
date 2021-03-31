@@ -1,0 +1,37 @@
+{{- if .Capabilities.APIVersions.Has "jenkins.io/v1/Release" }}
+apiVersion: jenkins.io/v1
+kind: Release
+metadata:
+  creationTimestamp: "2021-03-31T18:45:29Z"
+  deletionTimestamp: null
+  name: '{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}'
+spec:
+  commits:
+  - author:
+      email: rawlingsj80@gmail.com
+      name: James Rawlings
+    branch: master
+    committer:
+      email: rawlingsj80@gmail.com
+      name: James Rawlings
+    message: |
+      chore: move to plugins org
+    sha: d2f4239efa9227686eeae47b2ca9a9db16809d1f
+  - author:
+      email: james.strachan@gmail.com
+      name: James Strachan
+    branch: master
+    committer:
+      email: james.strachan@gmail.com
+      name: James Strachan
+    message: |
+      chore: upgrade deps
+    sha: bff7fc592345bac3daa8189baf44882c1056d1d9
+  gitHttpUrl: https://github.com/jenkins-x-plugins/jx-preview
+  gitOwner: jenkins-x-plugins
+  gitRepository: jx-preview
+  name: '{{ .Chart.Name }}'
+  version: 0.0.173
+status: {}
+ 
+{{- end }}
