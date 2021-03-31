@@ -5,7 +5,7 @@ import (
 
 	"github.com/jenkins-x/go-scm/scm"
 	fakescm "github.com/jenkins-x/go-scm/scm/driver/fake"
-	"github.com/jenkins-x/jx-preview/pkg/apis/preview/v1alpha1"
+	"github.com/jenkins-x-plugins/jx-preview/pkg/apis/preview/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 

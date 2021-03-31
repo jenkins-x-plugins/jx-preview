@@ -20,7 +20,7 @@ package versioned
 import (
 	"fmt"
 
-	previewv1alpha1 "github.com/jenkins-x/jx-preview/pkg/client/clientset/versioned/typed/preview/v1alpha1"
+	previewv1alpha1 "github.com/jenkins-x-plugins/jx-preview/pkg/client/clientset/versioned/typed/preview/v1alpha1"
 	discovery "k8s.io/client-go/discovery"
 	rest "k8s.io/client-go/rest"
 	flowcontrol "k8s.io/client-go/util/flowcontrol"

@@ -6,8 +6,8 @@ import (
 
 	"github.com/jenkins-x/go-scm/scm"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/scmhelpers"
-	"github.com/jenkins-x/jx-preview/pkg/cmd/destroy"
-	"github.com/jenkins-x/jx-preview/pkg/previews"
+	"github.com/jenkins-x-plugins/jx-preview/pkg/cmd/destroy"
+	"github.com/jenkins-x-plugins/jx-preview/pkg/previews"
 	"github.com/pkg/errors"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 

@@ -22,9 +22,9 @@ import (
 	sync "sync"
 	time "time"
 
-	versioned "github.com/jenkins-x/jx-preview/pkg/client/clientset/versioned"
-	internalinterfaces "github.com/jenkins-x/jx-preview/pkg/client/informers/externalversions/internalinterfaces"
-	preview "github.com/jenkins-x/jx-preview/pkg/client/informers/externalversions/preview"
+	versioned "github.com/jenkins-x-plugins/jx-preview/pkg/client/clientset/versioned"
+	internalinterfaces "github.com/jenkins-x-plugins/jx-preview/pkg/client/informers/externalversions/internalinterfaces"
+	preview "github.com/jenkins-x-plugins/jx-preview/pkg/client/informers/externalversions/preview"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	schema "k8s.io/apimachinery/pkg/runtime/schema"
