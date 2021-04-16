@@ -4,10 +4,10 @@ import (
 	"context"
 	"strconv"
 
-	"github.com/jenkins-x/go-scm/scm"
-	"github.com/jenkins-x/jx-helpers/v3/pkg/kube/naming"
 	"github.com/jenkins-x-plugins/jx-preview/pkg/apis/preview/v1alpha1"
 	"github.com/jenkins-x-plugins/jx-preview/pkg/client/clientset/versioned"
+	"github.com/jenkins-x/go-scm/scm"
+	"github.com/jenkins-x/jx-helpers/v3/pkg/kube/naming"
 	"github.com/pkg/errors"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

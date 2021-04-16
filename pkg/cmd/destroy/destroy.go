@@ -2,11 +2,16 @@ package destroy
 
 import (
 	"context"
+	"path/filepath"
+
 	"github.com/jenkins-x/jx-helpers/v3/pkg/input"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/input/inputfactory"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/options"
-	"path/filepath"
 
+	"github.com/jenkins-x-plugins/jx-preview/pkg/apis/preview/v1alpha1"
+	"github.com/jenkins-x-plugins/jx-preview/pkg/client/clientset/versioned"
+	"github.com/jenkins-x-plugins/jx-preview/pkg/previews"
+	"github.com/jenkins-x-plugins/jx-preview/pkg/rootcmd"
 	jxc "github.com/jenkins-x/jx-api/v4/pkg/client/clientset/versioned"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/cmdrunner"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/cobras/helper"
@@ -18,10 +23,6 @@ import (
 	"github.com/jenkins-x/jx-helpers/v3/pkg/scmhelpers"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/termcolor"
 	"github.com/jenkins-x/jx-logging/v3/pkg/log"
-	"github.com/jenkins-x-plugins/jx-preview/pkg/apis/preview/v1alpha1"
-	"github.com/jenkins-x-plugins/jx-preview/pkg/client/clientset/versioned"
-	"github.com/jenkins-x-plugins/jx-preview/pkg/previews"
-	"github.com/jenkins-x-plugins/jx-preview/pkg/rootcmd"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
