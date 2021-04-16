@@ -19,7 +19,7 @@ Command the CLI command for deleting the preview
 | `command` | string | No |  |
 | `args` | []string | No |  |
 | `path` | string | No |  |
-| `env` | [][EnvVar](./github-com-jenkins-x-jx-preview-pkg-apis-preview-v1alpha1.md#EnvVar) | No |  |
+| `env` | [][EnvVar](./github-com-jenkins-x-plugins-jx-preview-pkg-apis-preview-v1alpha1.md#EnvVar) | No |  |
 
 ## EnvVar
 
@@ -54,7 +54,7 @@ Preview contains the definition of a preview environment
 | `finalizers` | []string | No | Must be empty before the object is deleted from the registry. Each entry<br />is an identifier for the responsible component that will remove the entry<br />from the list. If the deletionTimestamp of the object is non-nil, entries<br />in this list can only be removed.<br />Finalizers may be processed and removed in any order.  Order is NOT enforced<br />because it introduces significant risk of stuck finalizers.<br />finalizers is a shared field, any actor with permission can reorder it.<br />If the finalizer list is processed in order, then this can lead to a situation<br />in which the component responsible for the first finalizer in the list is<br />waiting for a signal (field value, external system, or other) produced by a<br />component responsible for a finalizer later in the list, resulting in a deadlock.<br />Without enforced ordering finalizers are free to order amongst themselves and<br />are not vulnerable to ordering changes in the list.<br />+optional<br />+patchStrategy=merge |
 | `clusterName` | string | No | The name of the cluster which the object belongs to.<br />This is used to distinguish resources with same name and namespace in different clusters.<br />This field is not set anywhere right now and apiserver is going to ignore it if set in create or update request.<br />+optional |
 | `managedFields` | [][ManagedFieldsEntry](./k8s-io-apimachinery-pkg-apis-meta-v1.md#ManagedFieldsEntry) | No | ManagedFields maps workflow-id and version to the set of fields<br />that are managed by that workflow. This is mostly for internal<br />housekeeping, and users typically shouldn't need to set or<br />understand this field. A workflow can be the user's name, a<br />controller's name, or the name of a specific apply path like<br />"ci-cd". The set of fields is always in the version that the<br />workflow used when modifying the object.<br /><br />+optional |
-| `spec` | [PreviewSpec](./github-com-jenkins-x-jx-preview-pkg-apis-preview-v1alpha1.md#PreviewSpec) | No |  |
+| `spec` | [PreviewSpec](./github-com-jenkins-x-plugins-jx-preview-pkg-apis-preview-v1alpha1.md#PreviewSpec) | No |  |
 
 ## PreviewSource
 
@@ -73,10 +73,10 @@ PreviewSpec the spec of a pipeline request
 
 | Stanza | Type | Required | Description |
 |---|---|---|---|
-| `source` | [PreviewSource](./github-com-jenkins-x-jx-preview-pkg-apis-preview-v1alpha1.md#PreviewSource) | No | Source the source of the pull request |
-| `pullRequest` | [PullRequest](./github-com-jenkins-x-jx-preview-pkg-apis-preview-v1alpha1.md#PullRequest) | No | PullRequest the pull request which triggered it |
-| `resources` | [Resources](./github-com-jenkins-x-jx-preview-pkg-apis-preview-v1alpha1.md#Resources) | No | Resources information about the deployed resources |
-| `destroyCommand` | [Command](./github-com-jenkins-x-jx-preview-pkg-apis-preview-v1alpha1.md#Command) | No | DestroyCommand the command to destroy the preview |
+| `source` | [PreviewSource](./github-com-jenkins-x-plugins-jx-preview-pkg-apis-preview-v1alpha1.md#PreviewSource) | No | Source the source of the pull request |
+| `pullRequest` | [PullRequest](./github-com-jenkins-x-plugins-jx-preview-pkg-apis-preview-v1alpha1.md#PullRequest) | No | PullRequest the pull request which triggered it |
+| `resources` | [Resources](./github-com-jenkins-x-plugins-jx-preview-pkg-apis-preview-v1alpha1.md#Resources) | No | Resources information about the deployed resources |
+| `destroyCommand` | [Command](./github-com-jenkins-x-plugins-jx-preview-pkg-apis-preview-v1alpha1.md#Command) | No | DestroyCommand the command to destroy the preview |
 
 ## PullRequest
 
@@ -88,7 +88,7 @@ PullRequest the pull request information which triggered the preview
 | `owner` | string | No |  |
 | `repository` | string | No |  |
 | `url` | string | No |  |
-| `user` | [UserSpec](./github-com-jenkins-x-jx-preview-pkg-apis-preview-v1alpha1.md#UserSpec) | No |  |
+| `user` | [UserSpec](./github-com-jenkins-x-plugins-jx-preview-pkg-apis-preview-v1alpha1.md#UserSpec) | No |  |
 | `title` | string | No |  |
 | `description` | string | No |  |
 
