@@ -1,8 +1,8 @@
 package previews
 
 import (
-	"github.com/jenkins-x/jx-kube-client/v3/pkg/kubeclient"
 	"github.com/jenkins-x-plugins/jx-preview/pkg/client/clientset/versioned"
+	"github.com/jenkins-x/jx-kube-client/v3/pkg/kubeclient"
 	"github.com/pkg/errors"
 )
 

@@ -48,12 +48,24 @@ Creates a preview
     the git token used to operate on the git repository
 
 .PP
+\fB\-\-git\-user\fP=""
+    The user name to git clone the environment repository
+
+.PP
 \fB\-h\fP, \fB\-\-help\fP[=false]
     help for create
 
 .PP
 \fB\-\-no\-comment\fP[=false]
     Disables commenting on the Pull Request after preview is created
+
+.PP
+\fB\-\-no\-watch\fP[=false]
+    Disables watching the preview namespace as we deploy the preview
+
+.PP
+\fB\-\-path\fP=""
+    An optional path added to the Preview ingress URL. If not specified uses $JX\_PREVIEW\_PATH
 
 .PP
 \fB\-\-pr\fP=0

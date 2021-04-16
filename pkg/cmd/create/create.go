@@ -2,7 +2,6 @@ package create
 
 import (
 	"bufio"
-	"github.com/jenkins-x/jx-helpers/v3/pkg/gitclient"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -11,13 +10,21 @@ import (
 	"strings"
 	"time"
 
+	"github.com/jenkins-x/jx-helpers/v3/pkg/gitclient"
+
 	"context"
 	"fmt"
 
 	"github.com/cenkalti/backoff"
+	"github.com/jenkins-x-plugins/jx-gitops/pkg/cmd/pr/push"
+	"github.com/jenkins-x-plugins/jx-preview/pkg/apis/preview/v1alpha1"
+	"github.com/jenkins-x-plugins/jx-preview/pkg/client/clientset/versioned"
+	"github.com/jenkins-x-plugins/jx-preview/pkg/helmfiles"
+	"github.com/jenkins-x-plugins/jx-preview/pkg/kserving"
+	"github.com/jenkins-x-plugins/jx-preview/pkg/previews"
+	"github.com/jenkins-x-plugins/jx-preview/pkg/rootcmd"
 	"github.com/jenkins-x/go-scm/scm"
 	jxc "github.com/jenkins-x/jx-api/v4/pkg/client/clientset/versioned"
-	"github.com/jenkins-x-plugins/jx-gitops/pkg/cmd/pr/push"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/cmdrunner"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/cobras/helper"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/cobras/templates"
@@ -33,12 +40,6 @@ import (
 	"github.com/jenkins-x/jx-helpers/v3/pkg/stringhelpers"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/termcolor"
 	"github.com/jenkins-x/jx-logging/v3/pkg/log"
-	"github.com/jenkins-x-plugins/jx-preview/pkg/apis/preview/v1alpha1"
-	"github.com/jenkins-x-plugins/jx-preview/pkg/client/clientset/versioned"
-	"github.com/jenkins-x-plugins/jx-preview/pkg/helmfiles"
-	"github.com/jenkins-x-plugins/jx-preview/pkg/kserving"
-	"github.com/jenkins-x-plugins/jx-preview/pkg/previews"
-	"github.com/jenkins-x-plugins/jx-preview/pkg/rootcmd"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -70,6 +71,8 @@ type Options struct {
 	BuildNumber      string
 	Version          string
 	GitUser          string
+	PreviewURLPath   string
+
 	// PullRequestBranch used for testing to fake out the pull request branch name
 	PullRequestBranch     string
 	PreviewURLTimeout     time.Duration
@@ -111,6 +114,7 @@ func NewCmdPreviewCreate() (*cobra.Command, *Options) {
 	cmd.Flags().StringVarP(&o.PreviewHelmfile, "file", "f", "", "Preview helmfile.yaml path to use. If not specified it is discovered in preview/helmfile.yaml and created from a template if needed")
 	cmd.Flags().StringVarP(&o.Repository, "app", "", "", "Name of the app or repository")
 	cmd.Flags().StringVarP(&o.GitUser, "git-user", "", "", "The user name to git clone the environment repository")
+	cmd.Flags().StringVarP(&o.PreviewURLPath, "path", "", "", "An optional path added to the Preview ingress URL. If not specified uses $JX_PREVIEW_PATH")
 	cmd.Flags().DurationVarP(&o.PreviewURLTimeout, "preview-url-timeout", "", time.Minute+5, "Time to wait for the preview URL to be available")
 	cmd.Flags().BoolVarP(&o.NoComment, "no-comment", "", false, "Disables commenting on the Pull Request after preview is created")
 	cmd.Flags().BoolVarP(&o.NoWatchNamespace, "no-watch", "", false, "Disables watching the preview namespace as we deploy the preview")
@@ -193,6 +197,10 @@ func (o *Options) Run() error {
 	url, err := o.findPreviewURL(envVars)
 	if err != nil {
 		log.Logger().Warnf("failed to detect the preview URL %+v", err)
+	}
+
+	if url != "" && o.PreviewURLPath != "" {
+		url = stringhelpers.UrlJoin(url, o.PreviewURLPath)
 	}
 
 	toAuthor(&preview.Spec.PullRequest.User, &pr.Author)
@@ -291,6 +299,9 @@ func (o *Options) Validate() error {
 	}
 	if o.OutputEnvVars == nil {
 		o.OutputEnvVars = map[string]string{}
+	}
+	if o.PreviewURLPath == "" {
+		o.PreviewURLPath = os.Getenv("JX_PREVIEW_PATH")
 	}
 	return nil
 }

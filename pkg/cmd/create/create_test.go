@@ -9,6 +9,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/jenkins-x/jx-helpers/v3/pkg/stringhelpers"
+
+	"github.com/jenkins-x-plugins/jx-preview/pkg/client/clientset/versioned/fake"
+	"github.com/jenkins-x-plugins/jx-preview/pkg/cmd/destroy"
+	"github.com/jenkins-x-plugins/jx-preview/pkg/fakescms"
 	"github.com/jenkins-x/go-scm/scm"
 	fakescm "github.com/jenkins-x/go-scm/scm/driver/fake"
 	jxfake "github.com/jenkins-x/jx-api/v4/pkg/client/clientset/versioned/fake"
@@ -16,9 +21,6 @@ import (
 	"github.com/jenkins-x/jx-helpers/v3/pkg/cmdrunner/fakerunner"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/files"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/kube/jxenv"
-	"github.com/jenkins-x-plugins/jx-preview/pkg/client/clientset/versioned/fake"
-	"github.com/jenkins-x-plugins/jx-preview/pkg/cmd/destroy"
-	"github.com/jenkins-x-plugins/jx-preview/pkg/fakescms"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
@@ -53,7 +55,11 @@ func TestPreviewCreate(t *testing.T) {
 
 	serviceName := repo
 	ingressHost := "hook-jx.1.2.3.4.nip.io"
+	previewPath := "cheese"
 	previewURL := "http://" + ingressHost
+	if previewPath != "" {
+		previewURL = stringhelpers.UrlJoin(previewURL, previewPath)
+	}
 
 	kubeClient := fakekube.NewSimpleClientset(
 		&corev1.Namespace{
@@ -152,6 +158,7 @@ func TestPreviewCreate(t *testing.T) {
 		o.BuildNumber = buildNumber
 		o.SourceURL = repoLink + ".git"
 		o.Number = prNumber
+		o.PreviewURLPath = previewPath
 
 		var err error
 		tmpDir, err = ioutil.TempDir("", "")
