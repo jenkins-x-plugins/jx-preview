@@ -26,4 +26,4 @@ gcJobs:
 
 jxRequirements:
   cluster:
-    gitServer: https://gith3b.com
+    gitServer: https://github.com
