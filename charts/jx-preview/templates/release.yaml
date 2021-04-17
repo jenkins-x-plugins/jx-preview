@@ -1,0 +1,77 @@
+{{- if .Capabilities.APIVersions.Has "jenkins.io/v1/Release" }}
+apiVersion: jenkins.io/v1
+kind: Release
+metadata:
+  creationTimestamp: "2021-04-17T09:16:04Z"
+  deletionTimestamp: null
+  name: '{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}'
+spec:
+  commits:
+  - author:
+      email: jenkins-x@googlegroups.com
+      name: jenkins-x-bot
+    branch: master
+    committer:
+      email: jenkins-x@googlegroups.com
+      name: jenkins-x-bot
+    message: |
+      fix: support other git provider
+    sha: 61bd3f92e0081a28aeab69ceb06509ccf9e81ed9
+  - author:
+      email: james.strachan@gmail.com
+      name: James Strachan
+    branch: master
+    committer:
+      email: james.strachan@gmail.com
+      name: James Strachan
+    message: |
+      chore: regen docs
+    sha: 24ffa8a3f16abcb5677c9db2ad52e07e5c87f973
+  - author:
+      email: james.strachan@gmail.com
+      name: James Strachan
+    branch: master
+    committer:
+      email: james.strachan@gmail.com
+      name: James Strachan
+    message: |
+      chore: regen docs
+    sha: b0a67679e8466a58309cce702ae43768eba292cc
+  - author:
+      email: james.strachan@gmail.com
+      name: James Strachan
+    branch: master
+    committer:
+      email: james.strachan@gmail.com
+      name: James Strachan
+    message: |
+      chore: upgrade deps
+    sha: e3371ccfac1130c9c23859250994887cf57fe7b7
+  - author:
+      email: james.strachan@gmail.com
+      name: James Strachan
+    branch: master
+    committer:
+      email: james.strachan@gmail.com
+      name: James Strachan
+    message: |
+      chore: fmt
+    sha: 723d6a5978fdf96ca7c4f2d714452df511a83ad8
+  - author:
+      email: james.strachan@gmail.com
+      name: James Strachan
+    branch: master
+    committer:
+      email: james.strachan@gmail.com
+      name: James Strachan
+    message: |
+      fix: allow optional path added to the preview URL
+    sha: bd4d1f7d661fa0c0b9b17a33f73fe7b66ac7950b
+  gitHttpUrl: https://github.com/jenkins-x-plugins/jx-preview
+  gitOwner: jenkins-x-plugins
+  gitRepository: jx-preview
+  name: '{{ .Chart.Name }}'
+  version: 0.0.179
+status: {}
+ 
+{{- end }}
