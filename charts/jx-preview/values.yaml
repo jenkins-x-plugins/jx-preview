@@ -23,3 +23,7 @@ gcJobs:
   # gcJobs.concurrencyPolicy -- Drives the job's concurrency policy
   concurrencyPolicy: Forbid
 
+jx:
+  jxRequirements:
+    cluster:
+      gitServer: https://github.com
