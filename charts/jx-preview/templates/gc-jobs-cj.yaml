@@ -26,7 +26,7 @@ spec:
             - command:
               - /bin/sh
               - -c
-              - jx gitops git setup --namespace {{ .Release.Namespace }} --secret tekton-git --git-provider {{ .Values.jx.jxRequirements.cluster.gitServer | default "https://gitlab.com" }} && jx preview gc
+              - jx gitops git setup --namespace {{ .Release.Namespace }} --secret tekton-git --git-provider {{ .Values.jxRequirements.cluster.gitServer | default "https://gitlab.com" }} && jx preview gc
               env:
               - name: XDG_CONFIG_HOME
                 value: /home
