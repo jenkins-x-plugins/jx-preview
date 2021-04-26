@@ -214,5 +214,10 @@ cli-docs: bin/docs ## update docs
 code-generate:
 	./hack/generate.sh
 
+.PHONY: gen-schema
+gen-schema:
+	mkdir -p schema
+	go run cmd/schemagen/main.go
+
 include Makefile.codegen
 
