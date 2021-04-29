@@ -1,4 +1,4 @@
-FROM ghcr.io/jenkins-x/jx-boot:3.1.227
+FROM ghcr.io/jenkins-x/jx-boot:3.2.66
 
 ARG BUILD_DATE
 ARG VERSION
