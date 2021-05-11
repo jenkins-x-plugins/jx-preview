@@ -147,25 +147,13 @@ func (o *Options) Run() error {
 
 	// lets get the git clone URL with user/password so we can clone it again in the destroy command/CronJob
 	ctx := context.Background()
-	username := ""
-	user, _, err := o.ScmClient.Users.Find(ctx)
-	if err != nil {
-		return errors.Wrapf(err, "failed to find the current SCM user")
-	}
-	if user != nil {
-		username = user.Login
-	}
-	gitURL, err := stringhelpers.URLSetUserPassword(pr.Repository().Link, username, o.GitToken)
-	if err != nil {
-		return errors.Wrapf(err, "failed to modify the git URL")
-	}
 
 	err = previews.CreateJXValuesFile(o.GitClient, o.JXClient, o.Namespace, o.PreviewHelmfile, o.PreviewNamespace, o.GitUser, o.GitToken)
 	if err != nil {
 		return errors.Wrapf(err, "failed to create the jx-values.yaml file")
 	}
 
-	preview, _, err := previews.GetOrCreatePreview(o.PreviewClient, o.Namespace, pr, destroyCmd, gitURL, o.PreviewNamespace, o.PreviewHelmfile)
+	preview, _, err := previews.GetOrCreatePreview(o.PreviewClient, o.Namespace, pr, destroyCmd, pr.Repository().Link, o.PreviewNamespace, o.PreviewHelmfile)
 	if err != nil {
 		return errors.Wrapf(err, "failed to upsert the Preview resource in namespace %s", o.Namespace)
 	}
