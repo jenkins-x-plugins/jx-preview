@@ -1,19 +1,14 @@
 module github.com/jenkins-x-plugins/jx-preview
 
 require (
-	github.com/Azure/go-autorest/autorest v0.11.19 // indirect
-	github.com/Azure/go-autorest/autorest/adal v0.9.14 // indirect
 	github.com/cenkalti/backoff v2.2.1+incompatible
 	github.com/cpuguy83/go-md2man v1.0.10
-	github.com/form3tech-oss/jwt-go v3.2.3+incompatible // indirect
-	github.com/googleapis/gnostic v0.5.5 // indirect
-	github.com/jenkins-x-plugins/jx-gitops v0.2.104
+	github.com/jenkins-x-plugins/jx-gitops v0.2.105
 	github.com/jenkins-x/go-scm v1.10.0
 	github.com/jenkins-x/jx-api/v4 v4.0.33
-	github.com/jenkins-x/jx-helpers/v3 v3.0.118
+	github.com/jenkins-x/jx-helpers/v3 v3.0.119
 	github.com/jenkins-x/jx-kube-client/v3 v3.0.2
 	github.com/jenkins-x/jx-logging/v3 v3.0.6
-	github.com/json-iterator/go v1.1.11 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.1.1
 	github.com/spf13/pflag v1.0.5
@@ -21,7 +16,6 @@ require (
 	k8s.io/api v0.20.8
 	k8s.io/apimachinery v0.20.8
 	k8s.io/client-go v11.0.1-0.20190805182717-6502b5e7b1b5+incompatible
-	k8s.io/helm v2.16.10+incompatible // indirect
 	knative.dev/serving v0.20.0
 )
 

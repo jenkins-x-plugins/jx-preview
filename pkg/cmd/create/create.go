@@ -109,10 +109,9 @@ func NewCmdPreviewCreate() (*cobra.Command, *Options) {
 			helper.CheckErr(err)
 		},
 	}
-	o.Options.DiscoverFromGit = true
 
-	cmd.Flags().StringVarP(&o.PreviewHelmfile, "file", "f", "", "Preview helmfile.yaml path to use. If not specified it is discovered in preview/helmfile.yaml and created from a template if needed")
-	cmd.Flags().StringVarP(&o.Repository, "app", "", "", "Name of the app or repository")
+	o.AddFlags(cmd)
+
 	cmd.Flags().StringVarP(&o.GitUser, "git-user", "", "", "The user name to git clone the environment repository")
 	cmd.Flags().StringVarP(&o.PreviewURLPath, "path", "", "", "An optional path added to the Preview ingress URL. If not specified uses $JX_PREVIEW_PATH")
 	cmd.Flags().DurationVarP(&o.PreviewURLTimeout, "preview-url-timeout", "", time.Minute+5, "Time to wait for the preview URL to be available")
@@ -122,6 +121,13 @@ func NewCmdPreviewCreate() (*cobra.Command, *Options) {
 
 	o.PullRequestOptions.AddFlags(cmd)
 	return cmd, o
+}
+
+func (o *Options) AddFlags(cmd *cobra.Command) {
+	o.Options.DiscoverFromGit = true
+
+	cmd.Flags().StringVarP(&o.PreviewHelmfile, "file", "f", "", "Preview helmfile.yaml path to use. If not specified it is discovered in preview/helmfile.yaml and created from a template if needed")
+	cmd.Flags().StringVarP(&o.Repository, "app", "", "", "Name of the app or repository")
 }
 
 // Run implements a helmfile based preview environment
@@ -138,7 +144,7 @@ func (o *Options) Run() error {
 
 	log.Logger().Infof("found PullRequest %s", pr.Link)
 
-	envVars, err := o.createHelmfileEnvVars()
+	envVars, err := o.CreateHelmfileEnvVars(nil)
 	if err != nil {
 		return errors.Wrapf(err, "failed to create env vars")
 	}
@@ -148,7 +154,7 @@ func (o *Options) Run() error {
 	// lets get the git clone URL with user/password so we can clone it again in the destroy command/CronJob
 	ctx := context.Background()
 
-	err = previews.CreateJXValuesFile(o.GitClient, o.JXClient, o.Namespace, o.PreviewHelmfile, o.PreviewNamespace, o.GitUser, o.GitToken)
+	_, err = previews.CreateJXValuesFile(o.GitClient, o.JXClient, o.Namespace, o.PreviewHelmfile, o.PreviewNamespace, o.GitUser, o.GitToken)
 	if err != nil {
 		return errors.Wrapf(err, "failed to create the jx-values.yaml file")
 	}
@@ -349,7 +355,7 @@ func (o *Options) helmfileSyncPreview(envVars map[string]string) error {
 	return nil
 }
 
-func (o *Options) createHelmfileEnvVars() (map[string]string, error) {
+func (o *Options) CreateHelmfileEnvVars(fn func(string) (string, error)) (map[string]string, error) {
 	env := map[string]string{}
 	mandatoryEnvVars := []envVar{
 		{
@@ -389,6 +395,13 @@ func (o *Options) createHelmfileEnvVars() (map[string]string, error) {
 		value := os.Getenv(name)
 		if value == "" && e.DefaultValue != nil {
 			value = e.DefaultValue()
+		}
+		if value == "" && fn != nil {
+			var err error
+			value, err = fn(name)
+			if err != nil {
+				return env, errors.Wrapf(err, "failed to default value of variable %s", name)
+			}
 		}
 		if value == "" {
 			return env, errors.Errorf("missing $%s environment variable", name)

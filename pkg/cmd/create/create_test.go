@@ -24,14 +24,13 @@ import (
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
+	nv1 "k8s.io/api/networking/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	fakekube "k8s.io/client-go/kubernetes/fake"
 	kservefake "knative.dev/serving/pkg/client/clientset/versioned/fake"
 
 	"github.com/jenkins-x-plugins/jx-preview/pkg/cmd/create"
 	"github.com/stretchr/testify/require"
-	"k8s.io/api/extensions/v1beta1"
-	"k8s.io/apimachinery/pkg/util/intstr"
 )
 
 func TestPreviewCreate(t *testing.T) {
@@ -76,24 +75,26 @@ func TestPreviewCreate(t *testing.T) {
 			},
 		},
 
-		&v1beta1.Ingress{
+		&nv1.Ingress{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      serviceName,
 				Namespace: previewNamespace,
 			},
-			Spec: v1beta1.IngressSpec{
-				Rules: []v1beta1.IngressRule{
+			Spec: nv1.IngressSpec{
+				Rules: []nv1.IngressRule{
 					{
 						Host: ingressHost,
-						IngressRuleValue: v1beta1.IngressRuleValue{
-							HTTP: &v1beta1.HTTPIngressRuleValue{
-								Paths: []v1beta1.HTTPIngressPath{
+						IngressRuleValue: nv1.IngressRuleValue{
+							HTTP: &nv1.HTTPIngressRuleValue{
+								Paths: []nv1.HTTPIngressPath{
 									{
 										Path: "",
-										Backend: v1beta1.IngressBackend{
-											ServiceName: serviceName,
-											ServicePort: intstr.IntOrString{
-												IntVal: 80,
+										Backend: nv1.IngressBackend{
+											Service: &nv1.IngressServiceBackend{
+												Name: serviceName,
+												Port: nv1.ServiceBackendPort{
+													Number: 80,
+												},
 											},
 										},
 									},
