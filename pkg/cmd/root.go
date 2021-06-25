@@ -5,6 +5,7 @@ import (
 	"github.com/jenkins-x-plugins/jx-preview/pkg/cmd/destroy"
 	"github.com/jenkins-x-plugins/jx-preview/pkg/cmd/gc"
 	"github.com/jenkins-x-plugins/jx-preview/pkg/cmd/get"
+	"github.com/jenkins-x-plugins/jx-preview/pkg/cmd/template"
 	"github.com/jenkins-x-plugins/jx-preview/pkg/cmd/version"
 	"github.com/jenkins-x-plugins/jx-preview/pkg/rootcmd"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/cobras"
@@ -28,6 +29,7 @@ func Main() *cobra.Command {
 	cmd.AddCommand(cobras.SplitCommand(destroy.NewCmdPreviewDestroy()))
 	cmd.AddCommand(cobras.SplitCommand(gc.NewCmdGCPreviews()))
 	cmd.AddCommand(cobras.SplitCommand(get.NewCmdGetPreview()))
+	cmd.AddCommand(cobras.SplitCommand(template.NewCmdPreviewTemplate()))
 	cmd.AddCommand(cobras.SplitCommand(version.NewCmdVersion()))
 	return cmd
 }
