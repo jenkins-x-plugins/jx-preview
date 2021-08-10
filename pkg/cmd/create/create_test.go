@@ -34,6 +34,14 @@ import (
 )
 
 func TestPreviewCreate(t *testing.T) {
+	AssertPreview(t, "")
+}
+
+func TestPreviewCreateWithCustomService(t *testing.T) {
+	AssertPreview(t, "custom-service")
+}
+
+func AssertPreview(t *testing.T, customService string) {
 	containerRegistry := "ghcr.io"
 	gitUser := "myuser"
 	gitToken := "mytoken"
@@ -52,8 +60,12 @@ func TestPreviewCreate(t *testing.T) {
 
 	previewClient := fake.NewSimpleClientset()
 
-	serviceName := repo
-	ingressHost := "hook-jx.1.2.3.4.nip.io"
+	serviceName := customService
+	if serviceName == "" {
+		serviceName = repo
+	}
+
+	ingressHost := serviceName + ".1.2.3.4.nip.io"
 	previewPath := "cheese"
 	previewURL := "http://" + ingressHost
 	if previewPath != "" {
@@ -160,6 +172,9 @@ func TestPreviewCreate(t *testing.T) {
 		o.SourceURL = repoLink + ".git"
 		o.Number = prNumber
 		o.PreviewURLPath = previewPath
+		if customService != "" {
+			o.PreviewService = customService
+		}
 
 		var err error
 		tmpDir, err = ioutil.TempDir("", "")
