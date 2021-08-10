@@ -3,10 +3,10 @@ module github.com/jenkins-x-plugins/jx-preview
 require (
 	github.com/cenkalti/backoff v2.2.1+incompatible
 	github.com/cpuguy83/go-md2man v1.0.10
-	github.com/jenkins-x-plugins/jx-gitops v0.3.3
-	github.com/jenkins-x/go-scm v1.10.9
+	github.com/jenkins-x-plugins/jx-gitops v0.3.9
+	github.com/jenkins-x/go-scm v1.10.10
 	github.com/jenkins-x/jx-api/v4 v4.1.3
-	github.com/jenkins-x/jx-helpers/v3 v3.0.125
+	github.com/jenkins-x/jx-helpers/v3 v3.0.126
 	github.com/jenkins-x/jx-kube-client/v3 v3.0.2
 	github.com/jenkins-x/jx-logging/v3 v3.0.6
 	github.com/pkg/errors v0.9.1
@@ -24,7 +24,7 @@ replace (
 	github.com/docker/distribution => github.com/docker/distribution v0.0.0-20191216044856-a8371794149d
 	github.com/docker/docker => github.com/moby/moby v17.12.0-ce-rc1.0.20200618181300-9dc6525e6118+incompatible
 	// override the go-scm from tekton
-	github.com/jenkins-x/go-scm => github.com/jenkins-x/go-scm v1.10.9
+	github.com/jenkins-x/go-scm => github.com/jenkins-x/go-scm v1.10.10
 
 	k8s.io/api => k8s.io/api v0.20.2
 	k8s.io/apimachinery => k8s.io/apimachinery v0.20.2

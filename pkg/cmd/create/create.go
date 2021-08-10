@@ -67,6 +67,7 @@ type Options struct {
 	PreviewHelmfile  string
 	PreviewNamespace string
 	Namespace        string
+	PreviewService   string
 	DockerRegistry   string
 	BuildNumber      string
 	Version          string
@@ -114,6 +115,7 @@ func NewCmdPreviewCreate() (*cobra.Command, *Options) {
 
 	cmd.Flags().StringVarP(&o.GitUser, "git-user", "", "", "The user name to git clone the environment repository")
 	cmd.Flags().StringVarP(&o.PreviewURLPath, "path", "", "", "An optional path added to the Preview ingress URL. If not specified uses $JX_PREVIEW_PATH")
+	cmd.Flags().StringVarP(&o.PreviewService, "service", "", "", "Specify the service/ingress name to use for the preview URL. If not specified uses $JX_PREVIEW_SERVICE")
 	cmd.Flags().DurationVarP(&o.PreviewURLTimeout, "preview-url-timeout", "", time.Minute+5, "Time to wait for the preview URL to be available")
 	cmd.Flags().BoolVarP(&o.NoComment, "no-comment", "", false, "Disables commenting on the Pull Request after preview is created")
 	cmd.Flags().BoolVarP(&o.NoWatchNamespace, "no-watch", "", false, "Disables watching the preview namespace as we deploy the preview")
@@ -297,6 +299,9 @@ func (o *Options) Validate() error {
 	if o.PreviewURLPath == "" {
 		o.PreviewURLPath = os.Getenv("JX_PREVIEW_PATH")
 	}
+	if o.PreviewService == "" {
+		o.PreviewService = os.Getenv("JX_PREVIEW_SERVICE")
+	}
 	return nil
 }
 
@@ -461,7 +466,10 @@ func (o *Options) findPreviewURL(envVars map[string]string) (string, error) {
 	application := o.Repository
 	app := naming.ToValidName(application)
 
-	appNames := []string{app, releaseName, o.Namespace + "-preview", releaseName + "-" + app}
+	appNames := []string{o.PreviewService}
+	if o.PreviewService == "" {
+		appNames = []string{app, releaseName, o.Namespace + "-preview", releaseName + "-" + app}
+	}
 
 	ctx := context.Background()
 
