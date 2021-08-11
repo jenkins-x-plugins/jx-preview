@@ -2,10 +2,10 @@ image:
   # image.parentRepository -- Docker registry to pull images from
   parentRepository: ghcr.io/jenkins-x
 
-  repository: ghcr.io/jenkins-x/jx-preview
+  repository: ghcr.io/jenkins-x-plugins/jx-preview
 
   # image.tag -- Docker images tag
-  tag: 0.0.167
+  tag: latest
 
   # image.pullPolicy -- Image pull policy
   pullPolicy: IfNotPresent
