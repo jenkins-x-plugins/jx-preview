@@ -1,3 +1,3 @@
-FROM gcr.io/jenkinsxio/jx-boot:3.0.739
+FROM ghcr.io/jenkins-x/jx-boot:latest
 
 COPY ./build/linux/jx-preview /usr/bin/jx-preview
