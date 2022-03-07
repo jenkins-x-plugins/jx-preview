@@ -25,7 +25,7 @@ replace (
 	github.com/docker/docker => github.com/moby/moby v17.12.0-ce-rc1.0.20200618181300-9dc6525e6118+incompatible
 
 	// override the go-scm from tekton
-	github.com/jenkins-x/go-scm => github.com/jenkins-x/go-scm v1.10.10
+	github.com/jenkins-x/go-scm => github.com/jenkins-x/go-scm v1.11.2
 
 	k8s.io/api => k8s.io/api v0.20.6
 	k8s.io/apimachinery => k8s.io/apimachinery v0.20.6
