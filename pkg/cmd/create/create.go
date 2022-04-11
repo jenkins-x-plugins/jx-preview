@@ -30,9 +30,7 @@ import (
 	"github.com/jenkins-x/jx-helpers/v3/pkg/cobras/templates"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/files"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/gitclient/cli"
-	"github.com/jenkins-x/jx-helpers/v3/pkg/gitclient/giturl"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/kube"
-	"github.com/jenkins-x/jx-helpers/v3/pkg/kube/activities"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/kube/jxclient"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/kube/naming"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/kube/services"
@@ -219,11 +217,6 @@ func (o *Options) Run() error {
 		log.Logger().Infof("updated preview %s with URL %s", preview.Name, url)
 	} else {
 		log.Logger().Infof("could not detect a preview URL")
-	}
-
-	err = o.updatePipelineActivity(url, preview.Spec.PullRequest.URL)
-	if err != nil {
-		log.Logger().Warnf("failed to update the PipelineActivity - are you using Jenkins X? %s", err.Error())
 	}
 
 	err = o.writeOutputEnvVars()
@@ -499,68 +492,6 @@ func (o *Options) findPreviewURL(envVars map[string]string) (string, error) {
 		return "", errors.Wrapf(err, "failed to find preview URL for app names %#v in timeout %v", appNames, o.PreviewURLTimeout)
 	}
 	return url, nil
-}
-
-func (o *Options) updatePipelineActivity(applicationURL, pullRequestURL string) error {
-	if applicationURL == "" {
-		return nil
-	}
-	if o.BuildNumber == "" {
-		o.BuildNumber = os.Getenv("BUILD_NUMBER")
-		if o.BuildNumber == "" {
-			o.BuildNumber = os.Getenv("BUILD_ID")
-		}
-	}
-	if o.Branch == "" || o.Branch == "HEAD" {
-		o.Branch = os.Getenv("PULL_BASE_REF")
-	}
-	pipeline := fmt.Sprintf("%s/%s/%s", o.Owner, o.Repository, o.Branch)
-
-	ctx := context.Background()
-	build := o.BuildNumber
-	if pipeline != "" && build != "" {
-		ns := o.Namespace
-		name := naming.ToValidName(pipeline + "-" + build)
-
-		jxClient := o.JXClient
-
-		// lets see if we can update the pipeline
-		acts := jxClient.JenkinsV1().PipelineActivities(ns)
-		key := &activities.PromoteStepActivityKey{
-			PipelineActivityKey: activities.PipelineActivityKey{
-				Name:     name,
-				Pipeline: pipeline,
-				Build:    build,
-				GitInfo: &giturl.GitRepository{
-					Name:         o.Repository,
-					Organisation: o.Owner,
-				},
-			},
-		}
-		a, _, p, _, err := key.GetOrCreatePreview(jxClient, ns)
-		if err == nil && a != nil && p != nil {
-			updated := false
-			if p.ApplicationURL == "" {
-				p.ApplicationURL = applicationURL
-				updated = true
-			}
-			if p.PullRequestURL == "" && pullRequestURL != "" {
-				p.PullRequestURL = pullRequestURL
-				updated = true
-			}
-			if updated {
-				a, err = acts.Update(ctx, a, metav1.UpdateOptions{})
-				if err != nil {
-					log.Logger().Warnf("Failed to update PipelineActivity %s: %s", name, err.Error())
-				} else {
-					log.Logger().Infof("Updated PipelineActivity %s which has status %s", name, string(a.Spec.Status))
-				}
-			}
-		}
-	} else {
-		log.Logger().Warnf("No pipeline and build number available on $JOB_NAME and $BUILD_NUMBER so cannot update PipelineActivities with the preview URLs")
-	}
-	return nil
 }
 
 func (o *Options) commentOnPullRequest(preview *v1alpha1.Preview, url string) error {
