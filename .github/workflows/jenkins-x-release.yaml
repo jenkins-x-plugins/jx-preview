@@ -22,7 +22,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GIT_BOT_TOKEN }}
         VERSION: ${{ steps.prep.outputs.version }}
       name: release-binary
-      uses: docker://golang:1.15
+      uses: docker://golang:1.17.9
       with:
         args: -c "make release"
         entrypoint: bash
@@ -48,7 +48,7 @@ jobs:
         REPOSITORY: ${{ github.repository }}
         VERSION: ${{ steps.prep.outputs.version }}
       name: upload-binaries
-      uses: docker://goreleaser/goreleaser:v1.4.1
+      uses: docker://goreleaser/goreleaser:v1.8.3
       with:
         entrypoint: .github/workflows/jenkins-x/upload-binaries.sh
     - name: Set up QEMU
@@ -78,7 +78,7 @@ jobs:
         JX_REPOSITORY_USERNAME: jenkins-x-bot-test
         VERSION: ${{ steps.prep.outputs.version }}
       name: release-chart
-      uses: docker://ghcr.io/jenkins-x/jx-boot:3.1.284
+      uses: docker://ghcr.io/jenkins-x/jx-boot:latest
       with:
         entrypoint: .github/workflows/jenkins-x/release-chart.sh
     - env:
@@ -87,7 +87,7 @@ jobs:
         VERSION: ${{ steps.prep.outputs.version }}
         XDG_CONFIG_HOME: /github/home/.config
       name: promote-release
-      uses: docker://ghcr.io/jenkins-x/jx-updatebot:0.0.84
+      uses: docker://ghcr.io/jenkins-x/jx-updatebot:latest
       with:
         entrypoint: jx-updatebot
         args: pr --git-credentials
