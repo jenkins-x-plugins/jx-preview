@@ -3,6 +3,14 @@ kind: UpdateConfig
 spec:
   rules:
     - urls:
+        - https://github.com/jenkins-x/jx
+      changes:
+        - regex:
+            pattern: |
+              \s+PreviewVersion = "(.*)"
+            files:
+              - "pkg/plugins/versions.go"
+    - urls:
         - https://github.com/jenkins-x/jx3-pipeline-catalog
       changes:
         - regex:
