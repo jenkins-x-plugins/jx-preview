@@ -358,7 +358,7 @@ func TestPreviewCreateHelmfileDiscovery(t *testing.T) {
 		require.NoError(t, err, "failed to run for test %s", tc.name)
 
 		assert.Equal(t, filepath.Join(tmpDir, "preview", "helmfile.yaml"), o.PreviewHelmfile, "for test %s", tc.name)
-		//require.FileExists(t, filepath.Join(tmpDir, "charts", "preview", "helmfile.yaml"), "should have created helmfile.yaml")
+		// require.FileExists(t, filepath.Join(tmpDir, "charts", "preview", "helmfile.yaml"), "should have created helmfile.yaml")
 	}
 
 	for _, c := range runner.OrderedCommands {
