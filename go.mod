@@ -4,7 +4,7 @@ require (
 	github.com/cenkalti/backoff v2.2.1+incompatible
 	github.com/cpuguy83/go-md2man v1.0.10
 	github.com/jenkins-x-plugins/jx-gitops v0.3.27
-	github.com/jenkins-x/go-scm v1.11.5
+	github.com/jenkins-x/go-scm v1.11.9
 	github.com/jenkins-x/jx-api/v4 v4.3.7
 	github.com/jenkins-x/jx-helpers/v3 v3.2.9
 	github.com/jenkins-x/jx-kube-client/v3 v3.0.2
@@ -51,6 +51,7 @@ require (
 	github.com/hashicorp/golang-lru v0.5.4 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
+	github.com/jenkins-x/lighthouse-client v0.0.452 // indirect
 	github.com/jenkins-x/logrus-stackdriver-formatter v0.2.4 // indirect
 	github.com/json-iterator/go v1.1.11 // indirect
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
