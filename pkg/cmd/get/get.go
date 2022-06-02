@@ -67,7 +67,7 @@ func (o *Options) Run() error {
 	}
 
 	if o.Current {
-		return o.CurrentPreviewUrl()
+		return o.CurrentPreviewURL()
 	}
 
 	ctx := context.Background()
@@ -102,7 +102,7 @@ func (o *Options) Validate() error {
 	return nil
 }
 
-func (o *Options) CurrentPreviewUrl() error {
+func (o *Options) CurrentPreviewURL() error {
 	/* TODO
 	pipeline := o.GetJenkinsJobName()
 	if pipeline == "" {

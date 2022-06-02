@@ -102,7 +102,7 @@ func TestPreviewGC(t *testing.T) {
 	remainingPreviews := previewList.Items
 	require.Len(t, remainingPreviews, 1, "should have one remaining Preview")
 	if assert.Equal(t, preview2.Name, remainingPreviews[0].Name, "wrong remaining preview name") {
-		t.Logf("correctly has a single reamining Preview of name %s\n", remainingPreviews[0].Name)
+		t.Logf("correctly has a single remaining Preview of name %s\n", remainingPreviews[0].Name)
 	}
 
 	for _, c := range runner.OrderedCommands {
