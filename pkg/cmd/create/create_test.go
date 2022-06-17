@@ -53,6 +53,7 @@ func AssertPreview(t *testing.T, customService string) {
 	buildNumber := "2"
 	sha := "abcdef1234"
 	previewNamespace := ns + "-" + owner + "-" + repo + "-pr-" + strconv.Itoa(prNumber)
+	defaultService := "jx-service"
 
 	t.Logf("preview in namespace %s", previewNamespace)
 
@@ -62,7 +63,7 @@ func AssertPreview(t *testing.T, customService string) {
 
 	serviceName := customService
 	if serviceName == "" {
-		serviceName = repo
+		serviceName = defaultService
 	}
 
 	ingressHost := serviceName + ".1.2.3.4.nip.io"
