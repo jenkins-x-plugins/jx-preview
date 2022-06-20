@@ -6,15 +6,15 @@ require (
 	github.com/jenkins-x-plugins/jx-gitops v0.3.27
 	github.com/jenkins-x/go-scm v1.11.14
 	github.com/jenkins-x/jx-api/v4 v4.3.7
-	github.com/jenkins-x/jx-helpers/v3 v3.2.13
+	github.com/jenkins-x/jx-helpers/v3 v3.2.14
 	github.com/jenkins-x/jx-kube-client/v3 v3.0.3
 	github.com/jenkins-x/jx-logging/v3 v3.0.9
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.2.0
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.7.0
-	k8s.io/api v0.21.13
-	k8s.io/apimachinery v0.21.13
+	k8s.io/api v0.21.14
+	k8s.io/apimachinery v0.21.14
 	k8s.io/client-go v11.0.1-0.20190805182717-6502b5e7b1b5+incompatible
 	knative.dev/serving v0.20.0
 )
@@ -77,7 +77,7 @@ require (
 	go.uber.org/multierr v1.6.0 // indirect
 	go.uber.org/zap v1.18.1 // indirect
 	golang.org/x/crypto v0.0.0-20220525230936-793ad666bf5e // indirect
-	golang.org/x/net v0.0.0-20220615171555-694bf12d69de // indirect
+	golang.org/x/net v0.0.0-20220617184016-355a448f1bc9 // indirect
 	golang.org/x/oauth2 v0.0.0-20220608161450-d0670ef3b1eb // indirect
 	golang.org/x/sys v0.0.0-20220615213510-4f61da869c0c // indirect
 	golang.org/x/term v0.0.0-20220526004731-065cf7ba2467 // indirect
