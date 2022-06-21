@@ -435,6 +435,18 @@ func (o *Options) createPreviewNamespace() (string, error) {
 	return prNamespace, nil
 }
 
+func findAllServiceNamesInNamespace(client kubernetes.Interface, namespace string) ([]string, error) {
+	services, err := client.CoreV1().Services(namespace).List(context.TODO(), metav1.ListOptions{})
+	if err != nil {
+		return nil, err
+	}
+	appNames := []string{}
+	for _, service := range services.Items {
+		appNames = append(appNames, service.Name)
+	}
+	return appNames, nil
+}
+
 // findPreviewURL finds the preview URL
 func (o *Options) findPreviewURL(envVars map[string]string) (string, error) {
 
@@ -462,12 +474,12 @@ func (o *Options) findPreviewURL(envVars map[string]string) (string, error) {
 
 	log.Logger().Infof("found helm preview release %s in namespace %s", info(releaseName), info(releaseNamespace))
 
-	application := o.Repository
-	app := naming.ToValidName(application)
-
 	appNames := []string{o.PreviewService}
 	if o.PreviewService == "" {
-		appNames = []string{app, releaseName, o.Namespace + "-preview", releaseName + "-" + app}
+		appNames, err = findAllServiceNamesInNamespace(o.KubeClient, releaseNamespace)
+		if err != nil {
+			return "", fmt.Errorf("%v finding services in the preview namespace \n", err)
+		}
 	}
 
 	ctx := context.Background()
