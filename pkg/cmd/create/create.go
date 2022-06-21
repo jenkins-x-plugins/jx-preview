@@ -53,7 +53,7 @@ var (
 `)
 
 	cmdExample = templates.Examples(`
-		# creates a new preview environemnt
+		# creates a new preview environment
 		%s create
 	`)
 
@@ -291,7 +291,7 @@ func (o *Options) Validate() error {
 	}
 
 	if o.PreviewNamespace == "" {
-		o.PreviewNamespace, err = o.createPreviewNamespace()
+		o.PreviewNamespace, _ = o.createPreviewNamespace()
 	}
 	if o.OutputEnvVars == nil {
 		o.OutputEnvVars = map[string]string{}
@@ -313,13 +313,12 @@ func (o *Options) createDestroyCommand(envVars map[string]string) v1alpha1.Comma
 	args = append(args, "destroy")
 
 	var env []v1alpha1.EnvVar
-	if envVars != nil {
-		for k, v := range envVars {
-			env = append(env, v1alpha1.EnvVar{
-				Name:  k,
-				Value: v,
-			})
-		}
+
+	for k, v := range envVars {
+		env = append(env, v1alpha1.EnvVar{
+			Name:  k,
+			Value: v,
+		})
 	}
 	return v1alpha1.Command{
 		Command: "helmfile",
@@ -513,6 +512,7 @@ func (o *Options) findPreviewURL(envVars map[string]string) (string, error) {
 	return url, nil
 }
 
+//nolint
 func (o *Options) updatePipelineActivity(applicationURL, pullRequestURL string) error {
 	if applicationURL == "" {
 		return nil
@@ -694,7 +694,7 @@ func (o *Options) writeOutputEnvVars() error {
 	}
 
 	buf := strings.Builder{}
-	buf.WriteString("# preview environment varables\n")
+	buf.WriteString("# preview environment varibles\n")
 	for k, v := range o.OutputEnvVars {
 		buf.WriteString(fmt.Sprintf("export %s=\"%s\"\n", k, v))
 	}
@@ -716,7 +716,7 @@ func (o *Options) writeOutputEnvVars() error {
 		return errors.Wrapf(err, "failed to save file %s", path)
 	}
 
-	log.Logger().Infof("wrote preview environemnt variables to %s", info(path))
+	log.Logger().Infof("wrote preview environment variables to %s", info(path))
 	return nil
 }
 
