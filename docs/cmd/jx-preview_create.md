@@ -14,7 +14,7 @@ Creates a preview
 
 ### Examples
 
-  # creates a new preview environemnt
+  # creates a new preview environment
   jx-preview create
 
 ### Options

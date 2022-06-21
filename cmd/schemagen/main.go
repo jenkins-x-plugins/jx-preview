@@ -1,22 +1,21 @@
 package main
 
 import (
+	"os"
+
 	"github.com/jenkins-x-plugins/jx-preview/pkg/apis/preview"
 	"github.com/jenkins-x-plugins/jx-preview/pkg/apis/preview/v1alpha1"
 	"github.com/jenkins-x/jx-api/v4/pkg/schemagen"
 	"github.com/jenkins-x/jx-logging/v3/pkg/log"
-	"os"
 )
 
-var (
-	resourceKinds = []schemagen.ResourceKind{
-		{
-			APIVersion: preview.GroupAndVersion,
-			Name:       "preview",
-			Resource:   &v1alpha1.Preview{},
-		},
-	}
-)
+var resourceKinds = []schemagen.ResourceKind{
+	{
+		APIVersion: preview.GroupAndVersion,
+		Name:       "preview",
+		Resource:   &v1alpha1.Preview{},
+	},
+}
 
 func main() {
 	out := "schema"

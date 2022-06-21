@@ -67,7 +67,7 @@ func (o *Options) Run() error {
 	}
 
 	if o.Current {
-		return o.CurrentPreviewUrl()
+		return o.CurrentPreviewURL()
 	}
 
 	ctx := context.Background()
@@ -85,7 +85,8 @@ func (o *Options) Run() error {
 	t := table.CreateTable(os.Stdout)
 	t.AddRow("PULL REQUEST", "NAMESPACE", "APPLICATION")
 
-	for _, preview := range resources {
+	for k := range resources {
+		preview := resources[k]
 		t.AddRow(preview.Spec.PullRequest.URL, preview.Spec.Resources.Namespace, preview.Spec.Resources.URL)
 	}
 	t.Render()
@@ -102,7 +103,7 @@ func (o *Options) Validate() error {
 	return nil
 }
 
-func (o *Options) CurrentPreviewUrl() error {
+func (o *Options) CurrentPreviewURL() error {
 	/* TODO
 	pipeline := o.GetJenkinsJobName()
 	if pipeline == "" {
