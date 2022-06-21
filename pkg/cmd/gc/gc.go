@@ -131,7 +131,7 @@ func (o *Options) Run() error {
 
 			err = o.Destroy(name)
 			if err != nil {
-				return fmt.Errorf("failed to destroy preview environment %s: %v\n", name, err)
+				return fmt.Errorf("failed to destroy preview environment %s: %v", name, err)
 			}
 
 			o.Deleted = append(o.Deleted, name)
