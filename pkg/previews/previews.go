@@ -14,7 +14,7 @@ import (
 )
 
 // GetOrCreatePreview lazy creates the preview client and/or the current namespace if not already defined
-func GetOrCreatePreview(client versioned.Interface, ns string, pr *scm.PullRequest, destroyCmd v1alpha1.Command, gitURL, previewNamespace, path string) (*v1alpha1.Preview, bool, error) {
+func GetOrCreatePreview(client versioned.Interface, ns string, pr *scm.PullRequest, destroyCmd *v1alpha1.Command, gitURL, previewNamespace, path string) (*v1alpha1.Preview, bool, error) {
 	create := false
 
 	ctx := context.Background()
@@ -84,7 +84,7 @@ func GetOrCreatePreview(client versioned.Interface, ns string, pr *scm.PullReque
 	if previewNamespace != "" {
 		found.Spec.Resources.Namespace = previewNamespace
 	}
-	found.Spec.DestroyCommand = destroyCmd
+	found.Spec.DestroyCommand = *destroyCmd
 	if create {
 		found, err = previewInterface.Create(ctx, found, metav1.CreateOptions{})
 		if err != nil {

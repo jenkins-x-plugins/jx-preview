@@ -109,8 +109,8 @@ func (o *Options) Run() error {
 		previews.SortPreviews(resources)
 
 		var names []string
-		for _, r := range resources {
-			names = append(names, r.Name)
+		for k := range resources {
+			names = append(names, resources[k].Name)
 		}
 
 		o.Names, err = o.Input.SelectNamesWithFilter(names, "select preview(s) to delete: ", o.SelectAll, o.Filter, "pick the names of the previews to remove")

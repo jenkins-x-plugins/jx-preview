@@ -2,6 +2,8 @@ package create
 
 import (
 	"bufio"
+	"context"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -11,9 +13,6 @@ import (
 	"time"
 
 	"github.com/jenkins-x/jx-helpers/v3/pkg/gitclient"
-
-	"context"
-	"fmt"
 
 	"github.com/cenkalti/backoff"
 	"github.com/jenkins-x-plugins/jx-gitops/pkg/cmd/pr/push"
@@ -53,7 +52,7 @@ var (
 `)
 
 	cmdExample = templates.Examples(`
-		# creates a new preview environemnt
+		# creates a new preview environment
 		%s create
 	`)
 
@@ -161,7 +160,7 @@ func (o *Options) Run() error {
 		return errors.Wrapf(err, "failed to create the jx-values.yaml file")
 	}
 
-	preview, _, err := previews.GetOrCreatePreview(o.PreviewClient, o.Namespace, pr, destroyCmd, pr.Repository().Link, o.PreviewNamespace, o.PreviewHelmfile)
+	preview, _, err := previews.GetOrCreatePreview(o.PreviewClient, o.Namespace, pr, &destroyCmd, pr.Repository().Link, o.PreviewNamespace, o.PreviewHelmfile)
 	if err != nil {
 		return errors.Wrapf(err, "failed to upsert the Preview resource in namespace %s", o.Namespace)
 	}
@@ -221,10 +220,7 @@ func (o *Options) Run() error {
 		log.Logger().Infof("could not detect a preview URL")
 	}
 
-	err = o.updatePipelineActivity(url, preview.Spec.PullRequest.URL)
-	if err != nil {
-		log.Logger().Warnf("failed to update the PipelineActivity - are you using Jenkins X? %s", err.Error())
-	}
+	o.updatePipelineActivity(url, preview.Spec.PullRequest.URL)
 
 	err = o.writeOutputEnvVars()
 	if err != nil {
@@ -292,6 +288,9 @@ func (o *Options) Validate() error {
 
 	if o.PreviewNamespace == "" {
 		o.PreviewNamespace, err = o.createPreviewNamespace()
+		if err != nil {
+			return fmt.Errorf("error creating preview namespace %v", err)
+		}
 	}
 	if o.OutputEnvVars == nil {
 		o.OutputEnvVars = map[string]string{}
@@ -313,7 +312,7 @@ func (o *Options) createDestroyCommand(envVars map[string]string) v1alpha1.Comma
 	args = append(args, "destroy")
 
 	var env []v1alpha1.EnvVar
-	if envVars != nil {
+	if len(envVars) != 0 {
 		for k, v := range envVars {
 			env = append(env, v1alpha1.EnvVar{
 				Name:  k,
@@ -414,7 +413,6 @@ func (o *Options) CreateHelmfileEnvVars(fn func(string) (string, error)) (map[st
 		env[name] = value
 	}
 	return env, nil
-
 }
 
 func (o *Options) createPreviewNamespace() (string, error) {
@@ -442,15 +440,14 @@ func findAllServiceNamesInNamespace(client kubernetes.Interface, namespace strin
 		return nil, err
 	}
 	appNames := []string{}
-	for _, service := range services.Items {
-		appNames = append(appNames, service.Name)
+	for k := range services.Items {
+		appNames = append(appNames, services.Items[k].Name)
 	}
 	return appNames, nil
 }
 
 // findPreviewURL finds the preview URL
 func (o *Options) findPreviewURL(envVars map[string]string) (string, error) {
-
 	releases, err := helmfiles.ListReleases(o.CommandRunner, o.PreviewHelmfile, envVars)
 	if err != nil {
 		return "", errors.Wrapf(err, "failed to read helmfile releases")
@@ -479,7 +476,7 @@ func (o *Options) findPreviewURL(envVars map[string]string) (string, error) {
 	if o.PreviewService == "" {
 		appNames, err = findAllServiceNamesInNamespace(o.KubeClient, releaseNamespace)
 		if err != nil {
-			return "", fmt.Errorf("%v finding services in the preview namespace \n", err)
+			return "", fmt.Errorf("error finding services in the preview namespace %v", err)
 		}
 	}
 
@@ -513,9 +510,9 @@ func (o *Options) findPreviewURL(envVars map[string]string) (string, error) {
 	return url, nil
 }
 
-func (o *Options) updatePipelineActivity(applicationURL, pullRequestURL string) error {
+func (o *Options) updatePipelineActivity(applicationURL, pullRequestURL string) {
 	if applicationURL == "" {
-		return nil
+		return
 	}
 	if o.BuildNumber == "" {
 		o.BuildNumber = os.Getenv("BUILD_NUMBER")
@@ -572,7 +569,6 @@ func (o *Options) updatePipelineActivity(applicationURL, pullRequestURL string) 
 	} else {
 		log.Logger().Warnf("No pipeline and build number available on $JOB_NAME and $BUILD_NUMBER so cannot update PipelineActivities with the preview URLs")
 	}
-	return nil
 }
 
 func (o *Options) commentOnPullRequest(preview *v1alpha1.Preview, url string) error {
@@ -716,7 +712,7 @@ func (o *Options) writeOutputEnvVars() error {
 		return errors.Wrapf(err, "failed to save file %s", path)
 	}
 
-	log.Logger().Infof("wrote preview environemnt variables to %s", info(path))
+	log.Logger().Infof("wrote preview environment variables to %s", info(path))
 	return nil
 }
 

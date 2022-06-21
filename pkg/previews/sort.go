@@ -7,7 +7,7 @@ import (
 )
 
 // Less compares two previews to sort them in order
-func Less(a *v1alpha1.Preview, b *v1alpha1.Preview) bool {
+func Less(a, b *v1alpha1.Preview) bool {
 	if a.Spec.PullRequest.Owner < b.Spec.PullRequest.Owner {
 		return true
 	}

@@ -12,7 +12,7 @@ import (
 )
 
 // FindServiceURL finds the service URL for the given knative service name
-func FindServiceURL(ctx context.Context, client kserve.Interface, kubeClient kubernetes.Interface, namespace string, name string) (string, *v1.Service, error) {
+func FindServiceURL(ctx context.Context, client kserve.Interface, kubeClient kubernetes.Interface, namespace, name string) (string, *v1.Service, error) {
 	if client == nil {
 		return "", nil, nil
 	}

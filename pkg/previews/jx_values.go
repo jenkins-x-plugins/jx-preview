@@ -30,7 +30,7 @@ func CreateJXValuesFile(gitter gitclient.Interface, jxClient jxc.Interface, name
 		return "", errors.Wrapf(err, "failed to find the dev environment in namespace %s", namespace)
 	}
 	if devEnv == nil {
-		return "", errors.Errorf("not nto find the dev Environment in namespace %s", namespace)
+		return "", errors.Errorf("cannot find the dev environment in namespace %s", namespace)
 	}
 
 	url := devEnv.Spec.Source.URL

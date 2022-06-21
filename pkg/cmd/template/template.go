@@ -1,6 +1,9 @@
 package template
 
 import (
+	"os"
+	"strconv"
+
 	"github.com/jenkins-x-plugins/jx-gitops/pkg/plugins"
 	"github.com/jenkins-x-plugins/jx-gitops/pkg/variablefinders"
 	"github.com/jenkins-x-plugins/jx-preview/pkg/cmd/create"
@@ -12,8 +15,6 @@ import (
 	"github.com/jenkins-x/jx-logging/v3/pkg/log"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
-	"os"
-	"strconv"
 )
 
 // Options containers the CLI options

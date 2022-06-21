@@ -3,6 +3,7 @@ package gc
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/jenkins-x-plugins/jx-preview/pkg/cmd/destroy"
 	"github.com/jenkins-x-plugins/jx-preview/pkg/previews"
@@ -15,8 +16,6 @@ import (
 	"github.com/jenkins-x/jx-helpers/v3/pkg/cobras/templates"
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	"strings"
 
 	"github.com/jenkins-x/jx-logging/v3/pkg/log"
 )
@@ -79,7 +78,8 @@ func (o *Options) Run() error {
 	resources := resourceList.Items
 	previews.SortPreviews(resources)
 
-	for _, preview := range resources {
+	for k := range resources {
+		preview := resources[k]
 		name := preview.Name
 		gitURL := preview.Spec.Source.CloneURL
 		if gitURL == "" {
@@ -131,7 +131,7 @@ func (o *Options) Run() error {
 
 			err = o.Destroy(name)
 			if err != nil {
-				return fmt.Errorf("failed to destroy preview environment %s: %v\n", name, err)
+				return fmt.Errorf("failed to destroy preview environment %s: %v", name, err)
 			}
 
 			o.Deleted = append(o.Deleted, name)
