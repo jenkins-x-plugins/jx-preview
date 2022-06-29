@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -682,7 +681,7 @@ func (o *Options) writeOutputEnvVars() error {
 		return errors.Wrapf(err, "failed to check for file exist %s", path)
 	}
 	if exists {
-		data, err := ioutil.ReadFile(path)
+		data, err := os.ReadFile(path)
 		if err != nil {
 			return errors.Wrapf(err, "failed to read %s", path)
 		}
@@ -692,7 +691,7 @@ func (o *Options) writeOutputEnvVars() error {
 	buf := strings.Builder{}
 	buf.WriteString("# preview environment varables\n")
 	for k, v := range o.OutputEnvVars {
-		buf.WriteString(fmt.Sprintf("export %s=\"%s\"\n", k, v))
+		buf.WriteString(fmt.Sprintf("export %s=%q\n", k, v))
 	}
 	if text != "" {
 		buf.WriteString("\n\n")
@@ -707,7 +706,7 @@ func (o *Options) writeOutputEnvVars() error {
 		return errors.Wrapf(err, "failed to make dir %s", dir)
 	}
 
-	err = ioutil.WriteFile(path, []byte(text), files.DefaultFileWritePermissions)
+	err = os.WriteFile(path, []byte(text), files.DefaultFileWritePermissions)
 	if err != nil {
 		return errors.Wrapf(err, "failed to save file %s", path)
 	}
