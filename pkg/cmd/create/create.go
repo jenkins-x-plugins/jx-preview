@@ -151,10 +151,10 @@ func (o *Options) Run() error {
 
 	destroyCmd := o.createDestroyCommand(envVars)
 
-	// lets get the git clone URL with user/password so we can clone it again in the destroy command/CronJob
+	// let's get the git clone URL with user/password so we can clone it again in the destroy command/CronJob
 	ctx := context.Background()
 
-	_, err = previews.CreateJXValuesFile(o.GitClient, o.JXClient, o.Namespace, o.PreviewHelmfile, o.PreviewNamespace, o.GitUser, o.GitToken)
+	_, err = previews.CreateJXValuesFile(o.GitClient, o.JXClient, o.Namespace, filepath.Dir(o.PreviewHelmfile), o.PreviewNamespace, o.GitUser, o.GitToken)
 	if err != nil {
 		return errors.Wrapf(err, "failed to create the jx-values.yaml file")
 	}
@@ -207,7 +207,7 @@ func (o *Options) Run() error {
 	if url != "" {
 		log.Logger().Infof("preview %s is now running at %s", info(preview.Name), info(url))
 
-		// lets modify the preview
+		// let's modify the preview
 		preview.Spec.Resources.Name = o.Repository
 		preview.Spec.Resources.URL = url
 		preview, err = o.PreviewClient.PreviewV1alpha1().Previews(o.Namespace).Update(ctx, preview, metav1.UpdateOptions{})
@@ -434,13 +434,13 @@ func (o *Options) createPreviewNamespace() (string, error) {
 }
 
 func findAllServiceNamesInNamespace(client kubernetes.Interface, namespace string) ([]string, error) {
-	services, err := client.CoreV1().Services(namespace).List(context.TODO(), metav1.ListOptions{})
+	serviceList, err := client.CoreV1().Services(namespace).List(context.TODO(), metav1.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
-	appNames := []string{}
-	for k := range services.Items {
-		appNames = append(appNames, services.Items[k].Name)
+	var appNames []string
+	for k := range serviceList.Items {
+		appNames = append(appNames, serviceList.Items[k].Name)
 	}
 	return appNames, nil
 }
@@ -452,12 +452,12 @@ func (o *Options) findPreviewURL(envVars map[string]string) (string, error) {
 		return "", errors.Wrapf(err, "failed to read helmfile releases")
 	}
 
-	// lets try find the release name
+	// let's try to find the release name
 	if len(releases) == 0 {
 		return "", errors.Errorf("helmfile %s has no releases", o.PreviewHelmfile)
 	}
 
-	// lets assume first release is the preview
+	// let's assume first release is the preview
 	release := releases[0]
 	releaseName := release.Name
 	if releaseName == "" {
@@ -532,7 +532,7 @@ func (o *Options) updatePipelineActivity(applicationURL, pullRequestURL string) 
 
 		jxClient := o.JXClient
 
-		// lets see if we can update the pipeline
+		// let's see if we can update the pipeline
 		acts := jxClient.JenkinsV1().PipelineActivities(ns)
 		key := &activities.PromoteStepActivityKey{
 			PipelineActivityKey: activities.PipelineActivityKey{
@@ -621,7 +621,7 @@ func (o *Options) DiscoverPreviewHelmfile() error {
 		return nil
 	}
 
-	// lets make the preview dir
+	// let's make the preview dir
 	previewDir := filepath.Dir(o.PreviewHelmfile)
 	parentDir := filepath.Dir(previewDir)
 	relDir, err := filepath.Rel(o.Dir, parentDir)
@@ -644,7 +644,7 @@ func (o *Options) DiscoverPreviewHelmfile() error {
 		return errors.Wrapf(err, "failed to get the preview helmfile: %s via kpt", o.PreviewHelmfile)
 	}
 
-	// lets add the files
+	// let's add the files
 	if o.GitClient == nil {
 		o.GitClient = cli.NewCLIClient("", o.CommandRunner)
 	}
@@ -657,7 +657,7 @@ func (o *Options) DiscoverPreviewHelmfile() error {
 		return errors.Wrapf(err, "failed to commit the preview helmfile files to git")
 	}
 
-	// lets push the changes to git
+	// let's push the changes to git
 	_, po := push.NewCmdPullRequestPush()
 	po.CommandRunner = o.CommandRunner
 	po.ScmClient = o.ScmClient
@@ -689,7 +689,7 @@ func (o *Options) writeOutputEnvVars() error {
 	}
 
 	buf := strings.Builder{}
-	buf.WriteString("# preview environment varables\n")
+	buf.WriteString("# preview environment variables\n")
 	for k, v := range o.OutputEnvVars {
 		buf.WriteString(fmt.Sprintf("export %s=%q\n", k, v))
 	}

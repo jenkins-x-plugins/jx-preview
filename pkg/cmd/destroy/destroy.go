@@ -2,6 +2,7 @@ package destroy
 
 import (
 	"context"
+	"fmt"
 	"path/filepath"
 
 	"github.com/jenkins-x/jx-helpers/v3/pkg/input"
@@ -28,8 +29,6 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-
-	"fmt"
 )
 
 var (
@@ -48,20 +47,19 @@ var (
 // Options the CLI options for
 type Options struct {
 	options.BaseOptions
-	scmhelpers.Options
-	Names           []string
-	Namespace       string
-	PreviewHelmfile string
-	Filter          string
-	GitUser         string
-	FailOnHelmError bool
-	SelectAll       bool
-	PreviewClient   versioned.Interface
-	KubeClient      kubernetes.Interface
-	JXClient        jxc.Interface
-	GitClient       gitclient.Interface
-	CommandRunner   cmdrunner.CommandRunner
-	Input           input.Interface
+	scmhelpers.Options // Only used for tests
+	Names              []string
+	Namespace          string
+	Filter             string
+	GitUser            string // Only used for tests
+	FailOnHelmError    bool
+	SelectAll          bool
+	PreviewClient      versioned.Interface
+	KubeClient         kubernetes.Interface
+	JXClient           jxc.Interface
+	GitClient          gitclient.Interface
+	CommandRunner      cmdrunner.CommandRunner
+	Input              input.Interface
 }
 
 // NewCmdPreviewDestroy creates a command object for the command
@@ -80,10 +78,8 @@ func NewCmdPreviewDestroy() (*cobra.Command, *Options) {
 			helper.CheckErr(err)
 		},
 	}
-	cmd.Flags().StringVarP(&o.PreviewHelmfile, "file", "f", "", "Preview helmfile.yaml path to use. If not specified it is discovered in preview/helmfile.yaml and created from a template if needed")
-	cmd.Flags().StringVarP(&o.Filter, "filter", "", "", "The filter to use to find a preview to delete")
-	cmd.Flags().StringVarP(&o.GitUser, "git-user", "", "", "The user name to git clone the environment repository")
-	cmd.Flags().BoolVarP(&o.SelectAll, "all", "", false, "Select all the filters by default to remove")
+	cmd.Flags().StringVarP(&o.Filter, "filter", "", "", "The filter to use to find previews to delete")
+	cmd.Flags().BoolVarP(&o.SelectAll, "all", "", false, "Select all the previews that match filter by default")
 	cmd.Flags().BoolVarP(&o.FailOnHelmError, "fail-on-helm", "", false, "If enabled do not try to remove the namespace or Preview resource if we fail to destroy helmfile resources")
 	return cmd, o
 }
@@ -153,13 +149,7 @@ func (o *Options) Destroy(name string) error {
 
 	previewNamespace := preview.Spec.Resources.Namespace
 
-	if o.PreviewHelmfile == "" {
-		o.PreviewHelmfile, err = previews.DiscoverHelmfile(dir)
-		if err != nil {
-			return errors.Wrapf(err, "failed to discover the helmfile in the dir")
-		}
-	}
-	_, err = previews.CreateJXValuesFile(o.GitClient, o.JXClient, o.Namespace, o.PreviewHelmfile, previewNamespace, o.GitUser, o.GitToken)
+	_, err = previews.CreateJXValuesFile(o.GitClient, o.JXClient, o.Namespace, dir, previewNamespace, o.GitUser, o.GitToken)
 	if err != nil {
 		return errors.Wrapf(err, "failed to create the jx-values.yaml file")
 	}
