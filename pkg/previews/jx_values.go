@@ -21,8 +21,7 @@ import (
 var info = termcolor.ColorInfo
 
 // CreateJXValuesFile creates the jx-values.yaml file from the dev environment
-func CreateJXValuesFile(gitter gitclient.Interface, jxClient jxc.Interface, namespace, helmfile, previewNamespace, gitUser, gitToken string) (string, error) {
-	dir := filepath.Dir(helmfile)
+func CreateJXValuesFile(gitter gitclient.Interface, jxClient jxc.Interface, namespace, dir, previewNamespace, gitUser, gitToken string) (string, error) {
 	fileName := filepath.Join(dir, "jx-values.yaml")
 
 	devEnv, err := jxenv.GetDevEnvironment(jxClient, namespace)

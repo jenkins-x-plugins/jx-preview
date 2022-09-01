@@ -2,6 +2,7 @@ package template
 
 import (
 	"os"
+	"path/filepath"
 	"strconv"
 
 	"github.com/jenkins-x-plugins/jx-gitops/pkg/plugins"
@@ -76,7 +77,7 @@ func (o *Options) Run() error {
 		}
 	}
 
-	o.envCloneDir, err = previews.CreateJXValuesFile(o.GitClient, o.JXClient, o.Namespace, o.PreviewHelmfile, o.PreviewNamespace, o.GitUser, o.GitToken)
+	o.envCloneDir, err = previews.CreateJXValuesFile(o.GitClient, o.JXClient, o.Namespace, filepath.Dir(o.PreviewHelmfile), o.PreviewNamespace, o.GitUser, o.GitToken)
 	if err != nil {
 		return errors.Wrapf(err, "failed to create the jx-values.yaml file")
 	}
