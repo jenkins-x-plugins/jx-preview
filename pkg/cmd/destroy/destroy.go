@@ -51,6 +51,7 @@ type Options struct {
 	Names              []string
 	Namespace          string
 	Filter             string
+	Dir                string
 	GitUser            string // Only used for tests
 	FailOnHelmError    bool
 	SelectAll          bool
@@ -79,6 +80,7 @@ func NewCmdPreviewDestroy() (*cobra.Command, *Options) {
 		},
 	}
 	cmd.Flags().StringVarP(&o.Filter, "filter", "", "", "The filter to use to find previews to delete")
+	cmd.Flags().StringVarP(&o.Dir, "dir", "", "", "The directory where to run the delete preview command - a git clone will be done on a temporary jx-git-xxx directory if this parameter is empty")
 	cmd.Flags().BoolVarP(&o.SelectAll, "all", "", false, "Select all the previews that match filter by default")
 	cmd.Flags().BoolVarP(&o.FailOnHelmError, "fail-on-helm", "", false, "If enabled do not try to remove the namespace or Preview resource if we fail to destroy helmfile resources")
 	return cmd, o
@@ -142,19 +144,23 @@ func (o *Options) Destroy(name string) error {
 		return errors.Wrapf(err, "failed to find preview %s in namespace %s", name, ns)
 	}
 
-	dir, err := o.gitCloneSource(preview)
-	if err != nil {
-		return errors.Wrapf(err, "failed to git clone preview source")
+	if o.Dir == "" {
+		dir, err := o.gitCloneSource(preview)
+		if err != nil {
+			return errors.Wrapf(err, "failed to git clone preview source")
+		}
+
+		o.Dir = dir
 	}
 
 	previewNamespace := preview.Spec.Resources.Namespace
 
-	_, err = previews.CreateJXValuesFile(o.GitClient, o.JXClient, o.Namespace, dir, previewNamespace, o.GitUser, o.GitToken)
+	_, err = previews.CreateJXValuesFile(o.GitClient, o.JXClient, o.Namespace, o.Dir, previewNamespace, o.GitUser, o.GitToken)
 	if err != nil {
 		return errors.Wrapf(err, "failed to create the jx-values.yaml file")
 	}
 
-	err = o.runDeletePreviewCommand(preview, dir)
+	err = o.runDeletePreviewCommand(preview, o.Dir)
 	if err != nil {
 		if o.FailOnHelmError {
 			return errors.Wrapf(err, "failed to delete preview resources")
