@@ -2,7 +2,6 @@ package create_test
 
 import (
 	"context"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -178,7 +177,7 @@ func AssertPreview(t *testing.T, customService string) {
 		}
 
 		var err error
-		tmpDir, err = ioutil.TempDir("", "")
+		tmpDir, err = os.MkdirTemp("", "")
 		require.NoError(t, err, "failed to create temp dir")
 
 		err = files.CopyDirOverwrite("test_data", tmpDir)
@@ -330,7 +329,7 @@ func TestPreviewCreateHelmfileDiscovery(t *testing.T) {
 	fakescms.CreatePullRequest(fakeData, owner, repo, 1)
 
 	for _, tc := range testCases {
-		tmpDir, err := ioutil.TempDir("", "")
+		tmpDir, err := os.MkdirTemp("", "")
 		require.NoError(t, err, "could not create temp dir")
 
 		appsDir := filepath.Join(tmpDir, appsDirRelPath)
