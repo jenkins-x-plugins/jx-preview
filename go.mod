@@ -4,17 +4,18 @@ require (
 	github.com/cenkalti/backoff v2.2.1+incompatible
 	github.com/cpuguy83/go-md2man v1.0.10
 	github.com/jenkins-x-plugins/jx-gitops v0.8.2
-	github.com/jenkins-x/go-scm v1.11.20
-	github.com/jenkins-x/jx-api/v4 v4.5.1
+	github.com/jenkins-x/go-scm v1.11.29
+	github.com/jenkins-x/jx-api/v4 v4.6.2
 	github.com/jenkins-x/jx-helpers/v3 v3.4.2
-	github.com/jenkins-x/jx-kube-client/v3 v3.0.4
+	github.com/jenkins-x/jx-kube-client/v3 v3.0.5
 	github.com/jenkins-x/jx-logging/v3 v3.0.10
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.8.0
-	k8s.io/api v0.21.14
-	k8s.io/apimachinery v0.21.14
+	k8s.io/api v0.22.15
+	k8s.io/apimachinery v0.22.15
+
 	k8s.io/client-go v11.0.1-0.20190805182717-6502b5e7b1b5+incompatible
 	knative.dev/serving v0.20.0
 )
@@ -32,7 +33,7 @@ require (
 	github.com/MakeNowJust/heredoc v1.0.0 // indirect
 	github.com/bluekeyes/go-gitdiff v0.4.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/evanphx/json-patch v4.9.0+incompatible // indirect
+	github.com/evanphx/json-patch v4.11.0+incompatible // indirect
 	github.com/evanphx/json-patch/v5 v5.5.0 // indirect
 	github.com/fatih/color v1.10.0 // indirect
 	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32 // indirect
@@ -95,12 +96,14 @@ require (
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
+
 	k8s.io/klog/v2 v2.80.1 // indirect
-	k8s.io/kube-openapi v0.0.0-20210305001622-591a79e4bda7 // indirect
-	k8s.io/utils v0.0.0-20220922133306-665eaaec4324 // indirect
-	knative.dev/networking v0.0.0-20210107024535-ecb89ced52d9 // indirect
+	k8s.io/kube-openapi v0.0.0-20211109043538-20434351676c // indirect
+  k8s.io/utils v0.0.0-20220922133306-665eaaec4324 // indirect
+  
+ 	knative.dev/networking v0.0.0-20210107024535-ecb89ced52d9 // indirect
 	knative.dev/pkg v0.0.0-20210827184538-2bd91f75571c // indirect
-	sigs.k8s.io/structured-merge-diff/v4 v4.1.2 // indirect
+	sigs.k8s.io/structured-merge-diff/v4 v4.2.1 // indirect
 	sigs.k8s.io/yaml v1.2.0 // indirect
 )
 
@@ -114,9 +117,9 @@ replace (
 
 	github.com/json-iterator/go => github.com/json-iterator/go v1.1.12
 
-	k8s.io/api => k8s.io/api v0.21.4
-	k8s.io/apimachinery => k8s.io/apimachinery v0.21.4
-	k8s.io/client-go => k8s.io/client-go v0.21.4
+	k8s.io/api => k8s.io/api v0.22.15
+	k8s.io/apimachinery => k8s.io/apimachinery v0.22.15
+	k8s.io/client-go => k8s.io/client-go v0.22.15
 )
 
-go 1.17
+go 1.18
