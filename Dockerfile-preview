@@ -1,3 +1,7 @@
-FROM gcr.io/jenkinsxio/jx-boot:3.0.739
+FROM golang:1.19.3
+WORKDIR /app
+COPY . /app/
+RUN make build
+RUN ls -ltr /app/
 
-COPY ./build/linux/jx-preview /usr/bin/jx-preview
+ENTRYPOINT ["/app/build/jx-preview"]
