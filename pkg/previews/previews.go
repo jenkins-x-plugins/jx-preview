@@ -2,12 +2,10 @@ package previews
 
 import (
 	"context"
-	"strconv"
 
 	"github.com/jenkins-x-plugins/jx-preview/pkg/apis/preview/v1alpha1"
 	"github.com/jenkins-x-plugins/jx-preview/pkg/client/clientset/versioned"
 	"github.com/jenkins-x/go-scm/scm"
-	"github.com/jenkins-x/jx-helpers/v3/pkg/kube/naming"
 	"github.com/pkg/errors"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -33,8 +31,7 @@ func GetOrCreatePreview(client versioned.Interface, ns string, pr *scm.PullReque
 	var found *v1alpha1.Preview
 	for i := range previews.Items {
 		preview := &previews.Items[i]
-		prs := &preview.Spec.PullRequest
-		if prs.Number == pr.Number && prs.Repository == repo.Name && prs.Owner == repo.Namespace {
+		if preview.Name == previewNamespace {
 			found = preview
 			break
 		}
@@ -43,7 +40,7 @@ func GetOrCreatePreview(client versioned.Interface, ns string, pr *scm.PullReque
 		create = true
 		found = &v1alpha1.Preview{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      naming.ToValidName(repo.FullName + "-pr-" + strconv.Itoa(pr.Number)),
+				Name:      previewNamespace,
 				Namespace: ns,
 			},
 		}
