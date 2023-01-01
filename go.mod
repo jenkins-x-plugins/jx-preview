@@ -7,14 +7,14 @@ require (
 	github.com/jenkins-x/go-scm v1.11.29
 	github.com/jenkins-x/jx-api/v4 v4.6.3
 	github.com/jenkins-x/jx-helpers/v3 v3.4.2
-	github.com/jenkins-x/jx-kube-client/v3 v3.0.5
+	github.com/jenkins-x/jx-kube-client/v3 v3.0.7
 	github.com/jenkins-x/jx-logging/v3 v3.0.10
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.6.1
 	github.com/spf13/pflag v1.0.5
 	github.com/stretchr/testify v1.8.1
-	k8s.io/api v0.22.15
-	k8s.io/apimachinery v0.22.15
+	k8s.io/api v0.23.14
+	k8s.io/apimachinery v0.23.14
 	k8s.io/client-go v11.0.1-0.20190805182717-6502b5e7b1b5+incompatible
 	knative.dev/serving v0.20.0
 )
@@ -36,7 +36,7 @@ require (
 	github.com/evanphx/json-patch/v5 v5.5.0 // indirect
 	github.com/fatih/color v1.10.0 // indirect
 	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32 // indirect
-	github.com/go-logr/logr v0.4.0 // indirect
+	github.com/go-logr/logr v1.2.0 // indirect
 	github.com/go-stack/stack v1.8.1 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang-jwt/jwt/v4 v4.2.0 // indirect
@@ -93,8 +93,8 @@ require (
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
-	k8s.io/klog/v2 v2.9.0 // indirect
-	k8s.io/kube-openapi v0.0.0-20211109043538-20434351676c // indirect
+	k8s.io/klog/v2 v2.30.0 // indirect
+	k8s.io/kube-openapi v0.0.0-20211115234752-e816edb12b65 // indirect
 	k8s.io/utils v0.0.0-20220210201930-3a6ce19ff2f9 // indirect
 	knative.dev/networking v0.0.0-20210107024535-ecb89ced52d9 // indirect
 	knative.dev/pkg v0.0.0-20210827184538-2bd91f75571c // indirect
