@@ -154,12 +154,12 @@ func (o *Options) Run() error {
 	// let's get the git clone URL with user/password so we can clone it again in the destroy command/CronJob
 	ctx := context.Background()
 
-	_, err = previews.CreateJXValuesFile(o.GitClient, o.JXClient, o.Namespace, filepath.Dir(o.PreviewHelmfile), o.PreviewNamespace, o.GitUser, o.GitToken)
+	_, err = previews.CreateJXValuesFile(o.GitClient, o.JXClient, o.Namespace, filepath.Dir(o.PreviewHelmfile), envVars["PREVIEW_NAMESPACE"], o.GitUser, o.GitToken)
 	if err != nil {
 		return errors.Wrapf(err, "failed to create the jx-values.yaml file")
 	}
 
-	preview, _, err := previews.GetOrCreatePreview(o.PreviewClient, o.Namespace, pr, &destroyCmd, pr.Repository().Link, o.PreviewNamespace, o.PreviewHelmfile)
+	preview, _, err := previews.GetOrCreatePreview(o.PreviewClient, o.Namespace, pr, &destroyCmd, pr.Repository().Link, envVars["PREVIEW_NAMESPACE"], o.PreviewHelmfile)
 	if err != nil {
 		return errors.Wrapf(err, "failed to upsert the Preview resource in namespace %s", o.Namespace)
 	}
