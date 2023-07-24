@@ -798,9 +798,9 @@ func (o *Options) IfPodIsFailedShareLogs(pod *corev1.Pod, previewNamespace strin
 
 		var m string
 		for scanner.Scan() {
-			m = scanner.Text()
-			return fmt.Errorf("failed pod %s in namespace %s: %s", pod.Name, previewNamespace, m)
+			m += scanner.Text()
 		}
+		return fmt.Errorf("failed pod %s in namespace %s: %s", pod.Name, previewNamespace, m)
 	}
 	return nil
 }
