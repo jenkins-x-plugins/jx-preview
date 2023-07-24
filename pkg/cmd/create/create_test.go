@@ -8,6 +8,8 @@ import (
 	"testing"
 	"time"
 
+	"k8s.io/client-go/kubernetes"
+
 	"github.com/jenkins-x/jx-helpers/v3/pkg/stringhelpers"
 
 	"github.com/jenkins-x-plugins/jx-preview/pkg/client/clientset/versioned/fake"
@@ -33,14 +35,18 @@ import (
 )
 
 func TestPreviewCreate(t *testing.T) {
-	AssertPreview(t, "")
+	AssertPreview(t, "", false)
 }
 
 func TestPreviewCreateWithCustomService(t *testing.T) {
-	AssertPreview(t, "custom-service")
+	AssertPreview(t, "custom-service", false)
 }
 
-func AssertPreview(t *testing.T, customService string) {
+func TestHelmfileSyncFailurePostsPodLogs(t *testing.T) {
+	AssertPreview(t, "", true)
+}
+
+func AssertPreview(t *testing.T, customService string, failSync bool) {
 	containerRegistry := "ghcr.io"
 	gitUser := "myuser"
 	gitToken := "mytoken"
@@ -72,52 +78,7 @@ func AssertPreview(t *testing.T, customService string) {
 		previewURL = stringhelpers.UrlJoin(previewURL, previewPath)
 	}
 
-	kubeClient := fakekube.NewSimpleClientset(
-		&corev1.Namespace{
-			ObjectMeta: metav1.ObjectMeta{
-				Name: previewNamespace,
-			},
-		},
-
-		// the preview service and ingress resources
-		&corev1.Service{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      serviceName,
-				Namespace: previewNamespace,
-			},
-		},
-
-		&nv1.Ingress{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      serviceName,
-				Namespace: previewNamespace,
-			},
-			Spec: nv1.IngressSpec{
-				Rules: []nv1.IngressRule{
-					{
-						Host: ingressHost,
-						IngressRuleValue: nv1.IngressRuleValue{
-							HTTP: &nv1.HTTPIngressRuleValue{
-								Paths: []nv1.HTTPIngressPath{
-									{
-										Path: "",
-										Backend: nv1.IngressBackend{
-											Service: &nv1.IngressServiceBackend{
-												Name: serviceName,
-												Port: nv1.ServiceBackendPort{
-													Number: 80,
-												},
-											},
-										},
-									},
-								},
-							},
-						},
-					},
-				},
-			},
-		},
-	)
+	kubeClient := SetupKubeClient(serviceName, previewNamespace, ingressHost)
 
 	devEnv := jxenv.CreateDefaultDevEnvironment(ns)
 	devEnv.Namespace = ns
@@ -193,6 +154,10 @@ func AssertPreview(t *testing.T, customService string) {
 				if c.Name == "helmfile" && len(c.Args) > 2 && c.Args[2] == "list" {
 					return `[{"name":"preview","namespace":"jx-myowner-myrepo-pr-5","enabled":true,"labels":""}]`, nil
 				}
+				// helmfile sync
+				if c.Name == "helmfile" && c.Args[2] == "sync" && failSync {
+					return " \tCOMBINED OUTPUT:\n\t\t  Error: UPGRADE FAILED: timed out waiting for the condition", errors.New(" \tCOMBINED OUTPUT:\n\t\t  Error: UPGRADE FAILED: timed out waiting for the condition'")
+				}
 				return "", nil
 			},
 		}
@@ -202,24 +167,15 @@ func AssertPreview(t *testing.T, customService string) {
 		o.Version = "0.0.0-SNAPSHOT-PR-1"
 
 		err = o.Run()
-		require.NoError(t, err, "failed to run command in test %s", testName)
+		if failSync {
+			require.Error(t, err, "should have failed to create/update the preview environment")
+			require.Contains(t, err.Error(), "timed out waiting for the condition", "should have timed out via the helmfile sync")
+			require.Contains(t, err.Error(), "fake logs", "should have returned the fake logs")
+			// If the sync fails the pipeline wont be updated so we need to return
+			return
+		}
 
-		/*
-			runner.ExpectResults(t,
-				fakerunner.FakeResult{
-					CLI: "git clone https://jstrachan:mytoken@github.com/myorg/my-gitops-repo.git",
-				},
-				fakerunner.FakeResult{
-					CLI: "helmfile --file " + tmpDir + "/preview/helmfile.yaml repos",
-				},
-				fakerunner.FakeResult{
-					CLI: "helmfile --file " + tmpDir + "/preview/helmfile.yaml sync",
-				},
-				fakerunner.FakeResult{
-					CLI: "helmfile --file " + tmpDir + "/preview/helmfile.yaml list --output json",
-				},
-			)
-		*/
+		require.NoError(t, err, "failed to run command in test %s", testName)
 
 		previewList, err := o.PreviewClient.PreviewV1alpha1().Previews(ns).List(ctx, metav1.ListOptions{})
 		require.NoError(t, err, "failed to list previews in namespace %s for test %s", ns, testName)
@@ -247,6 +203,11 @@ func AssertPreview(t *testing.T, customService string) {
 		prsrc := &preview.Spec.Source
 		assert.Equal(t, repoLink, prsrc.URL, "preview.Spec.Source.URL")
 		assert.Equal(t, sha, prsrc.Ref, "preview.Spec.Source.Ref")
+	}
+
+	// If the sync fails the pipeline wont be updated
+	if failSync {
+		return
 	}
 
 	// verify pipeline activity
@@ -302,6 +263,66 @@ func AssertPreview(t *testing.T, customService string) {
 	namespaceList, err := do.KubeClient.CoreV1().Namespaces().List(ctx, metav1.ListOptions{})
 	require.NoError(t, err, "failed to list namespaces")
 	require.Len(t, namespaceList.Items, 0, "should not have any Namespaces")
+}
+
+func SetupKubeClient(serviceName, previewNamespace, ingressHost string) kubernetes.Interface {
+	return fakekube.NewSimpleClientset(
+		&corev1.Namespace{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: previewNamespace,
+			},
+		},
+
+		// the preview service and ingress resources
+		&corev1.Service{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      serviceName,
+				Namespace: previewNamespace,
+			},
+		},
+
+		// Create a failed pod, only looked at if the helmfile failed
+		&corev1.Pod{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "failed-pod",
+				Namespace: previewNamespace,
+			},
+			Status: corev1.PodStatus{
+				Phase: corev1.PodFailed,
+			},
+		},
+
+		&nv1.Ingress{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      serviceName,
+				Namespace: previewNamespace,
+			},
+			Spec: nv1.IngressSpec{
+				Rules: []nv1.IngressRule{
+					{
+						Host: ingressHost,
+						IngressRuleValue: nv1.IngressRuleValue{
+							HTTP: &nv1.HTTPIngressRuleValue{
+								Paths: []nv1.HTTPIngressPath{
+									{
+										Path: "",
+										Backend: nv1.IngressBackend{
+											Service: &nv1.IngressServiceBackend{
+												Name: serviceName,
+												Port: nv1.ServiceBackendPort{
+													Number: 80,
+												},
+											},
+										},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	)
 }
 
 func TestPreviewCreateHelmfileDiscovery(t *testing.T) {

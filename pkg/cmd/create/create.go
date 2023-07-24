@@ -11,6 +11,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/jenkins-x/jx-helpers/v3/pkg/kube/pods"
+	corev1 "k8s.io/api/core/v1"
+
 	"github.com/jenkins-x/jx-helpers/v3/pkg/gitclient"
 
 	"github.com/cenkalti/backoff"
@@ -43,6 +46,10 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	kserve "knative.dev/serving/pkg/client/clientset/versioned"
+)
+
+const (
+	timedOut = "UPGRADE FAILED: timed out waiting for the condition"
 )
 
 var (
@@ -351,11 +358,36 @@ func (o *Options) helmfileSyncPreview(envVars map[string]string) error {
 		Args: append(args, "sync"),
 		Env:  envVars,
 	}
-	_, err = o.CommandRunner(c)
-	if err != nil {
-		return errors.Wrapf(err, "failed to run helmfile sync")
+	_, syncErr := o.CommandRunner(c)
+	if syncErr != nil {
+		syncErr = errors.Wrapf(syncErr, "failed to run helmfile sync")
+
+		syncErr = o.ProcessHelmfileSyncTimeoutOrReturnOriginalError(syncErr)
+
+		return syncErr
 	}
+
 	return nil
+}
+
+func (o *Options) ProcessHelmfileSyncTimeoutOrReturnOriginalError(syncError error) error {
+	if strings.Contains(syncError.Error(), timedOut) {
+		log.Logger().Infof("detected a failure on the preview environment %s so looking for an erroring pod", o.PreviewNamespace)
+		_, podsInNs, err := pods.GetPods(o.KubeClient, o.PreviewNamespace, "")
+		if err != nil {
+			log.Logger().Errorf("failed to find pods in namespace %s: %s", o.PreviewNamespace, err.Error())
+			return errors.Wrapf(syncError, "failed to sync helmfile due to a timeout and failed to find pods in namespace %s: %s", o.PreviewNamespace, err.Error())
+		}
+
+		for _, pod := range podsInNs {
+			err := o.IfPodIsFailedShareLogs(pod, o.PreviewNamespace)
+			if err != nil {
+				return errors.Wrapf(syncError, "failed to sync helmfile due to a timeout, pod %s has failed with the logs:\n %s", pod.Name, err.Error())
+			}
+		}
+	}
+
+	return syncError
 }
 
 func (o *Options) CreateHelmfileEnvVars(fn func(string) (string, error)) (map[string]string, error) {
@@ -748,6 +780,28 @@ func (o *Options) watchNamespaceStart() error {
 			log.Logger().Infof(termcolor.ColorStatus(fmt.Sprintf("%s: ERROR: %s", previewNamespace, m)))
 		}
 	}()
+	return nil
+}
+
+func (o *Options) IfPodIsFailedShareLogs(pod *corev1.Pod, previewNamespace string) error {
+	if pod.Status.Phase == corev1.PodFailed {
+		log.Logger().Infof("found pod %s in namespace %s in state %s", pod.Name, previewNamespace, pod.Status.Phase)
+
+		logs := o.KubeClient.CoreV1().Pods(previewNamespace).GetLogs(pod.Name, &corev1.PodLogOptions{})
+		stream, err := logs.Stream(context.Background())
+		if err != nil {
+			return err
+		}
+		defer stream.Close()
+
+		scanner := bufio.NewScanner(stream)
+
+		var m string
+		for scanner.Scan() {
+			m = scanner.Text()
+			return fmt.Errorf("failed pod %s in namespace %s: %s", pod.Name, previewNamespace, m)
+		}
+	}
 	return nil
 }
 
