@@ -800,7 +800,10 @@ func (o *Options) IfPodIsFailedShareLogs(pod *corev1.Pod, previewNamespace strin
 	if pod.Status.Phase == corev1.PodFailed || highestRestarts > 5 {
 		log.Logger().Infof("found pod %s and container %s in namespace %s in state %s with %d restarts", pod.Name, highestRestartContainer, previewNamespace, pod.Status.Phase, highestRestarts)
 
-		logs := o.KubeClient.CoreV1().Pods(previewNamespace).GetLogs(pod.Name, &corev1.PodLogOptions{Previous: true, Container: highestRestartContainer})
+		// Only view previous if the pod state is not failed
+		previous := pod.Status.Phase != corev1.PodFailed
+
+		logs := o.KubeClient.CoreV1().Pods(previewNamespace).GetLogs(pod.Name, &corev1.PodLogOptions{Previous: previous, Container: highestRestartContainer})
 		stream, err := logs.Stream(context.Background())
 		if err != nil {
 			return err
