@@ -789,10 +789,10 @@ func (o *Options) IfPodIsFailedShareLogs(pod *corev1.Pod, previewNamespace strin
 	var highestRestartContainer string
 
 	containerStatuses := pod.Status.ContainerStatuses
-	for index, _ := range containerStatuses {
-		if containerStatuses[index].RestartCount > highestRestarts {
-			highestRestarts = containerStatuses[index].RestartCount
-			highestRestartContainer = containerStatuses[index].Name
+	for i := 0; i < len(containerStatuses); i++ {
+		if containerStatuses[i].RestartCount > highestRestarts {
+			highestRestarts = containerStatuses[i].RestartCount
+			highestRestartContainer = containerStatuses[i].Name
 		}
 	}
 
