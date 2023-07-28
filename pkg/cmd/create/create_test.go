@@ -35,18 +35,19 @@ import (
 )
 
 func TestPreviewCreate(t *testing.T) {
-	AssertPreview(t, "", false)
+	AssertPreview(t, "", false, "Running", 1)
 }
 
 func TestPreviewCreateWithCustomService(t *testing.T) {
-	AssertPreview(t, "custom-service", false)
+	AssertPreview(t, "custom-service", false, "Running", 0)
 }
 
 func TestHelmfileSyncFailurePostsPodLogs(t *testing.T) {
-	AssertPreview(t, "", true)
+	AssertPreview(t, "", true, "Pending", 8)
+	AssertPreview(t, "", true, "Failed", 0)
 }
 
-func AssertPreview(t *testing.T, customService string, failSync bool) {
+func AssertPreview(t *testing.T, customService string, failSync bool, podState corev1.PodPhase, numberOfRestarts int32) {
 	containerRegistry := "ghcr.io"
 	gitUser := "myuser"
 	gitToken := "mytoken"
@@ -78,7 +79,7 @@ func AssertPreview(t *testing.T, customService string, failSync bool) {
 		previewURL = stringhelpers.UrlJoin(previewURL, previewPath)
 	}
 
-	kubeClient := SetupKubeClient(serviceName, previewNamespace, ingressHost)
+	kubeClient := SetupKubeClient(serviceName, previewNamespace, ingressHost, podState, numberOfRestarts)
 
 	devEnv := jxenv.CreateDefaultDevEnvironment(ns)
 	devEnv.Namespace = ns
@@ -265,7 +266,7 @@ func AssertPreview(t *testing.T, customService string, failSync bool) {
 	require.Len(t, namespaceList.Items, 0, "should not have any Namespaces")
 }
 
-func SetupKubeClient(serviceName, previewNamespace, ingressHost string) kubernetes.Interface {
+func SetupKubeClient(serviceName, previewNamespace, ingressHost string, podState corev1.PodPhase, restarts int32) kubernetes.Interface {
 	return fakekube.NewSimpleClientset(
 		&corev1.Namespace{
 			ObjectMeta: metav1.ObjectMeta{
@@ -288,7 +289,13 @@ func SetupKubeClient(serviceName, previewNamespace, ingressHost string) kubernet
 				Namespace: previewNamespace,
 			},
 			Status: corev1.PodStatus{
-				Phase: corev1.PodFailed,
+				Phase: podState,
+				ContainerStatuses: []corev1.ContainerStatus{
+					{
+						Name:         "failed-container",
+						RestartCount: restarts,
+					},
+				},
 			},
 		},
 

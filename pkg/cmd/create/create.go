@@ -784,10 +784,26 @@ func (o *Options) watchNamespaceStart() error {
 }
 
 func (o *Options) IfPodIsFailedShareLogs(pod *corev1.Pod, previewNamespace string) error {
-	if pod.Status.Phase == corev1.PodFailed {
-		log.Logger().Infof("found pod %s in namespace %s in state %s", pod.Name, previewNamespace, pod.Status.Phase)
+	// get container with highest restarts
+	var highestRestarts int32
+	var highestRestartContainer string
 
-		logs := o.KubeClient.CoreV1().Pods(previewNamespace).GetLogs(pod.Name, &corev1.PodLogOptions{})
+	containerStatuses := pod.Status.ContainerStatuses
+	for i := 0; i < len(containerStatuses); i++ {
+		if containerStatuses[i].RestartCount > highestRestarts {
+			highestRestarts = containerStatuses[i].RestartCount
+			highestRestartContainer = containerStatuses[i].Name
+		}
+	}
+
+	// Check it's failed or the number of restarts is high
+	if pod.Status.Phase == corev1.PodFailed || highestRestarts > 5 {
+		log.Logger().Infof("found pod %s and container %s in namespace %s in state %s with %d restarts", pod.Name, highestRestartContainer, previewNamespace, pod.Status.Phase, highestRestarts)
+
+		// Only view previous if the pod state is not failed
+		previous := pod.Status.Phase != corev1.PodFailed
+
+		logs := o.KubeClient.CoreV1().Pods(previewNamespace).GetLogs(pod.Name, &corev1.PodLogOptions{Previous: previous, Container: highestRestartContainer})
 		stream, err := logs.Stream(context.Background())
 		if err != nil {
 			return err
