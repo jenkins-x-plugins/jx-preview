@@ -669,7 +669,7 @@ func (o *Options) DiscoverPreviewHelmfile() error {
 	c := &cmdrunner.Command{
 		Dir:  o.Dir,
 		Name: "kpt",
-		Args: []string{"pkg", "get", "https://github.com/jenkins-x/jx3-gitops-template.git/charts/preview", relDir},
+		Args: []string{"pkg", "get", "https://github.com/jenkins-x/jx3-pipeline-catalog.git/helm/preview", relDir},
 	}
 	_, err = o.CommandRunner(c)
 	if err != nil {
