@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"strconv"
 
 	"github.com/jenkins-x-plugins/jx-preview/pkg/apis/preview/v1alpha1"
 	"github.com/jenkins-x-plugins/jx-preview/pkg/client/clientset/versioned"
@@ -12,6 +11,7 @@ import (
 	"github.com/jenkins-x-plugins/jx-preview/pkg/rootcmd"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/cobras/helper"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/cobras/templates"
+	"github.com/jenkins-x/jx-helpers/v3/pkg/scmhelpers"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/table"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -21,6 +21,8 @@ import (
 
 // Options containers the CLI options
 type Options struct {
+	scmhelpers.PullRequestOptions
+
 	PreviewClient versioned.Interface
 	Namespace     string
 
@@ -68,6 +70,11 @@ func (o *Options) Run() error {
 		return errors.Wrapf(err, "failed to validate options")
 	}
 
+	_, err = o.DiscoverPullRequest()
+	if err != nil {
+		return errors.Wrapf(err, "failed to read pull request options")
+	}
+
 	if o.Current {
 		return o.CurrentPreviewURL()
 	}
@@ -102,6 +109,12 @@ func (o *Options) Validate() error {
 	if err != nil {
 		return errors.Wrapf(err, "failed to create Preview client")
 	}
+
+	err = o.PullRequestOptions.Validate()
+	if err != nil {
+		return errors.Wrapf(err, "failed to create Preview client")
+	}
+
 	return nil
 }
 
@@ -115,21 +128,16 @@ func (o *Options) CurrentPreviewURL() error {
 		}
 	}
 
-	repoName := os.Getenv("REPO_NAME")
-	prNumber, err := strconv.Atoi(os.Getenv("PULL_NUMBER"))
-	if err != nil {
-		return errors.Wrapf(err, "failed to retrieve current preview in namespace %s", ns)
-	}
-
 	var currentPreview v1alpha1.Preview
 	for _, preview := range resourceList.Items {
-		if preview.Spec.PullRequest.Number == prNumber &&
-			preview.Spec.PullRequest.Repository == repoName {
+		if preview.Spec.PullRequest.Number == o.Number &&
+			preview.Spec.PullRequest.Repository == o.Repository {
 			currentPreview = preview
+			break
 		}
 	}
-	if &currentPreview == nil {
-		return fmt.Errorf("no current preview for %s on pull request #%s", repoName, prNumber)
+	if currentPreview.Spec.PullRequest.Repository != o.Repository {
+		return fmt.Errorf("no current preview for %s on pull request #%v", o.Repository, o.Number)
 	}
 
 	t := table.CreateTable(os.Stdout)
