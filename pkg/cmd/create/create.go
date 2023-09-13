@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"context"
 	"fmt"
+	"github.com/jenkins-x-plugins/jx-preview/pkg/common"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -228,7 +229,7 @@ func (o *Options) Run() error {
 
 	o.updatePipelineActivity(url, preview.Spec.PullRequest.URL)
 
-	err = o.writeOutputEnvVars()
+	err = common.WriteOutputEnvVars(o.Dir, o.OutputEnvVars)
 	if err != nil {
 		return errors.Wrapf(err, "failed to write output environment variables")
 	}
@@ -701,49 +702,6 @@ func (o *Options) DiscoverPreviewHelmfile() error {
 	if err != nil {
 		return errors.Wrapf(err, "failed to push the changes to git")
 	}
-	return nil
-}
-
-func (o *Options) writeOutputEnvVars() error {
-	path := filepath.Join(o.Dir, ".jx", "variables.sh")
-
-	text := ""
-	exists, err := files.FileExists(path)
-	if err != nil {
-		return errors.Wrapf(err, "failed to check for file exist %s", path)
-	}
-	if exists {
-		data, err := os.ReadFile(path)
-		if err != nil {
-			return errors.Wrapf(err, "failed to read %s", path)
-		}
-		text = string(data)
-	}
-
-	buf := strings.Builder{}
-	buf.WriteString("# preview environment variables\n")
-	for k, v := range o.OutputEnvVars {
-		buf.WriteString(fmt.Sprintf("export %s=%q\n", k, v))
-	}
-	if text != "" {
-		buf.WriteString("\n\n")
-		buf.WriteString(text)
-	}
-	text = buf.String()
-
-	// make sure dir exists
-	dir := filepath.Dir(path)
-	err = os.MkdirAll(dir, files.DefaultDirWritePermissions)
-	if err != nil {
-		return errors.Wrapf(err, "failed to make dir %s", dir)
-	}
-
-	err = os.WriteFile(path, []byte(text), files.DefaultFileWritePermissions)
-	if err != nil {
-		return errors.Wrapf(err, "failed to save file %s", path)
-	}
-
-	log.Logger().Infof("wrote preview environment variables to %s", info(path))
 	return nil
 }
 

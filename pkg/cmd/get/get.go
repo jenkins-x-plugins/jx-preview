@@ -7,6 +7,7 @@ import (
 
 	"github.com/jenkins-x-plugins/jx-preview/pkg/apis/preview/v1alpha1"
 	"github.com/jenkins-x-plugins/jx-preview/pkg/client/clientset/versioned"
+	"github.com/jenkins-x-plugins/jx-preview/pkg/common"
 	"github.com/jenkins-x-plugins/jx-preview/pkg/previews"
 	"github.com/jenkins-x-plugins/jx-preview/pkg/rootcmd"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/cobras/helper"
@@ -25,6 +26,7 @@ type Options struct {
 
 	PreviewClient versioned.Interface
 	Namespace     string
+	OutputEnvVars map[string]string
 
 	Current bool
 }
@@ -110,6 +112,10 @@ func (o *Options) Validate() error {
 		return errors.Wrapf(err, "failed to create Preview client")
 	}
 
+	if o.OutputEnvVars == nil {
+		o.OutputEnvVars = map[string]string{}
+	}
+
 	err = o.PullRequestOptions.Validate()
 	if err != nil {
 		return errors.Wrapf(err, "failed to create Preview client")
@@ -147,5 +153,16 @@ func (o *Options) CurrentPreviewURL() error {
 		currentPreview.Spec.Resources.URL)
 
 	t.Render()
+
+	o.OutputEnvVars["PREVIEW_URL"] = currentPreview.Spec.Resources.URL
+	o.OutputEnvVars["PREVIEW_NAME"] = currentPreview.Name
+	o.OutputEnvVars["PREVIEW_NAMESPACE"] = currentPreview.Spec.Resources.Namespace
+	o.OutputEnvVars["PREVIEW_PULL_REQUEST_URL"] = currentPreview.Spec.PullRequest.URL
+
+	err = common.WriteOutputEnvVars(o.Dir, o.OutputEnvVars)
+	if err != nil {
+		return errors.Wrapf(err, "failed to write output environment variables")
+	}
+
 	return nil
 }
