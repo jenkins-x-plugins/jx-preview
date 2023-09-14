@@ -1,6 +1,7 @@
 package fakepreviews
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/jenkins-x-plugins/jx-preview/pkg/apis/preview/v1alpha1"
@@ -20,6 +21,7 @@ func CreateTestPreviewAndPullRequest(data *fakescm.Data, ns, owner, repo string,
 	prLink := repoLink + "/pull/" + prNumberText
 	sha := "abcdef1234"
 	previewNamespace := ns + "-" + owner + "-" + repo + "-pr-" + prNumberText
+	previewURL := fmt.Sprintf("https://%s-pr%v.mqube-test.com", repo, prNumber)
 	pr := &scm.PullRequest{
 		Number: prNumber,
 		Title:  prTitle,
@@ -64,6 +66,7 @@ func CreateTestPreviewAndPullRequest(data *fakescm.Data, ns, owner, repo string,
 			},
 			Resources: v1alpha1.Resources{
 				Namespace: previewNamespace,
+				URL:       previewURL,
 			},
 		},
 	}

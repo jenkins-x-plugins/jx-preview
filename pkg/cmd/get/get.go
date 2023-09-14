@@ -5,11 +5,14 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/jenkins-x-plugins/jx-preview/pkg/apis/preview/v1alpha1"
 	"github.com/jenkins-x-plugins/jx-preview/pkg/client/clientset/versioned"
+	"github.com/jenkins-x-plugins/jx-preview/pkg/common"
 	"github.com/jenkins-x-plugins/jx-preview/pkg/previews"
 	"github.com/jenkins-x-plugins/jx-preview/pkg/rootcmd"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/cobras/helper"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/cobras/templates"
+	"github.com/jenkins-x/jx-helpers/v3/pkg/scmhelpers"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/table"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -19,8 +22,11 @@ import (
 
 // Options containers the CLI options
 type Options struct {
+	scmhelpers.PullRequestOptions
+
 	PreviewClient versioned.Interface
 	Namespace     string
+	OutputEnvVars map[string]string
 
 	Current bool
 }
@@ -100,34 +106,75 @@ func (o *Options) Validate() error {
 	if err != nil {
 		return errors.Wrapf(err, "failed to create Preview client")
 	}
+
 	return nil
 }
 
 func (o *Options) CurrentPreviewURL() error {
-	/* TODO
-	pipeline := o.GetJenkinsJobName()
-	if pipeline == "" {
-		return fmt.Errorf("No $JOB_NAME defined for the current pipeline job to use")
-	}
-	name := naming.ToValidName(pipeline)
-
-	client, ns, err := o.JXClientAndDevNamespace()
+	err := o.ValidateCurrent()
 	if err != nil {
-		return err
+		return errors.Wrapf(err, "failed to validate current options")
 	}
 
-	envList, err := client.JenkinsV1().Environments(ns).List(metav1.ListOptions{})
+	_, err = o.DiscoverPullRequest()
 	if err != nil {
-		return err
+		return errors.Wrapf(err, "failed to read pull request options")
 	}
-	for _, env := range envList.Items {
-		if env.Spec.Kind == v1.EnvironmentKindTypePreview && env.Name == name {
-			// lets log directly to stdout for easy capture of the URL from shell scripts
-			fmt.Println(env.Spec.PreviewGitSpec.ApplicationURL)
-			return nil
+
+	ctx := context.Background()
+	ns := o.Namespace
+	resourceList, err := o.PreviewClient.PreviewV1alpha1().Previews(ns).List(ctx, metav1.ListOptions{})
+	if err != nil {
+		if !apierrors.IsNotFound(err) {
+			return errors.Wrapf(err, "failed to list previews in namespace %s", ns)
 		}
 	}
-	return fmt.Errorf("No Preview for name: %s", name)
-	*/
+
+	var currentPreview v1alpha1.Preview
+
+	for i := 0; i < len(resourceList.Items); i++ {
+		if resourceList.Items[i].Spec.PullRequest.Number == o.Number &&
+			resourceList.Items[i].Spec.PullRequest.Repository == o.Repository {
+			currentPreview = resourceList.Items[i]
+			break
+		}
+	}
+
+	if currentPreview.Spec.PullRequest.Repository != o.Repository {
+		return fmt.Errorf("no current preview for %s on pull request #%v", o.Repository, o.Number)
+	}
+
+	t := table.CreateTable(os.Stdout)
+	t.AddRow("PULL REQUEST", "NAMESPACE", "APPLICATION")
+	t.AddRow(currentPreview.Spec.PullRequest.URL,
+		currentPreview.Spec.Resources.Namespace,
+		currentPreview.Spec.Resources.URL)
+
+	t.Render()
+
+	o.OutputEnvVars["PREVIEW_URL"] = currentPreview.Spec.Resources.URL
+	o.OutputEnvVars["PREVIEW_NAME"] = currentPreview.Name
+	o.OutputEnvVars["PREVIEW_NAMESPACE"] = currentPreview.Spec.Resources.Namespace
+	o.OutputEnvVars["PREVIEW_PULL_REQUEST_URL"] = currentPreview.Spec.PullRequest.URL
+
+	err = common.WriteOutputEnvVars(o.Dir, o.OutputEnvVars)
+	if err != nil {
+		return errors.Wrapf(err, "failed to write output environment variables")
+	}
+
+	return nil
+}
+
+func (o *Options) ValidateCurrent() error {
+	if o.OutputEnvVars == nil {
+		o.OutputEnvVars = map[string]string{}
+	}
+	o.DiscoverFromGit = true
+
+	err := o.PullRequestOptions.Validate()
+	if err != nil {
+		return errors.Wrapf(err, "failed to validate pull request options")
+	}
+
 	return nil
 }
