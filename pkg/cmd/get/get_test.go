@@ -6,6 +6,8 @@ import (
 	"github.com/jenkins-x-plugins/jx-preview/pkg/fakescms"
 	"github.com/jenkins-x-plugins/jx-preview/pkg/previews/fakepreviews"
 	fakescm "github.com/jenkins-x/go-scm/scm/driver/fake"
+	jxfake "github.com/jenkins-x/jx-api/v4/pkg/client/clientset/versioned/fake"
+	"github.com/jenkins-x/jx-helpers/v3/pkg/kube/jxenv"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"testing"
@@ -25,10 +27,17 @@ func TestPreviewGetCurrent(t *testing.T) {
 
 	previewClient := fake.NewSimpleClientset(preview1)
 
+	devEnv := jxenv.CreateDefaultDevEnvironment(ns)
+	devEnv.Namespace = ns
+	devEnv.Spec.Source.URL = sourceUrl
+
+	jxClient := jxfake.NewSimpleClientset(devEnv)
+
 	_, o := NewCmdGetPreview()
 
 	o.ScmClient = scmClient
 	o.PreviewClient = previewClient
+	o.JXClient = jxClient
 	o.SourceURL = sourceUrl
 	o.PullRequestOptions.Number = prNumber
 	o.Repository = repo
