@@ -10,6 +10,7 @@ import (
 	"github.com/jenkins-x/jx-helpers/v3/pkg/kube/jxenv"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"os"
 	"testing"
 )
 
@@ -21,6 +22,8 @@ func TestPreviewGet(t *testing.T) {
 	prNumber := 1
 	sourceUrl := fmt.Sprintf("https://fake.com/%s/%s", owner, repo)
 	ns := "jx"
+	tmpDir, err := os.MkdirTemp("", "")
+	require.NoError(t, err, "failed to create temp dir")
 
 	preview1, _ := fakepreviews.CreateTestPreviewAndPullRequest(fakeData, ns, owner, repo, 1)
 	fakescms.CreatePullRequest(fakeData, owner, repo, prNumber)
@@ -59,6 +62,7 @@ func TestPreviewGet(t *testing.T) {
 		o.DiscoverFromGit = false
 		o.Namespace = ns
 		o.Current = tc.current
+		o.Dir = tmpDir
 
 		t.Logf("running get for test: %s", tc.name)
 		err := o.Run()
