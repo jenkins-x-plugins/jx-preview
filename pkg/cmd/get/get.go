@@ -131,13 +131,15 @@ func (o *Options) CurrentPreviewURL() error {
 	}
 
 	var currentPreview v1alpha1.Preview
-	for _, preview := range resourceList.Items {
-		if preview.Spec.PullRequest.Number == o.Number &&
-			preview.Spec.PullRequest.Repository == o.Repository {
-			currentPreview = preview
+
+	for i := 0; i < len(resourceList.Items); i++ {
+		if resourceList.Items[i].Spec.PullRequest.Number == o.Number &&
+			resourceList.Items[i].Spec.PullRequest.Repository == o.Repository {
+			currentPreview = resourceList.Items[i]
 			break
 		}
 	}
+
 	if currentPreview.Spec.PullRequest.Repository != o.Repository {
 		return fmt.Errorf("no current preview for %s on pull request #%v", o.Repository, o.Number)
 	}

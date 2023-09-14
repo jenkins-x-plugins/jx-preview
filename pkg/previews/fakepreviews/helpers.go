@@ -21,7 +21,7 @@ func CreateTestPreviewAndPullRequest(data *fakescm.Data, ns, owner, repo string,
 	prLink := repoLink + "/pull/" + prNumberText
 	sha := "abcdef1234"
 	previewNamespace := ns + "-" + owner + "-" + repo + "-pr-" + prNumberText
-	previewUrl := fmt.Sprintf("https://%s-pr%v.mqube-test.com", repo, prNumber)
+	previewURL := fmt.Sprintf("https://%s-pr%v.mqube-test.com", repo, prNumber)
 	pr := &scm.PullRequest{
 		Number: prNumber,
 		Title:  prTitle,
@@ -66,7 +66,7 @@ func CreateTestPreviewAndPullRequest(data *fakescm.Data, ns, owner, repo string,
 			},
 			Resources: v1alpha1.Resources{
 				Namespace: previewNamespace,
-				URL:       previewUrl,
+				URL:       previewURL,
 			},
 		},
 	}

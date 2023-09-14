@@ -21,7 +21,7 @@ func TestPreviewGet(t *testing.T) {
 	owner := "owner"
 	repo := "test-repo"
 	prNumber := 1
-	sourceUrl := fmt.Sprintf("https://fake.com/%s/%s", owner, repo)
+	sourceURL := fmt.Sprintf("https://fake.com/%s/%s", owner, repo)
 	ns := "jx"
 	tmpDir, err := os.MkdirTemp("", "")
 	require.NoError(t, err, "failed to create temp dir")
@@ -33,7 +33,7 @@ func TestPreviewGet(t *testing.T) {
 
 	devEnv := jxenv.CreateDefaultDevEnvironment(ns)
 	devEnv.Namespace = ns
-	devEnv.Spec.Source.URL = sourceUrl
+	devEnv.Spec.Source.URL = sourceURL
 
 	jxClient := jxfake.NewSimpleClientset(devEnv)
 
@@ -57,7 +57,7 @@ func TestPreviewGet(t *testing.T) {
 		o.ScmClient = scmClient
 		o.PreviewClient = previewClient
 		o.JXClient = jxClient
-		o.SourceURL = sourceUrl
+		o.SourceURL = sourceURL
 		o.PullRequestOptions.Number = prNumber
 		o.Repository = repo
 		o.DiscoverFromGit = false
@@ -73,7 +73,7 @@ func TestPreviewGet(t *testing.T) {
 			assert.Equal(t, fmt.Sprintf("https://%s-pr%v.mqube-test.com", repo, prNumber), o.OutputEnvVars["PREVIEW_URL"])
 			assert.Equal(t, fmt.Sprintf("%s-%s-%v", owner, repo, prNumber), o.OutputEnvVars["PREVIEW_NAME"])
 			assert.Equal(t, fmt.Sprintf("%s-%s-%s-pr-%v", ns, owner, repo, prNumber), o.OutputEnvVars["PREVIEW_NAMESPACE"])
-			assert.Equal(t, sourceUrl, o.OutputEnvVars["PREVIEW_PULL_REQUEST_URL"])
+			assert.Equal(t, sourceURL, o.OutputEnvVars["PREVIEW_PULL_REQUEST_URL"])
 		}
 	}
 }
