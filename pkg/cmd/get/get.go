@@ -115,10 +115,11 @@ func (o *Options) Validate() error {
 	if o.OutputEnvVars == nil {
 		o.OutputEnvVars = map[string]string{}
 	}
+	o.DiscoverFromGit = true
 
 	err = o.PullRequestOptions.Validate()
 	if err != nil {
-		return errors.Wrapf(err, "failed to create Preview client")
+		return errors.Wrapf(err, "failed to validate pull request options")
 	}
 
 	return nil
