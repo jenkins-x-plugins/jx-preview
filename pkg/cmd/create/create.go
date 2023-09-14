@@ -4,13 +4,14 @@ import (
 	"bufio"
 	"context"
 	"fmt"
-	"github.com/jenkins-x-plugins/jx-preview/pkg/common"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/jenkins-x-plugins/jx-preview/pkg/common"
 
 	"github.com/jenkins-x/jx-helpers/v3/pkg/kube/pods"
 	corev1 "k8s.io/api/core/v1"

@@ -2,13 +2,14 @@ package common
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
+	"strings"
+
 	"github.com/jenkins-x/jx-helpers/v3/pkg/files"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/termcolor"
 	"github.com/jenkins-x/jx-logging/v3/pkg/log"
 	"github.com/pkg/errors"
-	"os"
-	"path/filepath"
-	"strings"
 )
 
 // BinaryName the binary name to use in help docs

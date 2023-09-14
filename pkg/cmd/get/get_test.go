@@ -2,6 +2,9 @@ package get
 
 import (
 	"fmt"
+	"os"
+	"testing"
+
 	"github.com/jenkins-x-plugins/jx-preview/pkg/client/clientset/versioned/fake"
 	"github.com/jenkins-x-plugins/jx-preview/pkg/fakescms"
 	"github.com/jenkins-x-plugins/jx-preview/pkg/previews/fakepreviews"
@@ -10,8 +13,6 @@ import (
 	"github.com/jenkins-x/jx-helpers/v3/pkg/kube/jxenv"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"os"
-	"testing"
 )
 
 func TestPreviewGet(t *testing.T) {
