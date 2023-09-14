@@ -13,7 +13,7 @@ import (
 	"testing"
 )
 
-func TestPreviewGetCurrent(t *testing.T) {
+func TestPreviewGet(t *testing.T) {
 	scmClient, fakeData := fakescm.NewDefault()
 
 	owner := "owner"
@@ -33,23 +33,42 @@ func TestPreviewGetCurrent(t *testing.T) {
 
 	jxClient := jxfake.NewSimpleClientset(devEnv)
 
-	_, o := NewCmdGetPreview()
+	testCases := []struct {
+		name    string
+		current bool
+	}{
+		{
+			name:    "get",
+			current: false,
+		},
+		{
+			name:    "get current",
+			current: true,
+		},
+	}
 
-	o.ScmClient = scmClient
-	o.PreviewClient = previewClient
-	o.JXClient = jxClient
-	o.SourceURL = sourceUrl
-	o.PullRequestOptions.Number = prNumber
-	o.Repository = repo
-	o.DiscoverFromGit = false
-	o.Namespace = ns
-	o.Current = true
+	for _, tc := range testCases {
+		_, o := NewCmdGetPreview()
 
-	err := o.Run()
-	require.NoError(t, err)
+		o.ScmClient = scmClient
+		o.PreviewClient = previewClient
+		o.JXClient = jxClient
+		o.SourceURL = sourceUrl
+		o.PullRequestOptions.Number = prNumber
+		o.Repository = repo
+		o.DiscoverFromGit = false
+		o.Namespace = ns
+		o.Current = tc.current
 
-	assert.Equal(t, fmt.Sprintf("https://%s-pr%v.mqube-test.com", repo, prNumber), o.OutputEnvVars["PREVIEW_URL"])
-	assert.Equal(t, fmt.Sprintf("%s-%s-%v", owner, repo, prNumber), o.OutputEnvVars["PREVIEW_NAME"])
-	assert.Equal(t, fmt.Sprintf("%s-%s-%s-pr-%v", ns, owner, repo, prNumber), o.OutputEnvVars["PREVIEW_NAMESPACE"])
-	assert.Equal(t, sourceUrl, o.OutputEnvVars["PREVIEW_PULL_REQUEST_URL"])
+		t.Logf("running get for test: %s", tc.name)
+		err := o.Run()
+		require.NoError(t, err)
+
+		if tc.current {
+			assert.Equal(t, fmt.Sprintf("https://%s-pr%v.mqube-test.com", repo, prNumber), o.OutputEnvVars["PREVIEW_URL"])
+			assert.Equal(t, fmt.Sprintf("%s-%s-%v", owner, repo, prNumber), o.OutputEnvVars["PREVIEW_NAME"])
+			assert.Equal(t, fmt.Sprintf("%s-%s-%s-pr-%v", ns, owner, repo, prNumber), o.OutputEnvVars["PREVIEW_NAMESPACE"])
+			assert.Equal(t, sourceUrl, o.OutputEnvVars["PREVIEW_PULL_REQUEST_URL"])
+		}
+	}
 }

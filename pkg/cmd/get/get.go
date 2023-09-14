@@ -72,11 +72,6 @@ func (o *Options) Run() error {
 		return errors.Wrapf(err, "failed to validate options")
 	}
 
-	_, err = o.DiscoverPullRequest()
-	if err != nil {
-		return errors.Wrapf(err, "failed to read pull request options")
-	}
-
 	if o.Current {
 		return o.CurrentPreviewURL()
 	}
@@ -112,20 +107,20 @@ func (o *Options) Validate() error {
 		return errors.Wrapf(err, "failed to create Preview client")
 	}
 
-	if o.OutputEnvVars == nil {
-		o.OutputEnvVars = map[string]string{}
-	}
-	o.DiscoverFromGit = true
-
-	err = o.PullRequestOptions.Validate()
-	if err != nil {
-		return errors.Wrapf(err, "failed to validate pull request options")
-	}
-
 	return nil
 }
 
 func (o *Options) CurrentPreviewURL() error {
+	err := o.ValidateCurrent()
+	if err != nil {
+		return errors.Wrapf(err, "failed to validate current options")
+	}
+
+	_, err = o.DiscoverPullRequest()
+	if err != nil {
+		return errors.Wrapf(err, "failed to read pull request options")
+	}
+
 	ctx := context.Background()
 	ns := o.Namespace
 	resourceList, err := o.PreviewClient.PreviewV1alpha1().Previews(ns).List(ctx, metav1.ListOptions{})
@@ -163,6 +158,20 @@ func (o *Options) CurrentPreviewURL() error {
 	err = common.WriteOutputEnvVars(o.Dir, o.OutputEnvVars)
 	if err != nil {
 		return errors.Wrapf(err, "failed to write output environment variables")
+	}
+
+	return nil
+}
+
+func (o *Options) ValidateCurrent() error {
+	if o.OutputEnvVars == nil {
+		o.OutputEnvVars = map[string]string{}
+	}
+	o.DiscoverFromGit = true
+
+	err := o.PullRequestOptions.Validate()
+	if err != nil {
+		return errors.Wrapf(err, "failed to validate pull request options")
 	}
 
 	return nil
