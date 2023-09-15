@@ -70,7 +70,7 @@ func TestPreviewGet(t *testing.T) {
 		require.NoError(t, err)
 
 		if tc.current {
-			assert.Equal(t, fmt.Sprintf("https://%s-pr%v.mqube-test.com", repo, prNumber), o.OutputEnvVars["PREVIEW_URL"])
+			assert.Equal(t, fmt.Sprintf("https://%s-pr%v.jx-test.com", repo, prNumber), o.OutputEnvVars["PREVIEW_URL"])
 			assert.Equal(t, fmt.Sprintf("%s-%s-%v", owner, repo, prNumber), o.OutputEnvVars["PREVIEW_NAME"])
 			assert.Equal(t, fmt.Sprintf("%s-%s-%s-pr-%v", ns, owner, repo, prNumber), o.OutputEnvVars["PREVIEW_NAMESPACE"])
 			assert.Equal(t, sourceURL, o.OutputEnvVars["PREVIEW_PULL_REQUEST_URL"])
