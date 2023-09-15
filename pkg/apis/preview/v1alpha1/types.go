@@ -73,13 +73,14 @@ type PreviewSource struct {
 
 // PullRequest the pull request information which triggered the preview
 type PullRequest struct {
-	Number      int      `json:"number,omitempty" protobuf:"bytes,1,opt,name=number"`
-	Owner       string   `json:"owner,omitempty" protobuf:"bytes,2,opt,name=owner"`
-	Repository  string   `json:"repository,omitempty" protobuf:"bytes,3,opt,name=repository"`
-	URL         string   `json:"url,omitempty" protobuf:"bytes,4,opt,name=url"`
-	User        UserSpec `json:"user,omitempty" protobuf:"bytes,5,opt,name=user"`
-	Title       string   `json:"title,omitempty" protobuf:"bytes,6,opt,name=title"`
-	Description string   `json:"description,omitempty" protobuf:"bytes,7,opt,name=description"`
+	Number       int      `json:"number,omitempty" protobuf:"bytes,1,opt,name=number"`
+	Owner        string   `json:"owner,omitempty" protobuf:"bytes,2,opt,name=owner"`
+	Repository   string   `json:"repository,omitempty" protobuf:"bytes,3,opt,name=repository"`
+	URL          string   `json:"url,omitempty" protobuf:"bytes,4,opt,name=url"`
+	User         UserSpec `json:"user,omitempty" protobuf:"bytes,5,opt,name=user"`
+	Title        string   `json:"title,omitempty" protobuf:"bytes,6,opt,name=title"`
+	Description  string   `json:"description,omitempty" protobuf:"bytes,7,opt,name=description"`
+	LatestCommit string   `json:"latestCommit,omitempty" protobuf:"bytes,8,opt,name=latestCommit"`
 }
 
 // UserSpec is the user details

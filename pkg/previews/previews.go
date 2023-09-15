@@ -78,6 +78,9 @@ func GetOrCreatePreview(client versioned.Interface, ns string, pr *scm.PullReque
 	if prr.Description == "" {
 		prr.Description = pr.Body
 	}
+	if prr.LatestCommit == "" {
+		prr.LatestCommit = pr.Head.Sha
+	}
 	if previewNamespace != "" {
 		found.Spec.Resources.Namespace = previewNamespace
 	}

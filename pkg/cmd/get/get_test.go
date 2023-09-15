@@ -24,9 +24,12 @@ func TestPreviewGet(t *testing.T) {
 	sourceURL := fmt.Sprintf("https://fake.com/%s/%s", owner, repo)
 	ns := "jx"
 	tmpDir, err := os.MkdirTemp("", "")
+	latestCommit := "test-commit-hash"
 	require.NoError(t, err, "failed to create temp dir")
 
 	preview1, _ := fakepreviews.CreateTestPreviewAndPullRequest(fakeData, ns, owner, repo, 1)
+	preview1.Spec.PullRequest.LatestCommit = latestCommit
+
 	fakescms.CreatePullRequest(fakeData, owner, repo, prNumber)
 
 	previewClient := fake.NewSimpleClientset(preview1)
@@ -40,14 +43,22 @@ func TestPreviewGet(t *testing.T) {
 	testCases := []struct {
 		name    string
 		current bool
+		wait    bool
 	}{
 		{
 			name:    "get",
 			current: false,
+			wait:    false,
 		},
 		{
 			name:    "get current",
 			current: true,
+			wait:    false,
+		},
+		{
+			name:    "get current wait",
+			current: true,
+			wait:    true,
 		},
 	}
 
@@ -64,6 +75,7 @@ func TestPreviewGet(t *testing.T) {
 		o.Namespace = ns
 		o.Current = tc.current
 		o.Dir = tmpDir
+		o.LatestCommit = latestCommit
 
 		t.Logf("running get for test: %s", tc.name)
 		err := o.Run()
