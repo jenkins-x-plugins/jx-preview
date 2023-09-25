@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"time"
 
 	"github.com/jenkins-x-plugins/jx-preview/pkg/apis/preview/v1alpha1"
 	"github.com/jenkins-x-plugins/jx-preview/pkg/client/clientset/versioned"
@@ -26,9 +27,11 @@ type Options struct {
 
 	PreviewClient versioned.Interface
 	Namespace     string
+	LatestCommit  string
 	OutputEnvVars map[string]string
 
 	Current bool
+	Wait    bool
 }
 
 var (
@@ -62,6 +65,7 @@ func NewCmdGetPreview() (*cobra.Command, *Options) {
 	}
 
 	cmd.Flags().BoolVarP(&options.Current, "current", "c", false, "Output the URL of the current Preview application the current pipeline just deployed")
+	cmd.Flags().BoolVarP(&options.Wait, "wait", "w", false, "Waits for a preview deployment with commit hash that matches latest commit")
 	return cmd, options
 }
 
@@ -116,32 +120,24 @@ func (o *Options) CurrentPreviewURL() error {
 		return errors.Wrapf(err, "failed to validate current options")
 	}
 
-	_, err = o.DiscoverPullRequest()
+	pr, err := o.DiscoverPullRequest()
 	if err != nil {
 		return errors.Wrapf(err, "failed to read pull request options")
 	}
+	o.LatestCommit = pr.Head.Sha
 
-	ctx := context.Background()
-	ns := o.Namespace
-	resourceList, err := o.PreviewClient.PreviewV1alpha1().Previews(ns).List(ctx, metav1.ListOptions{})
-	if err != nil {
-		if !apierrors.IsNotFound(err) {
-			return errors.Wrapf(err, "failed to list previews in namespace %s", ns)
+	var currentPreview *v1alpha1.Preview
+	if o.Wait {
+		currentPreview, err = o.waitForCommit()
+		if err != nil {
+			return errors.Wrapf(err, "failed whilst waiting for commit")
 		}
-	}
-
-	var currentPreview v1alpha1.Preview
-
-	for i := 0; i < len(resourceList.Items); i++ {
-		if resourceList.Items[i].Spec.PullRequest.Number == o.Number &&
-			resourceList.Items[i].Spec.PullRequest.Repository == o.Repository {
-			currentPreview = resourceList.Items[i]
-			break
+	} else {
+		previewList, err := o.listPreviews()
+		currentPreview = o.getPreview(previewList.Items)
+		if err != nil {
+			return errors.Wrapf(err, "failed whilst retrieving preview")
 		}
-	}
-
-	if currentPreview.Spec.PullRequest.Repository != o.Repository {
-		return fmt.Errorf("no current preview for %s on pull request #%v", o.Repository, o.Number)
 	}
 
 	t := table.CreateTable(os.Stdout)
@@ -174,6 +170,49 @@ func (o *Options) ValidateCurrent() error {
 	err := o.PullRequestOptions.Validate()
 	if err != nil {
 		return errors.Wrapf(err, "failed to validate pull request options")
+	}
+
+	return nil
+}
+
+func (o *Options) listPreviews() (*v1alpha1.PreviewList, error) {
+	ctx := context.Background()
+	ns := o.Namespace
+	resourceList, err := o.PreviewClient.PreviewV1alpha1().Previews(ns).List(ctx, metav1.ListOptions{})
+	if err != nil {
+		if !apierrors.IsNotFound(err) {
+			return nil, errors.Wrapf(err, "failed to list previews in namespace %s", ns)
+		}
+	}
+	return resourceList, nil
+}
+
+func (o *Options) waitForCommit() (*v1alpha1.Preview, error) {
+	fmt.Printf("Waiting for preview with commit: %s", o.LatestCommit)
+	previewList, err := o.listPreviews()
+	if err != nil {
+		return nil, err
+	}
+
+	for {
+		preview := o.getPreview(previewList.Items)
+		if err != nil {
+			return nil, err
+		}
+		if preview.Spec.PullRequest.LatestCommit == o.LatestCommit {
+			return preview, nil
+		}
+
+		time.Sleep(5 * time.Second)
+	}
+}
+
+func (o *Options) getPreview(previews []v1alpha1.Preview) *v1alpha1.Preview {
+	for i := 0; i < len(previews); i++ {
+		if previews[i].Spec.PullRequest.Number == o.Number &&
+			previews[i].Spec.PullRequest.Repository == o.Repository {
+			return &previews[i]
+		}
 	}
 
 	return nil

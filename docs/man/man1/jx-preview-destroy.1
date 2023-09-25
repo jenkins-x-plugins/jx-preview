@@ -21,23 +21,19 @@ Destroys a preview environment
 .SH OPTIONS
 .PP
 \fB\-\-all\fP[=false]
-    Select all the filters by default to remove
+    Select all the previews that match filter by default
+
+.PP
+\fB\-\-dir\fP=""
+    The directory where to run the delete preview command \- a git clone will be done on a temporary jx\-git\-xxx directory if this parameter is empty
 
 .PP
 \fB\-\-fail\-on\-helm\fP[=false]
     If enabled do not try to remove the namespace or Preview resource if we fail to destroy helmfile resources
 
 .PP
-\fB\-f\fP, \fB\-\-file\fP=""
-    Preview helmfile.yaml path to use. If not specified it is discovered in preview/helmfile.yaml and created from a template if needed
-
-.PP
 \fB\-\-filter\fP=""
-    The filter to use to find a preview to delete
-
-.PP
-\fB\-\-git\-user\fP=""
-    The user name to git clone the environment repository
+    The filter to use to find previews to delete
 
 .PP
 \fB\-h\fP, \fB\-\-help\fP[=false]
