@@ -188,13 +188,14 @@ func (o *Options) listPreviews() (*v1alpha1.PreviewList, error) {
 }
 
 func (o *Options) waitForCommit() (*v1alpha1.Preview, error) {
-	fmt.Printf("Waiting for preview with commit: %s", o.LatestCommit)
-	previewList, err := o.listPreviews()
-	if err != nil {
-		return nil, err
-	}
+	fmt.Printf("Waiting for preview with commit: %s\n", o.LatestCommit)
 
 	for {
+		previewList, err := o.listPreviews()
+		if err != nil {
+			return nil, err
+		}
+
 		preview := o.getPreview(previewList.Items)
 		if err != nil {
 			return nil, err
