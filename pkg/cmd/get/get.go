@@ -200,7 +200,7 @@ func (o *Options) waitForCommit() (*v1alpha1.Preview, error) {
 		if err != nil {
 			return nil, err
 		}
-		if preview.Spec.PullRequest.LatestCommit == o.LatestCommit {
+		if preview != nil && preview.Spec.PullRequest.LatestCommit == o.LatestCommit {
 			return preview, nil
 		}
 
