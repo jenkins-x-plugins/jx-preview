@@ -521,7 +521,7 @@ func (o *Options) findPreviewURL(envVars map[string]string) (string, error) {
 			url, _ = services.FindServiceURL(o.KubeClient, releaseNamespace, n)
 			if url == "" {
 				var err error
-				url, _, err = kserving.FindServiceURL(ctx, o.KServeClient, o.KubeClient, releaseNamespace, n)
+				url, _, err = kserving.FindServiceURL(ctx, o.KServeClient, releaseNamespace, n)
 				if err != nil {
 					log.Logger().Warnf("failed to find preview url in %s service %s", n, err.Error())
 				}
