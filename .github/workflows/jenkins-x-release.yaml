@@ -48,7 +48,7 @@ jobs:
         REPOSITORY: ${{ github.repository }}
         VERSION: ${{ steps.prep.outputs.version }}
       name: upload-binaries
-      uses: docker://goreleaser/goreleaser:v1.8.3
+      uses: docker://ghcr.io/jenkins-x/jx-goreleaser-image:0.1.0@sha256:4ac5aeb4ce850761aeffc585446ea47bbcfa680d096fdd8c5d00c5a8c5adbcc0
       with:
         entrypoint: .github/workflows/jenkins-x/upload-binaries.sh
     - name: Set up QEMU
