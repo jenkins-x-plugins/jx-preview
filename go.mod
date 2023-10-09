@@ -4,7 +4,7 @@ require (
 	github.com/cenkalti/backoff v2.2.1+incompatible
 	github.com/cpuguy83/go-md2man v1.0.10
 	github.com/jenkins-x-plugins/jx-gitops v0.16.4
-	github.com/jenkins-x/go-scm v1.13.13
+	github.com/jenkins-x/go-scm v1.14.14
 	github.com/jenkins-x/jx-api/v4 v4.7.4
 	github.com/jenkins-x/jx-helpers/v3 v3.6.1
 	github.com/jenkins-x/jx-kube-client/v3 v3.0.7
@@ -70,7 +70,7 @@ require (
 	github.com/russross/blackfriday v1.6.0 // indirect
 	github.com/shurcooL/githubv4 v0.0.0-20191102174205-af46314aec7b // indirect
 	github.com/shurcooL/graphql v0.0.0-20181231061246-d48a9a75455f // indirect
-	github.com/sirupsen/logrus v1.9.1 // indirect
+	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/src-d/gcfg v1.4.0 // indirect
 	github.com/vrischmann/envconfig v1.3.0 // indirect
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect

@@ -144,8 +144,8 @@ github.com/inconshreveable/mousetrap v1.1.0/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLf
 github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99/go.mod h1:1lJo3i6rXxKeerYnT8Nvf0QmHCRC1n8sfWVwXF2Frvo=
 github.com/jenkins-x-plugins/jx-gitops v0.16.4 h1:Jg6CbhqHaDQXNLcE3hxLD7SOGrZIPIc00Hi6yztVwJw=
 github.com/jenkins-x-plugins/jx-gitops v0.16.4/go.mod h1:0+jEBEi1BXHFoHUJYLjHQlgzZ6+nb4nj+OmkV008i24=
-github.com/jenkins-x/go-scm v1.13.13 h1:QEUDWwaLMMGuf8b82SUR8AZpXETEu9U5J7eC4fU7HSM=
-github.com/jenkins-x/go-scm v1.13.13/go.mod h1:CY2nNGW77Wp8bKvNf8/iarzMgP9h/l2cFDx/vb/ymF0=
+github.com/jenkins-x/go-scm v1.14.14 h1:a4c3z4+FVPMWMl59hgdLZNbnbc0Z0/Ln6fHXS0hLAyY=
+github.com/jenkins-x/go-scm v1.14.14/go.mod h1:MR/WVGUSEqED4SP/lWaRKtks/vYGtylFueDr1FLogYg=
 github.com/jenkins-x/jx-api/v4 v4.7.4 h1:b5/UunAUkqIFx2ACTR0EsU6VRlwveOZQtRNQP4kTJWk=
 github.com/jenkins-x/jx-api/v4 v4.7.4/go.mod h1:WIuWzQkBOIlEdyPIcdqGzvtJDPUmlEkpPjjyHFOFle0=
 github.com/jenkins-x/jx-helpers/v3 v3.6.1 h1:jZ7nU7wCOKFsigA9zUYx5F5owxxAiTKxIOvvG/aJBv8=
@@ -243,8 +243,8 @@ github.com/shurcooL/githubv4 v0.0.0-20191102174205-af46314aec7b h1:Cocq9/ZZxCoiy
 github.com/shurcooL/githubv4 v0.0.0-20191102174205-af46314aec7b/go.mod h1:hAF0iLZy4td2EX+/8Tw+4nodhlMrwN3HupfaXj3zkGo=
 github.com/shurcooL/graphql v0.0.0-20181231061246-d48a9a75455f h1:tygelZueB1EtXkPI6mQ4o9DQ0+FKW41hTbunoXZCTqk=
 github.com/shurcooL/graphql v0.0.0-20181231061246-d48a9a75455f/go.mod h1:AuYgA5Kyo4c7HfUmvRGs/6rGlMMV/6B1bVnB9JxJEEg=
-github.com/sirupsen/logrus v1.9.1 h1:Ou41VVR3nMWWmTiEUnj0OlsgOSCUFgsPAOl6jRIcVtQ=
-github.com/sirupsen/logrus v1.9.1/go.mod h1:naHLuLoDiP4jHNo9R0sCBMtWGeIprob74mVsIT4qYEQ=
+github.com/sirupsen/logrus v1.9.3 h1:dueUQJ1C2q9oE3F7wvmSGAaVtTmUizReu6fjN8uqzbQ=
+github.com/sirupsen/logrus v1.9.3/go.mod h1:naHLuLoDiP4jHNo9R0sCBMtWGeIprob74mVsIT4qYEQ=
 github.com/spaolacci/murmur3 v0.0.0-20180118202830-f09979ecbc72/go.mod h1:JwIasOWyU6f++ZhiEuf87xNszmSA2myDM2Kzu9HwQUA=
 github.com/spf13/cobra v1.7.0 h1:hyqWnYt1ZQShIddO5kBpj3vu05/++x6tJ6dg8EC572I=
 github.com/spf13/cobra v1.7.0/go.mod h1:uLxZILRyS/50WlhOIKD7W6V5bgeIt+4sICxh6uRMrb0=
