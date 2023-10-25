@@ -194,7 +194,7 @@ func (o *Options) listPreviews() (*v1alpha1.PreviewList, error) {
 }
 
 func (o *Options) waitForCommit() (*v1alpha1.Preview, error) {
-	fmt.Printf("Waiting for preview with commit: %s\n", o.LatestCommit)
+	log.Logger().Infof("Waiting for preview with commit: %s\n", o.LatestCommit)
 
 	for {
 		previewList, err := o.listPreviews()
@@ -206,7 +206,8 @@ func (o *Options) waitForCommit() (*v1alpha1.Preview, error) {
 		if err != nil {
 			return nil, err
 		}
-		if preview != nil && preview.Spec.PullRequest.LatestCommit == o.LatestCommit {
+		if preview != nil && preview.Spec.PullRequest.LatestCommit == o.LatestCommit &&
+			preview.Spec.Resources.URL != "" {
 			return preview, nil
 		}
 
