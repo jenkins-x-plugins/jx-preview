@@ -3,6 +3,7 @@ package get
 import (
 	"context"
 	"fmt"
+	"github.com/jenkins-x/jx-logging/v3/pkg/log"
 	"os"
 	"time"
 
@@ -138,6 +139,11 @@ func (o *Options) CurrentPreviewURL() error {
 		if err != nil {
 			return errors.Wrapf(err, "failed whilst retrieving preview")
 		}
+	}
+
+	if currentPreview == nil {
+		log.Logger().Infof("No preview found for PR %v", o.Number)
+		return nil
 	}
 
 	t := table.CreateTable(os.Stdout)
