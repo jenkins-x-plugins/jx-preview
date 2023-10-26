@@ -15,6 +15,7 @@ import (
 	"github.com/jenkins-x/jx-helpers/v3/pkg/cobras/templates"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/scmhelpers"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/table"
+	"github.com/jenkins-x/jx-logging/v3/pkg/log"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -140,6 +141,11 @@ func (o *Options) CurrentPreviewURL() error {
 		}
 	}
 
+	if currentPreview == nil {
+		log.Logger().Infof("No preview found for PR %v", o.Number)
+		return nil
+	}
+
 	t := table.CreateTable(os.Stdout)
 	t.AddRow("PULL REQUEST", "NAMESPACE", "APPLICATION")
 	t.AddRow(currentPreview.Spec.PullRequest.URL,
@@ -188,7 +194,7 @@ func (o *Options) listPreviews() (*v1alpha1.PreviewList, error) {
 }
 
 func (o *Options) waitForCommit() (*v1alpha1.Preview, error) {
-	fmt.Printf("Waiting for preview with commit: %s\n", o.LatestCommit)
+	log.Logger().Infof("Waiting for preview with commit: %s\n", o.LatestCommit)
 
 	for {
 		previewList, err := o.listPreviews()
@@ -200,7 +206,8 @@ func (o *Options) waitForCommit() (*v1alpha1.Preview, error) {
 		if err != nil {
 			return nil, err
 		}
-		if preview != nil && preview.Spec.PullRequest.LatestCommit == o.LatestCommit {
+		if preview != nil && preview.Spec.PullRequest.LatestCommit == o.LatestCommit &&
+			preview.Spec.Resources.URL != "" {
 			return preview, nil
 		}
 
