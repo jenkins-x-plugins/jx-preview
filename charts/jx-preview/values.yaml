@@ -23,6 +23,9 @@ gcJobs:
   # gcJobs.concurrencyPolicy -- Drives the job's concurrency policy
   concurrencyPolicy: Forbid
 
+  # Extra arguments to the jx preview gc command
+  extraArgs: ""
+
 
 jxRequirements:
   cluster:
