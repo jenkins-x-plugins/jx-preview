@@ -7,6 +7,7 @@ import (
 	"github.com/jenkins-x-plugins/jx-preview/pkg/client/clientset/versioned/fake"
 	"github.com/jenkins-x-plugins/jx-preview/pkg/cmd/gc"
 	"github.com/jenkins-x-plugins/jx-preview/pkg/previews/fakepreviews"
+	"github.com/jenkins-x/go-scm/scm"
 	fakescm "github.com/jenkins-x/go-scm/scm/driver/fake"
 	jxfake "github.com/jenkins-x/jx-api/v4/pkg/client/clientset/versioned/fake"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/cmdrunner/fakerunner"
@@ -26,10 +27,11 @@ func TestPreviewGC(t *testing.T) {
 	preview1, pr1 := fakepreviews.CreateTestPreviewAndPullRequest(fakeScmData, ns, "myower", "myrepo", 2)
 	preview2, _ := fakepreviews.CreateTestPreviewAndPullRequest(fakeScmData, ns, "myower", "myrepo", 3)
 	preview3, pr3 := fakepreviews.CreateTestPreviewAndPullRequest(fakeScmData, ns, "myower", "another", 1)
+	preview4, pr4 := fakepreviews.CreateTestPreviewAndPullRequest(fakeScmData, ns, "myower", "athird", 4)
 
 	fakeScmData.CurrentUser.Login = gitUser
 
-	previewClient := fake.NewSimpleClientset(preview1, preview2, preview3)
+	previewClient := fake.NewSimpleClientset(preview1, preview2, preview3, preview4)
 	kubeClient := fakekube.NewSimpleClientset()
 
 	devEnv := jxenv.CreateDefaultDevEnvironment(ns)
@@ -41,7 +43,7 @@ func TestPreviewGC(t *testing.T) {
 	testCases := []struct {
 		name            string
 		expectedDeleted []string
-		initialise      func() error
+		initialise      func(o *gc.Options) error
 	}{
 		{
 			name: "startup",
@@ -49,9 +51,8 @@ func TestPreviewGC(t *testing.T) {
 		{
 			name:            "gc1",
 			expectedDeleted: []string{preview1.Name},
-			initialise: func() error {
-				pr1.State = "Closed"
-				t.Logf("modified state of PR %s to: %s", pr1.Link, pr1.State)
+			initialise: func(o *gc.Options) error {
+				pr1.Closed = true
 				return nil
 			},
 		},
@@ -61,9 +62,32 @@ func TestPreviewGC(t *testing.T) {
 		{
 			name:            "gc3",
 			expectedDeleted: []string{preview3.Name},
-			initialise: func() error {
-				pr3.State = "Merged"
-				t.Logf("modified state of PR %s to: %s", pr3.Link, pr3.State)
+			initialise: func(o *gc.Options) error {
+				pr3.Merged = true
+				return nil
+			},
+		},
+		{
+			name: "gc4",
+			initialise: func(o *gc.Options) error {
+				pr4.Draft = true
+				return nil
+			},
+		},
+		{
+			name: "gc5",
+			initialise: func(o *gc.Options) error {
+				o.DestroyDrafts = true
+				pr4.Labels = []*scm.Label{{Name: "ok-to-test"}}
+				return nil
+			},
+		},
+		{
+			name:            "gc6",
+			expectedDeleted: []string{preview4.Name},
+			initialise: func(o *gc.Options) error {
+				o.DestroyDrafts = true
+				pr4.Labels = nil
 				return nil
 			},
 		},
@@ -83,7 +107,7 @@ func TestPreviewGC(t *testing.T) {
 		o.CommandRunner = runner.Run
 
 		if tc.initialise != nil {
-			err := tc.initialise()
+			err := tc.initialise(o)
 			require.NoError(t, err, "failed to initialise test  %s", tc.name)
 		}
 		t.Logf("running GC for test: %s\n", tc.name)

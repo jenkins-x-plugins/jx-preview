@@ -3,7 +3,6 @@ package gc
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"github.com/jenkins-x-plugins/jx-preview/pkg/cmd/destroy"
 	"github.com/jenkins-x-plugins/jx-preview/pkg/previews"
@@ -24,7 +23,8 @@ import (
 type Options struct {
 	destroy.Options
 
-	Deleted []string
+	Deleted       []string
+	DestroyDrafts bool
 }
 
 var (
@@ -42,7 +42,6 @@ var (
 `)
 )
 
-// NewCmd s a command object for the "step" command
 func NewCmdGCPreviews() (*cobra.Command, *Options) {
 	options := &Options{}
 
@@ -56,6 +55,8 @@ func NewCmdGCPreviews() (*cobra.Command, *Options) {
 			helper.CheckErr(err)
 		},
 	}
+	cmd.Flags().BoolVarP(&options.DestroyDrafts, "gc-drafts", "", false, "Also garbage collect drafts")
+
 	return cmd, options
 }
 
@@ -125,10 +126,7 @@ func (o *Options) Run() error {
 			return errors.Wrapf(err, "failed to query PullRequest %s", prLink)
 		}
 
-		lowerState := strings.ToLower(pullRequest.State)
-
-		if strings.HasPrefix(lowerState, "clos") || strings.HasPrefix(lowerState, "merged") || strings.HasPrefix(lowerState, "superseded") || strings.HasPrefix(lowerState, "declined") {
-
+		if pullRequest.Closed || pullRequest.Merged || (o.DestroyDrafts && pullRequest.Draft && !scmhelpers.ContainsLabel(pullRequest.Labels, "ok-to-test")) {
 			err = o.Destroy(name)
 			if err != nil {
 				return fmt.Errorf("failed to destroy preview environment %s: %v", name, err)
@@ -138,7 +136,7 @@ func (o *Options) Run() error {
 		}
 	}
 	if len(o.Deleted) == 0 {
-		log.Logger().Debug("no preview environments found")
+		log.Logger().Debug("no preview environments to garbage collect where found")
 		return nil
 	}
 	return nil
