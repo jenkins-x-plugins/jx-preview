@@ -6,7 +6,7 @@ require (
 	github.com/jenkins-x-plugins/jx-gitops v0.16.4
 	github.com/jenkins-x/go-scm v1.14.25
 	github.com/jenkins-x/jx-api/v4 v4.7.4
-	github.com/jenkins-x/jx-helpers/v3 v3.6.5
+	github.com/jenkins-x/jx-helpers/v3 v3.7.0
 	github.com/jenkins-x/jx-kube-client/v3 v3.0.7
 	github.com/jenkins-x/jx-logging/v3 v3.0.15
 	github.com/pkg/errors v0.9.1
