@@ -8,7 +8,7 @@ require (
 	github.com/jenkins-x/jx-api/v4 v4.7.4
 	github.com/jenkins-x/jx-helpers/v3 v3.6.5
 	github.com/jenkins-x/jx-kube-client/v3 v3.0.7
-	github.com/jenkins-x/jx-logging/v3 v3.0.15
+	github.com/jenkins-x/jx-logging/v3 v3.0.16
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/pflag v1.0.5
@@ -52,7 +52,7 @@ require (
 	github.com/hashicorp/go-version v1.6.0 // indirect
 	github.com/imdario/mergo v0.3.15 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
-	github.com/jenkins-x/logrus-stackdriver-formatter v0.2.6 // indirect
+	github.com/jenkins-x/logrus-stackdriver-formatter v0.2.7 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51 // indirect
@@ -71,7 +71,6 @@ require (
 	github.com/pjbgf/sha1cd v0.3.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rawlingsj/jsonschema v0.0.0-20210511142122-a9c2cfdb7dcf // indirect
-	github.com/rickar/props v0.0.0-20170718221555-0b06aeb2f037 // indirect
 	github.com/russross/blackfriday v1.6.0 // indirect
 	github.com/shurcooL/githubv4 v0.0.0-20191102174205-af46314aec7b // indirect
 	github.com/shurcooL/graphql v0.0.0-20181231061246-d48a9a75455f // indirect
