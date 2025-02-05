@@ -51,7 +51,7 @@ func TestPreviewGC(t *testing.T) {
 		{
 			name:            "gc1",
 			expectedDeleted: []string{preview1.Name},
-			initialise: func(o *gc.Options) error {
+			initialise: func(_ *gc.Options) error {
 				pr1.Closed = true
 				return nil
 			},
@@ -62,14 +62,14 @@ func TestPreviewGC(t *testing.T) {
 		{
 			name:            "gc3",
 			expectedDeleted: []string{preview3.Name},
-			initialise: func(o *gc.Options) error {
+			initialise: func(_ *gc.Options) error {
 				pr3.Merged = true
 				return nil
 			},
 		},
 		{
 			name: "gc4",
-			initialise: func(o *gc.Options) error {
+			initialise: func(_ *gc.Options) error {
 				pr4.Draft = true
 				return nil
 			},

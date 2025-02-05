@@ -112,7 +112,7 @@ func NewCmdPreviewCreate() (*cobra.Command, *Options) {
 		Short:   "Creates a preview",
 		Long:    cmdLong,
 		Example: fmt.Sprintf(cmdExample, rootcmd.BinaryName),
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(_ *cobra.Command, _ []string) {
 			err := o.Run()
 			helper.CheckErr(err)
 		},
@@ -454,10 +454,10 @@ func (o *Options) createPreviewNamespace() (string, error) {
 
 	prNamespace := prefix + prName
 	if len(prNamespace) > 63 {
-		max := 62 - len(prefix)
+		maxIndex := 62 - len(prefix)
 		size := len(prName)
 
-		prNamespace = prefix + prName[size-max:]
+		prNamespace = prefix + prName[size-maxIndex:]
 		log.Logger().Warnf("Due the name of the organisation and repository being too long (%s) we are going to trim it to make the preview namespace: %s", prName, prNamespace)
 	}
 	if len(prNamespace) > 63 {

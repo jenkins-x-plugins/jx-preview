@@ -48,7 +48,7 @@ func NewCmdPreviewTemplate() (*cobra.Command, *Options) {
 		Aliases: []string{"tmp"},
 		Long:    cmdLong,
 		Example: cmdExample,
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(_ *cobra.Command, _ []string) {
 			err := o.Run()
 			helper.CheckErr(err)
 		},

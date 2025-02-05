@@ -73,7 +73,7 @@ func NewCmdPreviewDestroy() (*cobra.Command, *Options) {
 		Aliases: []string{"delete", "remove"},
 		Long:    cmdLong,
 		Example: fmt.Sprintf(cmdExample, rootcmd.BinaryName),
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(_ *cobra.Command, args []string) {
 			o.Names = args
 			err := o.Run()
 			helper.CheckErr(err)

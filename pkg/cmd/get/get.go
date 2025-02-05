@@ -59,7 +59,7 @@ func NewCmdGetPreview() (*cobra.Command, *Options) {
 		Aliases: []string{"list"},
 		Long:    cmdLong,
 		Example: fmt.Sprintf(cmdExample, rootcmd.BinaryName, rootcmd.BinaryName),
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(_ *cobra.Command, _ []string) {
 			err := options.Run()
 			helper.CheckErr(err)
 		},

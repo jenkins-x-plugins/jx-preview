@@ -51,7 +51,7 @@ func NewCmdGCPreviews() (*cobra.Command, *Options) {
 		Short:   "Garbage collect Preview environments for closed or merged Pull Requests",
 		Long:    cmdLong,
 		Example: fmt.Sprintf(cmdExample, rootcmd.BinaryName),
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(_ *cobra.Command, _ []string) {
 			err := options.Run()
 			helper.CheckErr(err)
 		},
