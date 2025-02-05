@@ -87,7 +87,7 @@ func CreateJXValuesFile(gitter gitclient.Interface, jxClient jxc.Interface, name
 		return "", fmt.Errorf("failed to check if file %s exists in clone of %s: %w", path, url, err)
 	}
 	if !exists {
-		return "", fmt.Errorf("file %s does not exist in clone of %s: %w", path, url, err)
+		return "", fmt.Errorf("file %s does not exist in clone of %s", path, url)
 	}
 
 	// lets modify the ingress sub domain
