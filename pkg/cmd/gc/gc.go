@@ -6,9 +6,10 @@ import (
 
 	"github.com/jenkins-x-plugins/jx-preview/pkg/cmd/destroy"
 	"github.com/jenkins-x-plugins/jx-preview/pkg/previews"
+	"github.com/jenkins-x-plugins/jx-preview/pkg/rootcmd"
 	"github.com/jenkins-x/go-scm/scm"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/scmhelpers"
-	"github.com/pkg/errors"
+
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 
 	"github.com/jenkins-x/jx-helpers/v3/pkg/cobras/helper"
@@ -49,7 +50,7 @@ func NewCmdGCPreviews() (*cobra.Command, *Options) {
 		Use:     "gc",
 		Short:   "Garbage collect Preview environments for closed or merged Pull Requests",
 		Long:    cmdLong,
-		Example: cmdExample,
+		Example: fmt.Sprintf(cmdExample, rootcmd.BinaryName),
 		Run: func(cmd *cobra.Command, args []string) {
 			err := options.Run()
 			helper.CheckErr(err)
@@ -64,7 +65,7 @@ func NewCmdGCPreviews() (*cobra.Command, *Options) {
 func (o *Options) Run() error {
 	err := o.Validate()
 	if err != nil {
-		return errors.Wrapf(err, "failed to validate options")
+		return fmt.Errorf("failed to validate options: %w", err)
 	}
 
 	ns := o.Namespace
@@ -72,7 +73,7 @@ func (o *Options) Run() error {
 	resourceList, err := o.PreviewClient.PreviewV1alpha1().Previews(ns).List(ctx, metav1.ListOptions{})
 	if err != nil {
 		if !apierrors.IsNotFound(err) {
-			return errors.Wrapf(err, "failed to list Previews in namespace %s", ns)
+			return fmt.Errorf("failed to list Previews in namespace %s: %w", ns, err)
 		}
 	}
 
@@ -114,7 +115,7 @@ func (o *Options) Run() error {
 		}
 		err = so.Validate()
 		if err != nil {
-			return errors.Wrapf(err, "failed to validate preview %s with source URL %s", name, preview.Spec.Source.URL)
+			return fmt.Errorf("failed to validate preview %s with source URL %s: %w", name, preview.Spec.Source.URL, err)
 		}
 
 		scmClient := so.ScmClient
@@ -123,7 +124,7 @@ func (o *Options) Run() error {
 		ctx := context.Background()
 		pullRequest, _, err := scmClient.PullRequests.Find(ctx, fullName, prNumber)
 		if err != nil {
-			return errors.Wrapf(err, "failed to query PullRequest %s", prLink)
+			return fmt.Errorf("failed to query PullRequest %s: %w", prLink, err)
 		}
 
 		if pullRequest.Closed || pullRequest.Merged || (o.DestroyDrafts && pullRequest.Draft && !scmhelpers.ContainsLabel(pullRequest.Labels, "ok-to-test")) {

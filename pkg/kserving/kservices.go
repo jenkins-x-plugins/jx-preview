@@ -2,9 +2,10 @@ package kserving
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/jenkins-x/jx-kube-client/v3/pkg/kubeclient"
-	"github.com/pkg/errors"
+
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1 "knative.dev/serving/pkg/apis/serving/v1"
 	kserve "knative.dev/serving/pkg/client/clientset/versioned"
@@ -42,11 +43,11 @@ func LazyCreateKServeClient(client kserve.Interface) (kserve.Interface, error) {
 	f := kubeclient.NewFactory()
 	cfg, err := f.CreateKubeConfig()
 	if err != nil {
-		return client, errors.Wrap(err, "failed to get kubernetes config")
+		return client, fmt.Errorf("failed to get kubernetes config: %w", err)
 	}
 	client, err = kserve.NewForConfig(cfg)
 	if err != nil {
-		return client, errors.Wrap(err, "error building jx clientset")
+		return client, fmt.Errorf("error building jx clientset: %w", err)
 	}
 	return client, nil
 }

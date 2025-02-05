@@ -2,6 +2,8 @@ package create_test
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -22,7 +24,7 @@ import (
 	"github.com/jenkins-x/jx-helpers/v3/pkg/cmdrunner/fakerunner"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/files"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/kube/jxenv"
-	"github.com/pkg/errors"
+
 	"github.com/stretchr/testify/assert"
 	corev1 "k8s.io/api/core/v1"
 	nv1 "k8s.io/api/networking/v1"
@@ -239,7 +241,7 @@ func AssertPreview(t *testing.T, customService string, failSync bool, podState c
 				srcDir := filepath.Join("test_data", "sample_project")
 				err := files.CopyDirOverwrite(srcDir, dir)
 				if err != nil {
-					return "", errors.Wrapf(err, "failed to copy files from %s to %s", srcDir, dir)
+					return "", fmt.Errorf("failed to copy files from %s to %s: %w", srcDir, dir, err)
 				}
 				return "", nil
 			}

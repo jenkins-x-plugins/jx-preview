@@ -1,6 +1,7 @@
 package previews
 
 import (
+	"fmt"
 	"path/filepath"
 
 	"github.com/jenkins-x/jx-helpers/v3/pkg/files"
@@ -15,7 +16,6 @@ import (
 	"github.com/jenkins-x/jx-helpers/v3/pkg/termcolor"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/yamls"
 	"github.com/jenkins-x/jx-logging/v3/pkg/log"
-	"github.com/pkg/errors"
 )
 
 var info = termcolor.ColorInfo
@@ -26,25 +26,25 @@ func CreateJXValuesFile(gitter gitclient.Interface, jxClient jxc.Interface, name
 
 	devEnv, err := jxenv.GetDevEnvironment(jxClient, namespace)
 	if err != nil {
-		return "", errors.Wrapf(err, "failed to find the dev environment in namespace %s", namespace)
+		return "", fmt.Errorf("failed to find the dev environment in namespace %s: %w", namespace, err)
 	}
 	if devEnv == nil {
-		return "", errors.Errorf("cannot find the dev environment in namespace %s", namespace)
+		return "", fmt.Errorf("cannot find the dev environment in namespace %s", namespace)
 	}
 
 	url := devEnv.Spec.Source.URL
 	if url == "" {
-		return "", errors.Errorf("environment %s does not have a source URL", devEnv.Name)
+		return "", fmt.Errorf("environment %s does not have a source URL", devEnv.Name)
 	}
 	if gitUser == "" || gitToken == "" {
 		creds, err := loadcreds.LoadGitCredential()
 		if err != nil {
-			return "", errors.Wrapf(err, "failed to load git credentials")
+			return "", fmt.Errorf("failed to load git credentials: %w", err)
 		}
 
 		gitInfo, err := giturl.ParseGitURL(url)
 		if err != nil {
-			return "", errors.Wrapf(err, "failed to parse git URL %s", url)
+			return "", fmt.Errorf("failed to parse git URL %s: %w", url, err)
 		}
 		gitServerURL := gitInfo.HostURL()
 		serverCreds := loadcreds.GetServerCredentials(creds, gitServerURL)
@@ -60,10 +60,10 @@ func CreateJXValuesFile(gitter gitclient.Interface, jxClient jxc.Interface, name
 		}
 
 		if gitUser == "" {
-			return "", errors.Errorf("could not find git user for git server %s", gitServerURL)
+			return "", fmt.Errorf("could not find git user for git server %s", gitServerURL)
 		}
 		if gitToken == "" {
-			return "", errors.Errorf("could not find git token for git server %s", gitServerURL)
+			return "", fmt.Errorf("could not find git token for git server %s", gitServerURL)
 		}
 	}
 
@@ -71,37 +71,37 @@ func CreateJXValuesFile(gitter gitclient.Interface, jxClient jxc.Interface, name
 	if gitUser != "" && gitToken != "" {
 		gitCloneURL, err = stringhelpers.URLSetUserPassword(url, gitUser, gitToken)
 		if err != nil {
-			return "", errors.Wrapf(err, "failed to add user and token to git url %s", url)
+			return "", fmt.Errorf("failed to add user and token to git url %s: %w", url, err)
 		}
 	}
 
 	cloneDir, err := gitclient.CloneToDir(gitter, gitCloneURL, "")
 	if err != nil {
-		return "", errors.Wrapf(err, "failed to clone URL %s", gitCloneURL)
+		return "", fmt.Errorf("failed to clone URL %s: %w", gitCloneURL, err)
 	}
 
 	path := filepath.Join(cloneDir, "helmfiles", "jx", "jx-values.yaml")
 
 	exists, err := files.FileExists(path)
 	if err != nil {
-		return "", errors.Wrapf(err, "failed to check if file %s exists in clone of %s", path, url)
+		return "", fmt.Errorf("failed to check if file %s exists in clone of %s: %w", path, url, err)
 	}
 	if !exists {
-		return "", errors.Wrapf(err, "file %s does not exist in clone of %s", path, url)
+		return "", fmt.Errorf("file %s does not exist in clone of %s: %w", path, url, err)
 	}
 
 	// lets modify the ingress sub domain
 	m := map[string]interface{}{}
 	err = yamls.LoadFile(path, &m)
 	if err != nil {
-		return "", errors.Wrapf(err, "failed to load file %s", path)
+		return "", fmt.Errorf("failed to load file %s: %w", path, err)
 	}
 	subDomain := "-" + previewNamespace + "."
 	log.Logger().Infof("using ingress sub domain %s", info(subDomain))
 	maps.SetMapValueViaPath(m, "jxRequirements.ingress.namespaceSubDomain", subDomain)
 	err = yamls.SaveFile(m, fileName)
 	if err != nil {
-		return "", errors.Wrapf(err, "failed to save file %s", fileName)
+		return "", fmt.Errorf("failed to save file %s: %w", fileName, err)
 	}
 	return cloneDir, nil
 }

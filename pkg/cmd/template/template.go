@@ -1,6 +1,7 @@
 package template
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -14,7 +15,7 @@ import (
 	"github.com/jenkins-x/jx-helpers/v3/pkg/cobras/helper"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/cobras/templates"
 	"github.com/jenkins-x/jx-logging/v3/pkg/log"
-	"github.com/pkg/errors"
+
 	"github.com/spf13/cobra"
 )
 
@@ -68,23 +69,23 @@ func (o *Options) Run() error {
 	}
 	err := o.Validate()
 	if err != nil {
-		return errors.Wrapf(err, "failed to validate options")
+		return fmt.Errorf("failed to validate options: %w", err)
 	}
 	if o.HelmfileBinary == "" {
 		o.HelmfileBinary, err = plugins.GetHelmfileBinary(plugins.HelmfileVersion)
 		if err != nil {
-			return errors.Wrapf(err, "failed to download helmfile plugin")
+			return fmt.Errorf("failed to download helmfile plugin: %w", err)
 		}
 	}
 
 	o.envCloneDir, err = previews.CreateJXValuesFile(o.GitClient, o.JXClient, o.Namespace, filepath.Dir(o.PreviewHelmfile), o.PreviewNamespace, o.GitUser, o.GitToken)
 	if err != nil {
-		return errors.Wrapf(err, "failed to create the jx-values.yaml file")
+		return fmt.Errorf("failed to create the jx-values.yaml file: %w", err)
 	}
 
 	envVars, err := o.CreateHelmfileEnvVars(o.defaultEnvVar)
 	if err != nil {
-		return errors.Wrapf(err, "failed to create env vars")
+		return fmt.Errorf("failed to create env vars: %w", err)
 	}
 	envVars["VERSION"] = o.Version
 	if envVars["PULL_NUMBER"] == "" {
@@ -93,7 +94,7 @@ func (o *Options) Run() error {
 
 	err = o.helmfileTemplate(envVars)
 	if err != nil {
-		return errors.Wrapf(err, "failed to run helmfile template")
+		return fmt.Errorf("failed to run helmfile template: %w", err)
 	}
 
 	return nil
@@ -116,20 +117,20 @@ func (o *Options) helmfileTemplate(envVars map[string]string) error {
 	}
 	_, err := o.CommandRunner(c)
 	if err != nil {
-		return errors.Wrapf(err, "failed to run helmfile template")
+		return fmt.Errorf("failed to run helmfile template: %w", err)
 	}
 	return nil
 }
 
 func (o *Options) defaultEnvVar(name string) (string, error) {
 	if o.envCloneDir == "" {
-		return "", errors.Errorf("no environment git clone dir")
+		return "", fmt.Errorf("no environment git clone dir")
 	}
 	var err error
 	if o.Requirements == nil {
 		o.Requirements, err = variablefinders.FindRequirements(o.GitClient, o.JXClient, o.Namespace, o.envCloneDir, o.Owner, o.Repository)
 		if err != nil {
-			return "", errors.Wrapf(err, "failed to load requirements")
+			return "", fmt.Errorf("failed to load requirements: %w", err)
 		}
 	}
 

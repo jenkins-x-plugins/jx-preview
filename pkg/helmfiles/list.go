@@ -2,10 +2,10 @@ package helmfiles
 
 import (
 	"encoding/json"
+	"fmt"
 	"strings"
 
 	"github.com/jenkins-x/jx-helpers/v3/pkg/cmdrunner"
-	"github.com/pkg/errors"
 )
 
 // HelmRelease the output from listing the releases
@@ -26,7 +26,7 @@ func ListReleases(runner cmdrunner.CommandRunner, file string, env map[string]st
 	}
 	output, err := runner(c)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to run %s", c.CLI())
+		return nil, fmt.Errorf("failed to run %s: %w", c.CLI(), err)
 	}
 	output = strings.TrimSpace(output)
 	if output == "" {
@@ -36,7 +36,7 @@ func ListReleases(runner cmdrunner.CommandRunner, file string, env map[string]st
 
 	err = json.Unmarshal([]byte(output), &answer)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to parse JSON: %s", output)
+		return nil, fmt.Errorf("failed to parse JSON: %s: %w", output, err)
 	}
 	return answer, nil
 }

@@ -43,7 +43,7 @@ import (
 	"github.com/jenkins-x/jx-helpers/v3/pkg/stringhelpers"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/termcolor"
 	"github.com/jenkins-x/jx-logging/v3/pkg/log"
-	"github.com/pkg/errors"
+
 	"github.com/spf13/cobra"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -143,19 +143,19 @@ func (o *Options) AddFlags(cmd *cobra.Command) {
 func (o *Options) Run() error {
 	err := o.Validate()
 	if err != nil {
-		return errors.Wrapf(err, "failed to validate options")
+		return fmt.Errorf("failed to validate options: %w", err)
 	}
 
 	pr, err := o.DiscoverPullRequest()
 	if err != nil {
-		return errors.Wrapf(err, "failed to discover pull request")
+		return fmt.Errorf("failed to discover pull request: %w", err)
 	}
 
 	log.Logger().Infof("found PullRequest %s", pr.Link)
 
 	envVars, err := o.CreateHelmfileEnvVars(nil)
 	if err != nil {
-		return errors.Wrapf(err, "failed to create env vars")
+		return fmt.Errorf("failed to create env vars: %w", err)
 	}
 
 	destroyCmd := o.createDestroyCommand(envVars)
@@ -165,15 +165,15 @@ func (o *Options) Run() error {
 
 	_, err = previews.CreateJXValuesFile(o.GitClient, o.JXClient, o.Namespace, filepath.Dir(o.PreviewHelmfile), envVars["PREVIEW_NAMESPACE"], o.GitUser, o.GitToken)
 	if err != nil {
-		return errors.Wrapf(err, "failed to create the jx-values.yaml file")
+		return fmt.Errorf("failed to create the jx-values.yaml file: %w", err)
 	}
 
 	preview, _, err := previews.GetOrCreatePreview(o.PreviewClient, o.Namespace, pr, &destroyCmd, pr.Repository().Link, envVars["PREVIEW_NAMESPACE"], o.PreviewHelmfile)
 	if err != nil {
-		return errors.Wrapf(err, "failed to upsert the Preview resource in namespace %s", o.Namespace)
+		return fmt.Errorf("failed to upsert the Preview resource in namespace %s: %w", o.Namespace, err)
 	}
 	if preview == nil {
-		return errors.Errorf("no upserted Preview resource in namespace %s", o.Namespace)
+		return fmt.Errorf("no upserted Preview resource in namespace %s", o.Namespace)
 	}
 	log.Logger().Infof("upserted preview %s", preview.Name)
 
@@ -181,19 +181,19 @@ func (o *Options) Run() error {
 	if !o.NoWatchNamespace {
 		err = o.watchNamespaceStart()
 		if err != nil {
-			return errors.Wrapf(err, "failed to watch namespace %s", o.Namespace)
+			return fmt.Errorf("failed to watch namespace %s: %w", o.Namespace, err)
 		}
 	}
 
 	err = o.helmfileSyncPreview(envVars)
 	if err != nil {
-		return errors.Wrapf(err, "failed to helmfile sync")
+		return fmt.Errorf("failed to helmfile sync: %w", err)
 	}
 
 	if !o.NoWatchNamespace {
 		err = o.watchNamespaceStop()
 		if err != nil {
-			return errors.Wrapf(err, "failed to watch namespace %s", o.Namespace)
+			return fmt.Errorf("failed to watch namespace %s: %w", o.Namespace, err)
 		}
 	}
 
@@ -221,7 +221,7 @@ func (o *Options) Run() error {
 		preview.Spec.Resources.URL = url
 		preview, err = o.PreviewClient.PreviewV1alpha1().Previews(o.Namespace).Update(ctx, preview, metav1.UpdateOptions{})
 		if err != nil {
-			return errors.Wrapf(err, "failed to update preview %s", preview.Name)
+			return fmt.Errorf("failed to update preview %s: %w", preview.Name, err)
 		}
 		log.Logger().Infof("updated preview %s with URL %s", preview.Name, url)
 	} else {
@@ -232,7 +232,7 @@ func (o *Options) Run() error {
 
 	err = common.WriteOutputEnvVars(o.Dir, o.OutputEnvVars)
 	if err != nil {
-		return errors.Wrapf(err, "failed to write output environment variables")
+		return fmt.Errorf("failed to write output environment variables: %w", err)
 	}
 
 	if o.NoComment {
@@ -267,31 +267,31 @@ func (o *Options) Validate() error {
 	}
 	err := o.PullRequestOptions.Validate()
 	if err != nil {
-		return errors.Wrapf(err, "failed to validate repository options")
+		return fmt.Errorf("failed to validate repository options: %w", err)
 	}
 
 	err = o.DiscoverPreviewHelmfile()
 	if err != nil {
-		return errors.Wrapf(err, "failed to discover the preview helmfile")
+		return fmt.Errorf("failed to discover the preview helmfile: %w", err)
 	}
 
 	o.PreviewClient, o.Namespace, err = previews.LazyCreatePreviewClientAndNamespace(o.PreviewClient, o.Namespace)
 	if err != nil {
-		return errors.Wrapf(err, "failed to create Preview client")
+		return fmt.Errorf("failed to create Preview client: %w", err)
 	}
 
 	o.KubeClient, err = kube.LazyCreateKubeClient(o.KubeClient)
 	if err != nil {
-		return errors.Wrapf(err, "failed to create kube client")
+		return fmt.Errorf("failed to create kube client: %w", err)
 	}
 	o.JXClient, err = jxclient.LazyCreateJXClient(o.JXClient)
 	if err != nil {
-		return errors.Wrapf(err, "failed to create jx client")
+		return fmt.Errorf("failed to create jx client: %w", err)
 	}
 
 	o.KServeClient, err = kserving.LazyCreateKServeClient(o.KServeClient)
 	if err != nil {
-		return errors.Wrapf(err, "failed to create jx client")
+		return fmt.Errorf("failed to create jx client: %w", err)
 	}
 
 	if o.PreviewNamespace == "" {
@@ -351,7 +351,7 @@ func (o *Options) helmfileSyncPreview(envVars map[string]string) error {
 	}
 	_, err := o.CommandRunner(c)
 	if err != nil {
-		return errors.Wrapf(err, "failed to run helmfile repos")
+		return fmt.Errorf("failed to run helmfile repos: %w", err)
 	}
 
 	// now install the charts using sync
@@ -362,7 +362,7 @@ func (o *Options) helmfileSyncPreview(envVars map[string]string) error {
 	}
 	_, syncErr := o.CommandRunner(c)
 	if syncErr != nil {
-		syncErr = errors.Wrapf(syncErr, "failed to run helmfile sync")
+		syncErr = fmt.Errorf("failed to run helmfile sync: %w", syncErr)
 
 		syncErr = o.ProcessHelmfileSyncTimeoutOrReturnOriginalError(syncErr)
 
@@ -378,13 +378,13 @@ func (o *Options) ProcessHelmfileSyncTimeoutOrReturnOriginalError(syncError erro
 		_, podsInNs, err := pods.GetPods(o.KubeClient, o.PreviewNamespace, "")
 		if err != nil {
 			log.Logger().Errorf("failed to find pods in namespace %s: %s", o.PreviewNamespace, err.Error())
-			return errors.Wrapf(syncError, "failed to sync helmfile due to a timeout and failed to find pods in namespace %s: %s", o.PreviewNamespace, err.Error())
+			return fmt.Errorf("failed to sync helmfile due to a timeout and failed to find pods in namespace %s: %s: %w", o.PreviewNamespace, err.Error(), syncError)
 		}
 
 		for _, pod := range podsInNs {
 			err := o.IfPodIsFailedShareLogs(pod, o.PreviewNamespace)
 			if err != nil {
-				return errors.Wrapf(syncError, "failed to sync helmfile due to a timeout, pod %s has failed with the logs:\n %s", pod.Name, err.Error())
+				return fmt.Errorf("failed to sync helmfile due to a timeout, pod %s has failed with the logs:\n %s: %w", pod.Name, err.Error(), syncError)
 			}
 		}
 	}
@@ -437,11 +437,11 @@ func (o *Options) CreateHelmfileEnvVars(fn func(string) (string, error)) (map[st
 			var err error
 			value, err = fn(name)
 			if err != nil {
-				return env, errors.Wrapf(err, "failed to default value of variable %s", name)
+				return env, fmt.Errorf("failed to default value of variable %s: %w", name, err)
 			}
 		}
 		if value == "" {
-			return env, errors.Errorf("missing $%s environment variable", name)
+			return env, fmt.Errorf("missing $%s environment variable", name)
 		}
 		env[name] = value
 	}
@@ -483,12 +483,12 @@ func findAllServiceNamesInNamespace(client kubernetes.Interface, namespace strin
 func (o *Options) findPreviewURL(envVars map[string]string) (string, error) {
 	releases, err := helmfiles.ListReleases(o.CommandRunner, o.PreviewHelmfile, envVars)
 	if err != nil {
-		return "", errors.Wrapf(err, "failed to read helmfile releases")
+		return "", fmt.Errorf("failed to read helmfile releases: %w", err)
 	}
 
 	// let's try to find the release name
 	if len(releases) == 0 {
-		return "", errors.Errorf("helmfile %s has no releases", o.PreviewHelmfile)
+		return "", fmt.Errorf("helmfile %s has no releases", o.PreviewHelmfile)
 	}
 
 	// let's assume first release is the preview
@@ -530,7 +530,7 @@ func (o *Options) findPreviewURL(envVars map[string]string) (string, error) {
 				return nil
 			}
 		}
-		return errors.Errorf("not found")
+		return fmt.Errorf("not found")
 	}
 
 	bo := backoff.NewExponentialBackOff()
@@ -538,7 +538,7 @@ func (o *Options) findPreviewURL(envVars map[string]string) (string, error) {
 	bo.Reset()
 	err = backoff.Retry(fn, bo)
 	if err != nil {
-		return "", errors.Wrapf(err, "failed to find preview URL for app names %#v in timeout %v", appNames, o.PreviewURLTimeout)
+		return "", fmt.Errorf("failed to find preview URL for app names %#v in timeout %v: %w", appNames, o.PreviewURLTimeout, err)
 	}
 	return url, nil
 }
@@ -617,7 +617,7 @@ func (o *Options) commentOnPullRequest(preview *v1alpha1.Preview, url string) er
 	_, _, err := o.ScmClient.PullRequests.CreateComment(ctx, o.FullRepositoryName, o.Number, commentInput)
 	prName := "#" + strconv.Itoa(o.Number)
 	if err != nil {
-		return errors.Wrapf(err, "failed to comment on pull request %s on repository %s", prName, o.FullRepositoryName)
+		return fmt.Errorf("failed to comment on pull request %s on repository %s: %w", prName, o.FullRepositoryName, err)
 	}
 	log.Logger().Infof("commented on pull request %s on repository %s", info(prName), info(o.FullRepositoryName))
 	return nil
@@ -631,16 +631,16 @@ func (o *Options) DiscoverPreviewHelmfile() error {
 		chartsDir := filepath.Join(o.Dir, "charts")
 		exists, err := files.DirExists(chartsDir)
 		if err != nil {
-			return errors.Wrapf(err, "failed to check if dir %s exists", chartsDir)
+			return fmt.Errorf("failed to check if dir %s exists: %w", chartsDir, err)
 		}
 		if !exists {
 			chartsDir = filepath.Join(o.Dir, "..")
 			exists, err = files.DirExists(chartsDir)
 			if err != nil {
-				return errors.Wrapf(err, "failed to check if dir %s exists", chartsDir)
+				return fmt.Errorf("failed to check if dir %s exists: %w", chartsDir, err)
 			}
 			if !exists {
-				return errors.Wrapf(err, "could not detect the helm charts folder in dir %s", o.Dir)
+				return fmt.Errorf("could not detect the helm charts folder in dir %s", o.Dir)
 			}
 		}
 
@@ -649,7 +649,7 @@ func (o *Options) DiscoverPreviewHelmfile() error {
 
 	exists, err := files.FileExists(o.PreviewHelmfile)
 	if err != nil {
-		return errors.Wrapf(err, "failed to check for file %s", o.PreviewHelmfile)
+		return fmt.Errorf("failed to check for file %s: %w", o.PreviewHelmfile, err)
 	}
 	if exists {
 		return nil
@@ -660,11 +660,11 @@ func (o *Options) DiscoverPreviewHelmfile() error {
 	parentDir := filepath.Dir(previewDir)
 	relDir, err := filepath.Rel(o.Dir, parentDir)
 	if err != nil {
-		return errors.Wrapf(err, "failed to find preview dir in %s of %s", o.Dir, parentDir)
+		return fmt.Errorf("failed to find preview dir in %s of %s: %w", o.Dir, parentDir, err)
 	}
 	err = os.MkdirAll(parentDir, files.DefaultDirWritePermissions)
 	if err != nil {
-		return errors.Wrapf(err, "failed to make preview dir %s", parentDir)
+		return fmt.Errorf("failed to make preview dir %s: %w", parentDir, err)
 	}
 
 	// now lets grab the template preview
@@ -675,7 +675,7 @@ func (o *Options) DiscoverPreviewHelmfile() error {
 	}
 	_, err = o.CommandRunner(c)
 	if err != nil {
-		return errors.Wrapf(err, "failed to get the preview helmfile: %s via kpt", o.PreviewHelmfile)
+		return fmt.Errorf("failed to get the preview helmfile: %s via kpt: %w", o.PreviewHelmfile, err)
 	}
 
 	// let's add the files
@@ -684,11 +684,11 @@ func (o *Options) DiscoverPreviewHelmfile() error {
 	}
 	_, err = o.GitClient.Command(o.Dir, "add", "*")
 	if err != nil {
-		return errors.Wrapf(err, "failed to add the preview helmfile files to git")
+		return fmt.Errorf("failed to add the preview helmfile files to git: %w", err)
 	}
 	_, err = o.GitClient.Command(o.Dir, "commit", "-a", "-m", "fix: add preview helmfile")
 	if err != nil {
-		return errors.Wrapf(err, "failed to commit the preview helmfile files to git")
+		return fmt.Errorf("failed to commit the preview helmfile files to git: %w", err)
 	}
 
 	// let's push the changes to git
@@ -701,7 +701,7 @@ func (o *Options) DiscoverPreviewHelmfile() error {
 
 	err = po.Run()
 	if err != nil {
-		return errors.Wrapf(err, "failed to push the changes to git")
+		return fmt.Errorf("failed to push the changes to git: %w", err)
 	}
 	return nil
 }
@@ -712,16 +712,16 @@ func (o *Options) watchNamespaceStart() error {
 	o.WatchNamespaceCommand = cmd
 	stderr, err := cmd.StderrPipe()
 	if err != nil {
-		return errors.Wrapf(err, "failed to create stderr for command %s", cmd.String())
+		return fmt.Errorf("failed to create stderr for command %s: %w", cmd.String(), err)
 	}
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
-		return errors.Wrapf(err, "failed to create stdout for command %s", cmd.String())
+		return fmt.Errorf("failed to create stdout for command %s: %w", cmd.String(), err)
 	}
 
 	err = cmd.Start()
 	if err != nil {
-		return errors.Wrapf(err, "failed to run %s", cmd.String())
+		return fmt.Errorf("failed to run %s: %w", cmd.String(), err)
 	}
 
 	go func() {
@@ -784,7 +784,7 @@ func (o *Options) watchNamespaceStop() error {
 	if o.WatchNamespaceCommand != nil && o.WatchNamespaceCommand.Process != nil {
 		err := o.WatchNamespaceCommand.Process.Kill()
 		if err != nil {
-			return errors.Wrapf(err, "failed to kill watch process")
+			return fmt.Errorf("failed to kill watch process: %w", err)
 		}
 		log.Logger().Infof("killed the kubectl event watch command")
 	}

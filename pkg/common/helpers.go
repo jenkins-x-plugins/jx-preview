@@ -9,25 +9,7 @@ import (
 	"github.com/jenkins-x/jx-helpers/v3/pkg/files"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/termcolor"
 	"github.com/jenkins-x/jx-logging/v3/pkg/log"
-	"github.com/pkg/errors"
 )
-
-// BinaryName the binary name to use in help docs
-var BinaryName string
-
-// TopLevelCommand the top level command name
-var TopLevelCommand string
-
-func init() {
-	BinaryName = os.Getenv("BINARY_NAME")
-	if BinaryName == "" {
-		BinaryName = "jx remote"
-	}
-	TopLevelCommand = os.Getenv("TOP_LEVEL_COMMAND")
-	if TopLevelCommand == "" {
-		TopLevelCommand = "jx remote"
-	}
-}
 
 var info = termcolor.ColorInfo
 
@@ -37,12 +19,12 @@ func WriteOutputEnvVars(currentDir string, outputEnvVars map[string]string) erro
 	text := ""
 	exists, err := files.FileExists(path)
 	if err != nil {
-		return errors.Wrapf(err, "failed to check for file exist %s", path)
+		return fmt.Errorf("failed to check for file exist %s: %w", path, err)
 	}
 	if exists {
 		data, err := os.ReadFile(path)
 		if err != nil {
-			return errors.Wrapf(err, "failed to read %s", path)
+			return fmt.Errorf("failed to read %s: %w", path, err)
 		}
 		text = string(data)
 	}
@@ -62,12 +44,12 @@ func WriteOutputEnvVars(currentDir string, outputEnvVars map[string]string) erro
 	dir := filepath.Dir(path)
 	err = os.MkdirAll(dir, files.DefaultDirWritePermissions)
 	if err != nil {
-		return errors.Wrapf(err, "failed to make dir %s", dir)
+		return fmt.Errorf("failed to make dir %s: %w", dir, err)
 	}
 
 	err = os.WriteFile(path, []byte(text), files.DefaultFileWritePermissions)
 	if err != nil {
-		return errors.Wrapf(err, "failed to save file %s", path)
+		return fmt.Errorf("failed to save file %s: %w", path, err)
 	}
 
 	log.Logger().Infof("wrote preview environment variables to %s", info(path))
