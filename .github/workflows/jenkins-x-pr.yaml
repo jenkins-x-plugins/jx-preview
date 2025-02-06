@@ -10,10 +10,11 @@ jobs:
     - env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       name: jx-variables
-      uses: docker://ghcr.io/jenkins-x/jx-boot:3.11.39
+      uses: docker://ghcr.io/jenkins-x/jx-boot:latest
       with:
-        args: gitops variables
-        entrypoint: jx
+        args: >
+          -c "git config --global --add safe.directory /github/workspace; jx gitops variables"
+        entrypoint: /bin/sh
     - env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       name: build-make-linux
