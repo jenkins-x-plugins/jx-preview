@@ -16,7 +16,7 @@ import (
 	"github.com/jenkins-x/jx-helpers/v3/pkg/scmhelpers"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/table"
 	"github.com/jenkins-x/jx-logging/v3/pkg/log"
-	"github.com/pkg/errors"
+
 	"github.com/spf13/cobra"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -59,7 +59,7 @@ func NewCmdGetPreview() (*cobra.Command, *Options) {
 		Aliases: []string{"list"},
 		Long:    cmdLong,
 		Example: fmt.Sprintf(cmdExample, rootcmd.BinaryName, rootcmd.BinaryName),
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(_ *cobra.Command, _ []string) {
 			err := options.Run()
 			helper.CheckErr(err)
 		},
@@ -74,7 +74,7 @@ func NewCmdGetPreview() (*cobra.Command, *Options) {
 func (o *Options) Run() error {
 	err := o.Validate()
 	if err != nil {
-		return errors.Wrapf(err, "failed to validate options")
+		return fmt.Errorf("failed to validate options: %w", err)
 	}
 
 	if o.Current {
@@ -86,7 +86,7 @@ func (o *Options) Run() error {
 	resourceList, err := o.PreviewClient.PreviewV1alpha1().Previews(ns).List(ctx, metav1.ListOptions{})
 	if err != nil {
 		if !apierrors.IsNotFound(err) {
-			return errors.Wrapf(err, "failed to list Previews in namespace %s", ns)
+			return fmt.Errorf("failed to list Previews in namespace %s: %w", ns, err)
 		}
 	}
 
@@ -109,7 +109,7 @@ func (o *Options) Validate() error {
 	var err error
 	o.PreviewClient, o.Namespace, err = previews.LazyCreatePreviewClientAndNamespace(o.PreviewClient, o.Namespace)
 	if err != nil {
-		return errors.Wrapf(err, "failed to create Preview client")
+		return fmt.Errorf("failed to create Preview client: %w", err)
 	}
 
 	return nil
@@ -118,12 +118,12 @@ func (o *Options) Validate() error {
 func (o *Options) CurrentPreviewURL() error {
 	err := o.ValidateCurrent()
 	if err != nil {
-		return errors.Wrapf(err, "failed to validate current options")
+		return fmt.Errorf("failed to validate current options: %w", err)
 	}
 
 	pr, err := o.DiscoverPullRequest()
 	if err != nil {
-		return errors.Wrapf(err, "failed to read pull request options")
+		return fmt.Errorf("failed to read pull request options: %w", err)
 	}
 	o.LatestCommit = pr.Head.Sha
 
@@ -131,13 +131,13 @@ func (o *Options) CurrentPreviewURL() error {
 	if o.Wait {
 		currentPreview, err = o.waitForCommit()
 		if err != nil {
-			return errors.Wrapf(err, "failed whilst waiting for commit")
+			return fmt.Errorf("failed whilst waiting for commit: %w", err)
 		}
 	} else {
 		previewList, err := o.listPreviews()
 		currentPreview = o.getPreview(previewList.Items)
 		if err != nil {
-			return errors.Wrapf(err, "failed whilst retrieving preview")
+			return fmt.Errorf("failed whilst retrieving preview: %w", err)
 		}
 	}
 
@@ -161,7 +161,7 @@ func (o *Options) CurrentPreviewURL() error {
 
 	err = common.WriteOutputEnvVars(o.Dir, o.OutputEnvVars)
 	if err != nil {
-		return errors.Wrapf(err, "failed to write output environment variables")
+		return fmt.Errorf("failed to write output environment variables: %w", err)
 	}
 
 	return nil
@@ -175,7 +175,7 @@ func (o *Options) ValidateCurrent() error {
 
 	err := o.PullRequestOptions.Validate()
 	if err != nil {
-		return errors.Wrapf(err, "failed to validate pull request options")
+		return fmt.Errorf("failed to validate pull request options: %w", err)
 	}
 
 	return nil
@@ -187,7 +187,7 @@ func (o *Options) listPreviews() (*v1alpha1.PreviewList, error) {
 	resourceList, err := o.PreviewClient.PreviewV1alpha1().Previews(ns).List(ctx, metav1.ListOptions{})
 	if err != nil {
 		if !apierrors.IsNotFound(err) {
-			return nil, errors.Wrapf(err, "failed to list previews in namespace %s", ns)
+			return nil, fmt.Errorf("failed to list previews in namespace %s: %w", ns, err)
 		}
 	}
 	return resourceList, nil

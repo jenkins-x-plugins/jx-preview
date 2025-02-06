@@ -2,7 +2,11 @@ package gc_test
 
 import (
 	"context"
+	"os"
+	"path/filepath"
 	"testing"
+
+	"github.com/jenkins-x/jx-helpers/v3/pkg/cmdrunner"
 
 	"github.com/jenkins-x-plugins/jx-preview/pkg/client/clientset/versioned/fake"
 	"github.com/jenkins-x-plugins/jx-preview/pkg/cmd/gc"
@@ -51,7 +55,7 @@ func TestPreviewGC(t *testing.T) {
 		{
 			name:            "gc1",
 			expectedDeleted: []string{preview1.Name},
-			initialise: func(o *gc.Options) error {
+			initialise: func(_ *gc.Options) error {
 				pr1.Closed = true
 				return nil
 			},
@@ -62,14 +66,14 @@ func TestPreviewGC(t *testing.T) {
 		{
 			name:            "gc3",
 			expectedDeleted: []string{preview3.Name},
-			initialise: func(o *gc.Options) error {
+			initialise: func(_ *gc.Options) error {
 				pr3.Merged = true
 				return nil
 			},
 		},
 		{
 			name: "gc4",
-			initialise: func(o *gc.Options) error {
+			initialise: func(_ *gc.Options) error {
 				pr4.Draft = true
 				return nil
 			},
@@ -93,7 +97,22 @@ func TestPreviewGC(t *testing.T) {
 		},
 	}
 
-	runner := &fakerunner.FakeRunner{}
+	runner := &fakerunner.FakeRunner{
+		CommandRunner: func(c *cmdrunner.Command) (string, error) {
+			// git clone
+			if c.Name == "git" && c.Args[0] == "clone" {
+				err := os.MkdirAll(filepath.Join(c.Args[2], "helmfiles", "jx"), 0755)
+				if err != nil {
+					return "", err
+				}
+				err = os.WriteFile(filepath.Join(c.Args[2], "helmfiles", "jx", "jx-values.yaml"), []byte(""), 0600)
+				if err != nil {
+					return "", err
+				}
+			}
+			return "", nil
+		},
+	}
 	for _, tc := range testCases {
 		_, o := gc.NewCmdGCPreviews()
 

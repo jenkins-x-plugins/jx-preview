@@ -24,7 +24,7 @@ import (
 	"github.com/jenkins-x/jx-helpers/v3/pkg/scmhelpers"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/termcolor"
 	"github.com/jenkins-x/jx-logging/v3/pkg/log"
-	"github.com/pkg/errors"
+
 	"github.com/spf13/cobra"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -73,7 +73,7 @@ func NewCmdPreviewDestroy() (*cobra.Command, *Options) {
 		Aliases: []string{"delete", "remove"},
 		Long:    cmdLong,
 		Example: fmt.Sprintf(cmdExample, rootcmd.BinaryName),
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(_ *cobra.Command, args []string) {
 			o.Names = args
 			err := o.Run()
 			helper.CheckErr(err)
@@ -90,7 +90,7 @@ func NewCmdPreviewDestroy() (*cobra.Command, *Options) {
 func (o *Options) Run() error {
 	err := o.Validate()
 	if err != nil {
-		return errors.Wrapf(err, "failed to validate options")
+		return fmt.Errorf("failed to validate options: %w", err)
 	}
 
 	if len(o.Names) == 0 && !o.BatchMode {
@@ -99,7 +99,7 @@ func (o *Options) Run() error {
 		resourceList, err := o.PreviewClient.PreviewV1alpha1().Previews(ns).List(ctx, metav1.ListOptions{})
 		if err != nil {
 			if !apierrors.IsNotFound(err) {
-				return errors.Wrapf(err, "failed to list Previews in namespace %s", ns)
+				return fmt.Errorf("failed to list Previews in namespace %s: %w", ns, err)
 			}
 		}
 
@@ -113,18 +113,18 @@ func (o *Options) Run() error {
 
 		o.Names, err = o.Input.SelectNamesWithFilter(names, "select preview(s) to delete: ", o.SelectAll, o.Filter, "pick the names of the previews to remove")
 		if err != nil {
-			return errors.Wrapf(err, "failed to select names to delete")
+			return fmt.Errorf("failed to select names to delete: %w", err)
 		}
 	}
 	if len(o.Names) == 0 {
-		return errors.Errorf("missing preview name")
+		return fmt.Errorf("missing preview name")
 
 	}
 
 	for _, name := range o.Names {
 		err = o.Destroy(name)
 		if err != nil {
-			return errors.Wrapf(err, "failed to destroy preview %s", name)
+			return fmt.Errorf("failed to destroy preview %s: %w", name, err)
 		}
 	}
 	return nil
@@ -141,13 +141,13 @@ func (o *Options) Destroy(name string) error {
 
 	preview, err := previewInterface.Get(ctx, name, metav1.GetOptions{})
 	if err != nil {
-		return errors.Wrapf(err, "failed to find preview %s in namespace %s", name, ns)
+		return fmt.Errorf("failed to find preview %s in namespace %s: %w", name, ns, err)
 	}
 
 	if o.Dir == "" {
 		dir, err := o.gitCloneSource(preview)
 		if err != nil {
-			return errors.Wrapf(err, "failed to git clone preview source")
+			return fmt.Errorf("failed to git clone preview source: %w", err)
 		}
 
 		o.Dir = dir
@@ -157,25 +157,25 @@ func (o *Options) Destroy(name string) error {
 
 	_, err = previews.CreateJXValuesFile(o.GitClient, o.JXClient, o.Namespace, o.Dir, previewNamespace, o.GitUser, o.GitToken)
 	if err != nil {
-		return errors.Wrapf(err, "failed to create the jx-values.yaml file")
+		return fmt.Errorf("failed to create the jx-values.yaml file: %w", err)
 	}
 
 	err = o.runDeletePreviewCommand(preview, o.Dir)
 	if err != nil {
 		if o.FailOnHelmError {
-			return errors.Wrapf(err, "failed to delete preview resources")
+			return fmt.Errorf("failed to delete preview resources: %w", err)
 		}
 		log.Logger().Warnf("could not delete preview resources: %s", err.Error())
 	}
 
 	err = o.deletePreviewNamespace(preview)
 	if err != nil {
-		return errors.Wrapf(err, "failed to delete preview namespace")
+		return fmt.Errorf("failed to delete preview namespace: %w", err)
 	}
 
 	err = previewInterface.Delete(ctx, name, metav1.DeleteOptions{})
 	if err != nil {
-		return errors.Wrapf(err, "failed to delete preview %s in namespace %s", name, ns)
+		return fmt.Errorf("failed to delete preview %s in namespace %s: %w", name, ns, err)
 	}
 	log.Logger().Infof("deleted preview: %s in namespace %s", info(name), info(ns))
 	return nil
@@ -185,23 +185,23 @@ func (o *Options) Destroy(name string) error {
 func (o *Options) Validate() error {
 	err := o.BaseOptions.Validate()
 	if err != nil {
-		return errors.Wrapf(err, "failed to validate base options")
+		return fmt.Errorf("failed to validate base options: %w", err)
 	}
 	if o.Input == nil {
 		o.Input = inputfactory.NewInput(&o.BaseOptions)
 	}
 	o.PreviewClient, o.Namespace, err = previews.LazyCreatePreviewClientAndNamespace(o.PreviewClient, o.Namespace)
 	if err != nil {
-		return errors.Wrapf(err, "failed to create Preview client")
+		return fmt.Errorf("failed to create Preview client: %w", err)
 	}
 
 	o.KubeClient, err = kube.LazyCreateKubeClient(o.KubeClient)
 	if err != nil {
-		return errors.Wrapf(err, "failed to create kube client")
+		return fmt.Errorf("failed to create kube client: %w", err)
 	}
 	o.JXClient, err = jxclient.LazyCreateJXClient(o.JXClient)
 	if err != nil {
-		return errors.Wrapf(err, "failed to create jx client")
+		return fmt.Errorf("failed to create jx client: %w", err)
 	}
 
 	if o.CommandRunner == nil {
@@ -232,7 +232,7 @@ func (o *Options) runDeletePreviewCommand(preview *v1alpha1.Preview, dir string)
 	}
 	_, err := o.CommandRunner(c)
 	if err != nil {
-		return errors.Wrapf(err, "failed to run destroy command")
+		return fmt.Errorf("failed to run destroy command: %w", err)
 	}
 	return nil
 
@@ -243,7 +243,7 @@ func (o *Options) deletePreviewNamespace(preview *v1alpha1.Preview) error {
 
 	previewNamespace := preview.Spec.Resources.Namespace
 	if previewNamespace == "" {
-		return errors.Errorf("no preview.Spec.PreviewNamespace is defined for preview %s", preview.Name)
+		return fmt.Errorf("no preview.Spec.PreviewNamespace is defined for preview %s", preview.Name)
 	}
 
 	namespaceInterface := o.KubeClient.CoreV1().Namespaces()
@@ -253,12 +253,12 @@ func (o *Options) deletePreviewNamespace(preview *v1alpha1.Preview) error {
 			log.Logger().Infof("there is no preview namespace %s to be removed", info(previewNamespace))
 			return nil
 		}
-		return errors.Wrapf(err, "failed to find preview namespace %s", previewNamespace)
+		return fmt.Errorf("failed to find preview namespace %s: %w", previewNamespace, err)
 	}
 
 	err = namespaceInterface.Delete(ctx, previewNamespace, metav1.DeleteOptions{})
 	if err != nil {
-		return errors.Wrapf(err, "failed to delete preview namespace %s", previewNamespace)
+		return fmt.Errorf("failed to delete preview namespace %s: %w", previewNamespace, err)
 	}
 	log.Logger().Infof("deleted preview namespace %s", info(previewNamespace))
 	return nil
@@ -270,7 +270,7 @@ func (o *Options) gitCloneSource(preview *v1alpha1.Preview) (string, error) {
 	}
 	gitURL := preview.Spec.Source.URL
 	if gitURL == "" {
-		return "", errors.Errorf("no preview.Spec.Source.URL to clone for preview %s", preview.Name)
+		return "", fmt.Errorf("no preview.Spec.Source.URL to clone for preview %s", preview.Name)
 	}
 	return gitclient.CloneToDir(o.GitClient, gitURL, "")
 }

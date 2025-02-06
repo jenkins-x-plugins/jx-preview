@@ -9,12 +9,7 @@ import (
 
 // Build information. Populated at build-time.
 var (
-	Version   string
-	Revision  string
-	Branch    string
-	BuildUser string
-	BuildDate string
-	GoVersion string
+	Version string
 )
 
 const (
@@ -37,7 +32,7 @@ func NewCmdVersion() (*cobra.Command, *Options) {
 	cmd := &cobra.Command{
 		Use:   "version",
 		Short: "Displays the version of this command",
-		Run: func(cmd *cobra.Command, args []string) {
+		Run: func(_ *cobra.Command, _ []string) {
 			err := o.Run()
 			helper.CheckErr(err)
 		},

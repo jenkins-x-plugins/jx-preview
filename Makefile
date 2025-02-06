@@ -36,11 +36,6 @@ VERSION ?= $(shell echo "$$(git for-each-ref refs/tags/ --count=1 --sort=-versio
 # Full build flags used when building binaries. Not used for test compilation/execution.
 BUILDFLAGS :=  -ldflags \
   " -X $(ROOT_PACKAGE)/pkg/cmd/version.Version=$(VERSION)\
-		-X github.com/jenkins-x-plugins/jx-preview/pkg/cmd/version.Version=$(VERSION)\
-		-X $(ROOT_PACKAGE)/pkg/cmd/version.Revision='$(REV)'\
-		-X $(ROOT_PACKAGE)/pkg/cmd/version.Branch='$(BRANCH)'\
-		-X $(ROOT_PACKAGE)/pkg/cmd/version.BuildDate='$(BUILD_DATE)'\
-		-X $(ROOT_PACKAGE)/pkg/cmd/version.GoVersion='$(GO_VERSION)'\
 		$(BUILD_TIME_CONFIG_FLAGS)"
 
 # Some tests expect default values for version.*, so just use the config package values there.
@@ -145,7 +140,7 @@ clean: ## Clean the generated artifacts
 	rm -rf build release dist
 
 get-fmt-deps: ## Install test dependencies
-	$(GO_NOMOD) get golang.org/x/tools/cmd/goimports
+	$(GO_NOMOD) install golang.org/x/tools/cmd/goimports
 
 .PHONY: fmt
 fmt: importfmt ## Format the code

@@ -2,11 +2,12 @@ package previews
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/jenkins-x-plugins/jx-preview/pkg/apis/preview/v1alpha1"
 	"github.com/jenkins-x-plugins/jx-preview/pkg/client/clientset/versioned"
 	"github.com/jenkins-x/go-scm/scm"
-	"github.com/pkg/errors"
+
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -24,7 +25,7 @@ func GetOrCreatePreview(client versioned.Interface, ns string, pr *scm.PullReque
 		}
 	}
 	if err != nil {
-		return nil, create, errors.Wrapf(err, "failed to list Previews in namespace %s", ns)
+		return nil, create, fmt.Errorf("failed to list Previews in namespace %s: %w", ns, err)
 	}
 
 	repo := pr.Repository()
@@ -86,13 +87,13 @@ func GetOrCreatePreview(client versioned.Interface, ns string, pr *scm.PullReque
 	if create {
 		found, err = previewInterface.Create(ctx, found, metav1.CreateOptions{})
 		if err != nil {
-			return found, create, errors.Wrapf(err, "failed to create Preview %s", found.Name)
+			return found, create, fmt.Errorf("failed to create Preview %s: %w", found.Name, err)
 		}
 		return found, create, nil
 	}
 	found, err = previewInterface.Update(ctx, found, metav1.UpdateOptions{})
 	if err != nil {
-		return found, create, errors.Wrapf(err, "failed to update Preview %s", found.Name)
+		return found, create, fmt.Errorf("failed to update Preview %s: %w", found.Name, err)
 	}
 	return found, create, nil
 }

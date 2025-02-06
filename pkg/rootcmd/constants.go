@@ -1,9 +1,22 @@
 package rootcmd
 
-var (
-	// TopLevelCommand top level command
-	TopLevelCommand = "jx-preview"
-
-	// BinaryName the name of the command binary in help
-	BinaryName = "jx-preview"
+import (
+	"os"
 )
+
+// BinaryName the binary name to use in help docs
+var BinaryName string
+
+// TopLevelCommand the top level command name
+var TopLevelCommand string
+
+func init() {
+	BinaryName = os.Getenv("BINARY_NAME")
+	if BinaryName == "" {
+		BinaryName = "jx-preview"
+	}
+	TopLevelCommand = os.Getenv("TOP_LEVEL_COMMAND")
+	if TopLevelCommand == "" {
+		TopLevelCommand = "jx-preview"
+	}
+}
