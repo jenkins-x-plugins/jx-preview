@@ -2,6 +2,9 @@ package gc_test
 
 import (
 	"context"
+	"github.com/jenkins-x/jx-helpers/v3/pkg/cmdrunner"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/jenkins-x-plugins/jx-preview/pkg/client/clientset/versioned/fake"
@@ -93,7 +96,22 @@ func TestPreviewGC(t *testing.T) {
 		},
 	}
 
-	runner := &fakerunner.FakeRunner{}
+	runner := &fakerunner.FakeRunner{
+		CommandRunner: func(c *cmdrunner.Command) (string, error) {
+			// git clone
+			if c.Name == "git" && c.Args[0] == "clone" {
+				err := os.MkdirAll(filepath.Join(c.Args[2], "helmfiles", "jx"), 0755)
+				if err != nil {
+					return "", err
+				}
+				err = os.WriteFile(filepath.Join(c.Args[2], "helmfiles", "jx", "jx-values.yaml"), []byte(""), 0755)
+				if err != nil {
+					return "", err
+				}
+			}
+			return "", nil
+		},
+	}
 	for _, tc := range testCases {
 		_, o := gc.NewCmdGCPreviews()
 
