@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 
@@ -161,6 +162,17 @@ func AssertPreview(t *testing.T, customService string, failSync bool, podState c
 				if c.Name == "helmfile" && c.Args[2] == "sync" && failSync {
 					return " \tCOMBINED OUTPUT:\n\t\t  Error: UPGRADE FAILED: timed out waiting for the condition", errors.New(" \tCOMBINED OUTPUT:\n\t\t  Error: UPGRADE FAILED: timed out waiting for the condition'")
 				}
+				// git clone
+				if c.Name == "git" && c.Args[0] == "clone" {
+					err = os.MkdirAll(filepath.Join(c.Args[2], "helmfiles", "jx"), 0755)
+					if err != nil {
+						return "", err
+					}
+					err = os.WriteFile(filepath.Join(c.Args[2], "helmfiles", "jx", "jx-values.yaml"), []byte(""), 0755)
+					if err != nil {
+						return "", err
+					}
+				}
 				return "", nil
 			},
 		}
@@ -237,11 +249,23 @@ func AssertPreview(t *testing.T, customService string, failSync bool, podState c
 		CommandRunner: func(c *cmdrunner.Command) (string, error) {
 			if c.Name == "git" && len(c.Args) > 0 && c.Args[0] == "clone" {
 				dir := c.Args[len(c.Args)-1]
-				// lets copy the sample project
-				srcDir := filepath.Join("test_data", "sample_project")
-				err := files.CopyDirOverwrite(srcDir, dir)
-				if err != nil {
-					return "", fmt.Errorf("failed to copy files from %s to %s: %w", srcDir, dir, err)
+				repoURL := c.Args[len(c.Args)-2]
+				if strings.HasSuffix(repoURL, "repo.git") {
+					err = os.MkdirAll(filepath.Join(c.Args[2], "helmfiles", "jx"), 0755)
+					if err != nil {
+						return "", err
+					}
+					err = os.WriteFile(filepath.Join(c.Args[2], "helmfiles", "jx", "jx-values.yaml"), []byte(""), 0755)
+					if err != nil {
+						return "", err
+					}
+				} else {
+					// lets copy the sample project
+					srcDir := filepath.Join("test_data", "sample_project")
+					err := files.CopyDirOverwrite(srcDir, dir)
+					if err != nil {
+						return "", fmt.Errorf("failed to copy files from %s to %s: %w", srcDir, dir, err)
+					}
 				}
 				return "", nil
 			}
