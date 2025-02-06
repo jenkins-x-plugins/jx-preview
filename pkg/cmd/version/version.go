@@ -9,12 +9,7 @@ import (
 
 // Build information. Populated at build-time.
 var (
-	Version   string
-	Revision  string
-	Branch    string
-	BuildUser string
-	BuildDate string
-	GoVersion string
+	Version string
 )
 
 const (
