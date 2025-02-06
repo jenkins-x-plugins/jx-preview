@@ -168,7 +168,7 @@ func AssertPreview(t *testing.T, customService string, failSync bool, podState c
 					if err != nil {
 						return "", err
 					}
-					err = os.WriteFile(filepath.Join(c.Args[2], "helmfiles", "jx", "jx-values.yaml"), []byte(""), 0755)
+					err = os.WriteFile(filepath.Join(c.Args[2], "helmfiles", "jx", "jx-values.yaml"), []byte(""), 0600)
 					if err != nil {
 						return "", err
 					}
@@ -255,7 +255,7 @@ func AssertPreview(t *testing.T, customService string, failSync bool, podState c
 					if err != nil {
 						return "", err
 					}
-					err = os.WriteFile(filepath.Join(c.Args[2], "helmfiles", "jx", "jx-values.yaml"), []byte(""), 0755)
+					err = os.WriteFile(filepath.Join(c.Args[2], "helmfiles", "jx", "jx-values.yaml"), []byte(""), 0600)
 					if err != nil {
 						return "", err
 					}

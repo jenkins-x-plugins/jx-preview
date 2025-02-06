@@ -728,7 +728,7 @@ func (o *Options) watchNamespaceStart() error {
 		scanner := bufio.NewScanner(stdout)
 		for scanner.Scan() {
 			m := scanner.Text()
-			log.Logger().Infof(termcolor.ColorStatus(fmt.Sprintf("%s: %s", previewNamespace, m)))
+			log.Logger().Info(termcolor.ColorStatus(fmt.Sprintf("%s: %s", previewNamespace, m)))
 		}
 	}()
 
@@ -736,7 +736,7 @@ func (o *Options) watchNamespaceStart() error {
 		scanner := bufio.NewScanner(stderr)
 		for scanner.Scan() {
 			m := scanner.Text()
-			log.Logger().Infof(termcolor.ColorStatus(fmt.Sprintf("%s: ERROR: %s", previewNamespace, m)))
+			log.Logger().Info(termcolor.ColorStatus(fmt.Sprintf("%s: ERROR: %s", previewNamespace, m)))
 		}
 	}()
 	return nil

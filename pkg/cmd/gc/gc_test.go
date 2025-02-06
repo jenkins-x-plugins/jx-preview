@@ -2,10 +2,11 @@ package gc_test
 
 import (
 	"context"
-	"github.com/jenkins-x/jx-helpers/v3/pkg/cmdrunner"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/jenkins-x/jx-helpers/v3/pkg/cmdrunner"
 
 	"github.com/jenkins-x-plugins/jx-preview/pkg/client/clientset/versioned/fake"
 	"github.com/jenkins-x-plugins/jx-preview/pkg/cmd/gc"
@@ -104,7 +105,7 @@ func TestPreviewGC(t *testing.T) {
 				if err != nil {
 					return "", err
 				}
-				err = os.WriteFile(filepath.Join(c.Args[2], "helmfiles", "jx", "jx-values.yaml"), []byte(""), 0755)
+				err = os.WriteFile(filepath.Join(c.Args[2], "helmfiles", "jx", "jx-values.yaml"), []byte(""), 0600)
 				if err != nil {
 					return "", err
 				}
