@@ -156,7 +156,12 @@ func AssertPreview(t *testing.T, customService string, failSync bool, podState c
 				//   helmfile -f preview/helmfile.yaml list --output json
 				// after a helm install
 				if c.Name == "helmfile" && len(c.Args) > 2 && c.Args[2] == "list" {
-					return `[{"name":"preview","namespace":"jx-myowner-myrepo-pr-5","enabled":true,"labels":""}]`, nil
+					s := `[{"name":"preview","namespace":"jx-myowner-myrepo-pr-5","enabled":true,"labels":""}]`
+					if c.Out != nil {
+						_, _ = c.Out.Write([]byte(s))
+						return "", nil
+					}
+					return s, nil
 				}
 				// helmfile sync
 				if c.Name == "helmfile" && c.Args[2] == "sync" && failSync {
