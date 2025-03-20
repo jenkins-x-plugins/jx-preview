@@ -7,8 +7,8 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/jenkins-x-plugins/jx-preview/pkg/common"
@@ -50,11 +50,9 @@ import (
 	kserve "knative.dev/serving/pkg/client/clientset/versioned"
 )
 
-const (
-	timedOut = "UPGRADE FAILED: timed out waiting for the condition"
-)
-
 var (
+	timedOut = regexp.MustCompile("UPGRADE FAILED: timed out waiting for the condition|context deadline exceeded")
+
 	cmdLong = templates.LongDesc(`
 		Creates a preview
 `)
@@ -373,7 +371,7 @@ func (o *Options) helmfileSyncPreview(envVars map[string]string) error {
 }
 
 func (o *Options) ProcessHelmfileSyncTimeoutOrReturnOriginalError(syncError error) error {
-	if strings.Contains(syncError.Error(), timedOut) {
+	if timedOut.MatchString(syncError.Error()) {
 		log.Logger().Infof("detected a failure on the preview environment %s so looking for an erroring pod", o.PreviewNamespace)
 		_, podsInNs, err := pods.GetPods(o.KubeClient, o.PreviewNamespace, "")
 		if err != nil {
@@ -757,7 +755,8 @@ func (o *Options) IfPodIsFailedShareLogs(pod *corev1.Pod, previewNamespace strin
 
 	// Check it's failed or the number of restarts is high
 	if pod.Status.Phase == corev1.PodFailed || highestRestarts > 5 {
-		log.Logger().Infof("found pod %s and container %s in namespace %s in state %s with %d restarts", pod.Name, highestRestartContainer, previewNamespace, pod.Status.Phase, highestRestarts)
+		log.Logger().Infof("found pod %s and container %s in namespace %s in state %s with %d restarts",
+			pod.Name, highestRestartContainer, previewNamespace, pod.Status.Phase, highestRestarts)
 
 		// Only view previous if the pod state is not failed
 		previous := pod.Status.Phase != corev1.PodFailed
