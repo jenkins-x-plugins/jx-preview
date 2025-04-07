@@ -4,9 +4,9 @@ require (
 	github.com/cenkalti/backoff v2.2.1+incompatible
 	github.com/cpuguy83/go-md2man v1.0.10
 	github.com/jenkins-x-plugins/jx-gitops v0.24.2
-	github.com/jenkins-x/go-scm v1.14.55
+	github.com/jenkins-x/go-scm v1.14.57
 	github.com/jenkins-x/jx-api/v4 v4.7.9
-	github.com/jenkins-x/jx-helpers/v3 v3.9.2
+	github.com/jenkins-x/jx-helpers/v3 v3.9.5
 	github.com/jenkins-x/jx-kube-client/v3 v3.0.8
 	github.com/jenkins-x/jx-logging/v3 v3.0.17
 	github.com/spf13/cobra v1.8.1
