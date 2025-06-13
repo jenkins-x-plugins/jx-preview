@@ -3,7 +3,10 @@ package destroy
 import (
 	"context"
 	"fmt"
+	"os"
 	"path/filepath"
+
+	"github.com/jenkins-x/jx-helpers/v3/pkg/files"
 
 	"github.com/jenkins-x/jx-helpers/v3/pkg/input"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/input/inputfactory"
@@ -61,6 +64,7 @@ type Options struct {
 	GitClient          gitclient.Interface
 	CommandRunner      cmdrunner.CommandRunner
 	Input              input.Interface
+	DevDir             string
 }
 
 // NewCmdPreviewDestroy creates a command object for the command
@@ -144,28 +148,42 @@ func (o *Options) Destroy(name string) error {
 		return fmt.Errorf("failed to find preview %s in namespace %s: %w", name, ns, err)
 	}
 
-	if o.Dir == "" {
-		dir, err := o.gitCloneSource(preview)
+	if preview.Spec.DestroyCommand.Command != "" {
+		previewNamespace := preview.Spec.Resources.Namespace
+
+		previewPath := preview.Spec.DestroyCommand.Path
+		if previewPath == "" {
+			previewPath = "preview"
+		}
+		dir := o.Dir
+		if dir == "" {
+			dir, err = o.gitCloneSource(preview, previewPath)
+			if err != nil {
+				return fmt.Errorf("failed to git clone preview source: %w", err)
+			}
+			defer os.RemoveAll(dir)
+		}
+
+		fullPreviewPath := filepath.Join(dir, previewPath)
+		exists, err := files.DirExists(fullPreviewPath)
 		if err != nil {
-			return fmt.Errorf("failed to git clone preview source: %w", err)
+			return fmt.Errorf("failed to check existence of preview directory %s: %w", fullPreviewPath, err)
 		}
 
-		o.Dir = dir
-	}
-
-	previewNamespace := preview.Spec.Resources.Namespace
-
-	_, err = previews.CreateJXValuesFile(o.GitClient, o.JXClient, o.Namespace, o.Dir, previewNamespace, o.GitUser, o.GitToken)
-	if err != nil {
-		return fmt.Errorf("failed to create the jx-values.yaml file: %w", err)
-	}
-
-	err = o.runDeletePreviewCommand(preview, o.Dir)
-	if err != nil {
-		if o.FailOnHelmError {
-			return fmt.Errorf("failed to delete preview resources: %w", err)
+		if exists {
+			o.DevDir, err = previews.CreateJXValuesFileWithCloneDir(o.GitClient, o.JXClient, o.Namespace, fullPreviewPath, previewNamespace, o.GitUser, o.GitToken, o.DevDir)
+			if err != nil {
+				log.Logger().Warnf("failed to create the jx-values.yaml file: %v", err)
+			}
 		}
-		log.Logger().Warnf("could not delete preview resources: %s", err.Error())
+
+		err = o.runDeletePreviewCommand(preview, dir)
+		if err != nil {
+			if o.FailOnHelmError {
+				return fmt.Errorf("failed to delete preview resources: %w", err)
+			}
+			log.Logger().Warnf("could not delete preview resources: %s", err.Error())
+		}
 	}
 
 	err = o.deletePreviewNamespace(preview)
@@ -264,13 +282,24 @@ func (o *Options) deletePreviewNamespace(preview *v1alpha1.Preview) error {
 	return nil
 }
 
-func (o *Options) gitCloneSource(preview *v1alpha1.Preview) (string, error) {
+func (o *Options) gitCloneSource(preview *v1alpha1.Preview, path string) (string, error) {
 	if o.GitClient == nil {
 		o.GitClient = cli.NewCLIClient("", o.CommandRunner)
 	}
-	gitURL := preview.Spec.Source.URL
+	spec := preview.Spec
+	gitURL := spec.Source.CloneURL
 	if gitURL == "" {
 		return "", fmt.Errorf("no preview.Spec.Source.URL to clone for preview %s", preview.Name)
 	}
-	return gitclient.CloneToDir(o.GitClient, gitURL, "")
+	dir, err := gitclient.SparseCloneToDir(o.GitClient, gitURL, "", false, path)
+	if err != nil {
+		return "", err
+	}
+	if spec.PullRequest.LatestCommit != "" {
+		err := gitclient.Checkout(o.GitClient, dir, spec.PullRequest.LatestCommit)
+		if err != nil {
+			log.Logger().Warnf("failed to checkout latest commit for preview %s: %v", preview.Name, err)
+		}
+	}
+	return dir, nil
 }
