@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"path/filepath"
 
+	"github.com/jenkins-x/jx-helpers/v3/pkg/files"
+
 	"github.com/jenkins-x/jx-helpers/v3/pkg/input"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/input/inputfactory"
 	"github.com/jenkins-x/jx-helpers/v3/pkg/options"
@@ -61,6 +63,7 @@ type Options struct {
 	GitClient          gitclient.Interface
 	CommandRunner      cmdrunner.CommandRunner
 	Input              input.Interface
+	DevDir             string
 }
 
 // NewCmdPreviewDestroy creates a command object for the command
@@ -155,9 +158,20 @@ func (o *Options) Destroy(name string) error {
 
 	previewNamespace := preview.Spec.Resources.Namespace
 
-	_, err = previews.CreateJXValuesFile(o.GitClient, o.JXClient, o.Namespace, o.Dir, previewNamespace, o.GitUser, o.GitToken)
+	previewPath := preview.Spec.DestroyCommand.Path
+	if previewPath == "" {
+		previewPath = "preview"
+	}
+	exists, err := files.DirExists(filepath.Join(o.Dir, previewPath))
 	if err != nil {
-		return fmt.Errorf("failed to create the jx-values.yaml file: %w", err)
+		return fmt.Errorf("failed to check existence of preview directory %s: %w", previewPath, err)
+	}
+
+	if exists {
+		o.DevDir, err = previews.CreateJXValuesFileWithCloneDir(o.GitClient, o.JXClient, o.Namespace, previewPath, previewNamespace, o.GitUser, o.GitToken, o.DevDir)
+		if err != nil {
+			log.Logger().Warnf("failed to create the jx-values.yaml file: %v", err)
+		}
 	}
 
 	err = o.runDeletePreviewCommand(preview, o.Dir)
