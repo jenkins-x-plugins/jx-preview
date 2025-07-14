@@ -22,7 +22,7 @@ e.g.
 
 ```yaml 
 - name: test-preview
-  image: golang:1.23.3
+  image: golang:1.24.4
   script: |
     #!/usr/bin/env sh
     source .jx/variables.sh

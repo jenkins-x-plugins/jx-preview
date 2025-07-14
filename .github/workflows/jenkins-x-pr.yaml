@@ -18,14 +18,14 @@ jobs:
     - env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       name: build-make-linux
-      uses: docker://golang:1.23.3
+      uses: docker://golang:1.24.4
       with:
         args: -c "make linux"
         entrypoint: /bin/sh
     - env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       name: build-make-test
-      uses: docker://golang:1.23.3
+      uses: docker://golang:1.24.4
       with:
         args: -c "make test"
         entrypoint: /bin/sh
