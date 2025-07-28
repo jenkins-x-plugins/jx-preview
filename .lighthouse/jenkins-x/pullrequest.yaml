@@ -26,6 +26,7 @@ spec:
           resources: {}
         - name: build-make-test
           resources: {}
+        - name: build-container-build
   podTemplate: {}
   serviceAccountName: tekton-bot
   timeout: 24h
