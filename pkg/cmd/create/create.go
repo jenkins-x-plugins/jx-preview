@@ -319,6 +319,8 @@ func (o *Options) createDestroyCommand(envVars map[string]string) v1alpha1.Comma
 	args = append(args, "destroy")
 
 	var env []v1alpha1.EnvVar
+	// We don't actually know which environment variables are needed. Maybe do "helm delete $(helm ls --short)" instead
+	// (with HELM_NAMESPACE=$PREVIEW_NAMESPACE). But that is hard to do platform independent (i.e. on windows).
 	if len(envVars) != 0 {
 		for k, v := range envVars {
 			env = append(env, v1alpha1.EnvVar{
@@ -707,6 +709,14 @@ func (o *Options) DiscoverPreviewHelmfile() error {
 	// let's add the files
 	if o.GitClient == nil {
 		o.GitClient = cli.NewCLIClient("", o.CommandRunner)
+	}
+	canonicalDir, err := filepath.Abs(o.Dir)
+	if err != nil {
+		return fmt.Errorf("failed to get absolute path of directory %s: %w", o.Dir, err)
+	}
+	_, err = o.GitClient.Command(o.Dir, "config", "--global", "--add", "safe.directory", canonicalDir)
+	if err != nil {
+		return fmt.Errorf("failed to mark %s as safe.directory: %w", canonicalDir, err)
 	}
 	_, err = o.GitClient.Command(o.Dir, "add", "*")
 	if err != nil {
