@@ -153,7 +153,7 @@ func AssertPreview(t *testing.T, customService string, failSync bool, podState c
 		runner := &fakerunner.FakeRunner{
 			CommandRunner: func(c *cmdrunner.Command) (string, error) {
 				// lets mock running:
-				//   helmfile -f preview/helmfile.yaml list --output json
+				//   helmfile -f preview/helmfile.yaml.gotmpl list --output json
 				// after a helm install
 				if c.Name == "helmfile" && len(c.Args) > 2 && c.Args[2] == "list" {
 					s := `[{"name":"preview","namespace":"jx-myowner-myrepo-pr-5","enabled":true,"labels":""}]`
@@ -289,7 +289,7 @@ func AssertPreview(t *testing.T, customService string, failSync bool, podState c
 	require.NoError(t, err, "failed to delete preview %s", previewName)
 
 	require.Len(t, runner.OrderedCommands, 3, "should have 2 commands")
-	assert.Equal(t, "helmfile --file "+tmpDir+"/preview/helmfile.yaml destroy", runner.OrderedCommands[2].CLI(), "second command")
+	assert.Equal(t, "helmfile --file "+tmpDir+"/preview/helmfile.yaml.gotmpl destroy", runner.OrderedCommands[2].CLI(), "second command")
 
 	// now lets check we removed the preview namespace
 	namespaceList, err := do.KubeClient.CoreV1().Namespaces().List(ctx, metav1.ListOptions{})
@@ -416,7 +416,7 @@ func TestPreviewCreateHelmfileDiscovery(t *testing.T) {
 		err = o.DiscoverPreviewHelmfile()
 		require.NoError(t, err, "failed to run for test %s", tc.name)
 
-		assert.Equal(t, filepath.Join(tmpDir, "preview", "helmfile.yaml"), o.PreviewHelmfile, "for test %s", tc.name)
+		assert.Equal(t, filepath.Join(tmpDir, "preview", "helmfile.yaml.gotmpl"), o.PreviewHelmfile, "for test %s", tc.name)
 	}
 
 	for _, c := range runner.OrderedCommands {

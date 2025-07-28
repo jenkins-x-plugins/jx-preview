@@ -67,7 +67,7 @@ type PreviewSource struct {
 	// Ref the git reference (sha / branch / tag) to clone the source
 	Ref string `json:"ref,omitempty" protobuf:"bytes,3,opt,name=ref"`
 
-	// Path the location of the helmfile.yaml file (defaults to charts/preview/helmfile.yaml)
+	// Path the location of the helmfile.yaml.gotmpl file (defaults to charts/preview/helmfile.yaml.gotmpl)
 	Path string `json:"path,omitempty" protobuf:"bytes,4,opt,name=path"`
 }
 
