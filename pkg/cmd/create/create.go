@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/jenkins-x-plugins/jx-preview/pkg/common"
@@ -133,7 +134,7 @@ func NewCmdPreviewCreate() (*cobra.Command, *Options) {
 func (o *Options) AddFlags(cmd *cobra.Command) {
 	o.Options.DiscoverFromGit = true
 
-	cmd.Flags().StringVarP(&o.PreviewHelmfile, "file", "f", "", "Preview helmfile.yaml path to use. If not specified it is discovered in preview/helmfile.yaml and created from a template if needed")
+	cmd.Flags().StringVarP(&o.PreviewHelmfile, "file", "f", "", "Preview helmfile.yaml.gotmpl path to use. If not specified it is discovered in preview/helmfile.yaml.gotmpl and created from a template if needed")
 	cmd.Flags().StringVarP(&o.Repository, "app", "", "", "Name of the app or repository")
 }
 
@@ -623,7 +624,7 @@ func (o *Options) commentOnPullRequest(preview *v1alpha1.Preview, url string) er
 
 // DiscoverPreviewHelmfile if there is no helmfile configured
 // lets find the charts folder and default the preview helmfile to that
-// then generate a helmfile.yaml if its missing
+// then generate a helmfile.yaml.gotmpl if its missing
 func (o *Options) DiscoverPreviewHelmfile() error {
 	if o.PreviewHelmfile == "" {
 		chartsDir := filepath.Join(o.Dir, "charts")
@@ -642,7 +643,23 @@ func (o *Options) DiscoverPreviewHelmfile() error {
 			}
 		}
 
-		o.PreviewHelmfile = filepath.Join(chartsDir, "..", "preview", "helmfile.yaml")
+		o.PreviewHelmfile = filepath.Join(chartsDir, "..", "preview", "helmfile.yaml.gotmpl")
+		exists, err = files.FileExists(o.PreviewHelmfile)
+		if err != nil {
+			return fmt.Errorf("failed to check for file %s: %w", o.PreviewHelmfile, err)
+		}
+		if !exists && strings.HasSuffix(o.PreviewHelmfile, ".gotmpl") {
+			oldFile := strings.TrimSuffix(o.PreviewHelmfile, ".gotmpl")
+			oldFileExists, err := files.FileExists(oldFile)
+			if err != nil {
+				return fmt.Errorf("failed to check for file %s: %w", oldFile, err)
+			}
+			if oldFileExists {
+				if err := os.Rename(oldFile, o.PreviewHelmfile); err != nil {
+					return fmt.Errorf("failed to rename file %s to %s: %w", oldFile, o.PreviewHelmfile, err)
+				}
+			}
+		}
 	}
 
 	exists, err := files.FileExists(o.PreviewHelmfile)
@@ -650,30 +667,41 @@ func (o *Options) DiscoverPreviewHelmfile() error {
 		return fmt.Errorf("failed to check for file %s: %w", o.PreviewHelmfile, err)
 	}
 	if exists {
-		return nil
-	}
+		multiple, err := hasMultipleDocuments(o.PreviewHelmfile)
+		if err != nil {
+			return fmt.Errorf("failed to check if file %s contains single document: %w", o.PreviewHelmfile, err)
+		}
+		if multiple {
+			return nil
+		}
+		log.Logger().Infof("splitting helmfile into 2 documents for compatibility with helmfile version 1: %s", o.PreviewHelmfile)
+		err = splitHelmfile(o.PreviewHelmfile)
+		if err != nil {
+			return fmt.Errorf("failed to split helmfile into 2 documents: %w", err)
+		}
+	} else {
+		// let's make the preview dir
+		previewDir := filepath.Dir(o.PreviewHelmfile)
+		parentDir := filepath.Dir(previewDir)
+		relDir, err := filepath.Rel(o.Dir, parentDir)
+		if err != nil {
+			return fmt.Errorf("failed to find preview dir in %s of %s: %w", o.Dir, parentDir, err)
+		}
+		err = os.MkdirAll(parentDir, files.DefaultDirWritePermissions)
+		if err != nil {
+			return fmt.Errorf("failed to make preview dir %s: %w", parentDir, err)
+		}
 
-	// let's make the preview dir
-	previewDir := filepath.Dir(o.PreviewHelmfile)
-	parentDir := filepath.Dir(previewDir)
-	relDir, err := filepath.Rel(o.Dir, parentDir)
-	if err != nil {
-		return fmt.Errorf("failed to find preview dir in %s of %s: %w", o.Dir, parentDir, err)
-	}
-	err = os.MkdirAll(parentDir, files.DefaultDirWritePermissions)
-	if err != nil {
-		return fmt.Errorf("failed to make preview dir %s: %w", parentDir, err)
-	}
-
-	// now lets grab the template preview
-	c := &cmdrunner.Command{
-		Dir:  o.Dir,
-		Name: "kpt",
-		Args: []string{"pkg", "get", "https://github.com/jenkins-x/jx3-pipeline-catalog.git/helm/preview", relDir},
-	}
-	_, err = o.CommandRunner(c)
-	if err != nil {
-		return fmt.Errorf("failed to get the preview helmfile: %s via kpt: %w", o.PreviewHelmfile, err)
+		// now lets grab the template preview
+		c := &cmdrunner.Command{
+			Dir:  o.Dir,
+			Name: "kpt",
+			Args: []string{"pkg", "get", "https://github.com/jenkins-x/jx3-pipeline-catalog.git/helm/preview", relDir},
+		}
+		_, err = o.CommandRunner(c)
+		if err != nil {
+			return fmt.Errorf("failed to get the preview helmfile: %s via kpt: %w", o.PreviewHelmfile, err)
+		}
 	}
 
 	// let's add the files
@@ -702,6 +730,56 @@ func (o *Options) DiscoverPreviewHelmfile() error {
 		return fmt.Errorf("failed to push the changes to git: %w", err)
 	}
 	return nil
+}
+
+// splitHelmfile by inserting document separator after environment map
+func splitHelmfile(helmfile string) error {
+	content, err := os.ReadFile(helmfile)
+	if err != nil {
+		return fmt.Errorf("failed to open %s for reading: %w", helmfile, err)
+	}
+	lines := strings.Split(string(content), "\n")
+	splittedFile, err := os.Create(helmfile)
+	if err != nil {
+		return fmt.Errorf("failed to open %s for writing: %w", helmfile, err)
+	}
+	inEnvironments := false
+	for _, line := range lines {
+		if inEnvironments {
+			// Reaching first block after environments
+			if !strings.HasPrefix(line, " ") {
+				_, err = fmt.Fprintln(splittedFile, "---")
+				if err != nil {
+					return fmt.Errorf("failed to write document separator to %s: %w", helmfile, err)
+				}
+			}
+		} else {
+			if strings.HasPrefix(line, "environments:") {
+				inEnvironments = true
+			}
+		}
+		_, err = fmt.Fprintln(splittedFile, line)
+		if err != nil {
+			return fmt.Errorf("failed to write to %s: %w", helmfile, err)
+		}
+	}
+	return nil
+}
+
+func hasMultipleDocuments(helmfile string) (bool, error) {
+	open, err := os.Open(helmfile)
+	if err != nil {
+		return false, fmt.Errorf("failed to open %s: %w", helmfile, err)
+	}
+	defer open.Close()
+	scanner := bufio.NewScanner(open)
+	for scanner.Scan() {
+		line := scanner.Text()
+		if line == "---" {
+			return true, nil
+		}
+	}
+	return false, nil
 }
 
 func (o *Options) watchNamespaceStart() error {
