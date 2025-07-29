@@ -1,7 +1,5 @@
-FROM golang:1.24.4
-WORKDIR /app
-COPY . /app/
-RUN make build
-RUN ls -ltr /app/
+FROM ghcr.io/jenkins-x/jx-boot:latest
 
-ENTRYPOINT ["/app/build/jx-preview"]
+ENTRYPOINT ["jx-preview"]
+
+COPY ./build/linux/jx-preview /usr/bin/jx-preview

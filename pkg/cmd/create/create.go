@@ -3,6 +3,7 @@ package create
 import (
 	"bufio"
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -238,7 +239,12 @@ func (o *Options) Run() error {
 		return nil
 	}
 
-	return o.commentOnPullRequest(preview, url)
+	comment := fmt.Sprintf(":star: PR built and available in a preview **%s**", preview.Name)
+	if url != "" {
+		comment += fmt.Sprintf(" [here](%s) ", url)
+	}
+
+	return o.commentOnPullRequest(comment)
 }
 
 func toAuthor(to *v1alpha1.UserSpec, from *scm.User) {
@@ -605,11 +611,7 @@ func (o *Options) updatePipelineActivity(applicationURL, pullRequestURL string) 
 	}
 }
 
-func (o *Options) commentOnPullRequest(preview *v1alpha1.Preview, url string) error {
-	comment := fmt.Sprintf(":star: PR built and available in a preview **%s**", preview.Name)
-	if url != "" {
-		comment += fmt.Sprintf(" [here](%s) ", url)
-	}
+func (o *Options) commentOnPullRequest(comment string) error {
 
 	ctx := context.Background()
 	commentInput := &scm.CommentInput{
@@ -628,6 +630,7 @@ func (o *Options) commentOnPullRequest(preview *v1alpha1.Preview, url string) er
 // lets find the charts folder and default the preview helmfile to that
 // then generate a helmfile.yaml.gotmpl if its missing
 func (o *Options) DiscoverPreviewHelmfile() error {
+	helmfileUpdated := false
 	if o.PreviewHelmfile == "" {
 		chartsDir := filepath.Join(o.Dir, "charts")
 		exists, err := files.DirExists(chartsDir)
@@ -660,6 +663,7 @@ func (o *Options) DiscoverPreviewHelmfile() error {
 				if err := os.Rename(oldFile, o.PreviewHelmfile); err != nil {
 					return fmt.Errorf("failed to rename file %s to %s: %w", oldFile, o.PreviewHelmfile, err)
 				}
+				helmfileUpdated = true
 			}
 		}
 	}
@@ -668,22 +672,33 @@ func (o *Options) DiscoverPreviewHelmfile() error {
 	if err != nil {
 		return fmt.Errorf("failed to check for file %s: %w", o.PreviewHelmfile, err)
 	}
+	previewDir := filepath.Dir(o.PreviewHelmfile)
 	if exists {
 		multiple, err := hasMultipleDocuments(o.PreviewHelmfile)
 		if err != nil {
 			return fmt.Errorf("failed to check if file %s contains single document: %w", o.PreviewHelmfile, err)
 		}
-		if multiple {
+		if !multiple {
+			changed, err := splitHelmfile(o.PreviewHelmfile)
+			if err != nil {
+				return fmt.Errorf("failed to split helmfile into 2 documents: %w", err)
+			}
+			log.Logger().Infof("split helmfile into 2 documents for compatibility with helmfile version 1: %s", o.PreviewHelmfile)
+			helmfileUpdated = helmfileUpdated || changed
+		}
+		if !helmfileUpdated {
 			return nil
 		}
-		log.Logger().Infof("splitting helmfile into 2 documents for compatibility with helmfile version 1: %s", o.PreviewHelmfile)
-		err = splitHelmfile(o.PreviewHelmfile)
-		if err != nil {
-			return fmt.Errorf("failed to split helmfile into 2 documents: %w", err)
-		}
 	} else {
+		exists, err = files.DirExists(previewDir)
+		if err != nil {
+			return fmt.Errorf("failed to check if preview dir %s exists: %w", previewDir, err)
+		}
+		if exists {
+			return fmt.Errorf("preview dir %s exists, but lacks helmfile", previewDir)
+		}
+
 		// let's make the preview dir
-		previewDir := filepath.Dir(o.PreviewHelmfile)
 		parentDir := filepath.Dir(previewDir)
 		relDir, err := filepath.Rel(o.Dir, parentDir)
 		if err != nil {
@@ -718,12 +733,17 @@ func (o *Options) DiscoverPreviewHelmfile() error {
 	if err != nil {
 		return fmt.Errorf("failed to mark %s as safe.directory: %w", canonicalDir, err)
 	}
-	_, err = o.GitClient.Command(o.Dir, "add", "*")
+	_, _, err = gitclient.EnsureUserAndEmailSetup(o.GitClient, o.Dir, "", "")
+	if err != nil {
+		return fmt.Errorf("failed to setup git user details: %w", err)
+	}
+	_, err = o.GitClient.Command(o.Dir, "add", previewDir)
 	if err != nil {
 		return fmt.Errorf("failed to add the preview helmfile files to git: %w", err)
 	}
-	_, err = o.GitClient.Command(o.Dir, "commit", "-a", "-m", "fix: add preview helmfile")
+	_, err = o.GitClient.Command(o.Dir, "commit", "-m", "fix: add preview helmfile")
 	if err != nil {
+		// TODO: if
 		return fmt.Errorf("failed to commit the preview helmfile files to git: %w", err)
 	}
 
@@ -739,41 +759,52 @@ func (o *Options) DiscoverPreviewHelmfile() error {
 	if err != nil {
 		return fmt.Errorf("failed to push the changes to git: %w", err)
 	}
-	return nil
+	// Aborting jx-preview create. The push should trigger another run and this way there would be less risk of the
+	// helmfile sync to get in the way of each other.
+	err = o.commentOnPullRequest(fmt.Sprintf("Preview helmfile %s is added / updated. If a new pipeline run isn't triggered automatically you can do it manually", o.PreviewHelmfile))
+	if err != nil {
+		return err
+	}
+	return errors.New("aborting jx-preview after pushing preview helmfile. This aught to trigger a new pipeline run")
 }
 
 // splitHelmfile by inserting document separator after environment map
-func splitHelmfile(helmfile string) error {
+func splitHelmfile(helmfile string) (bool, error) {
 	content, err := os.ReadFile(helmfile)
 	if err != nil {
-		return fmt.Errorf("failed to open %s for reading: %w", helmfile, err)
+		return false, fmt.Errorf("failed to open %s for reading: %w", helmfile, err)
 	}
 	lines := strings.Split(string(content), "\n")
 	splittedFile, err := os.Create(helmfile)
 	if err != nil {
-		return fmt.Errorf("failed to open %s for writing: %w", helmfile, err)
+		return false, fmt.Errorf("failed to open %s for writing: %w", helmfile, err)
 	}
+	defer splittedFile.Close()
 	inEnvironments := false
+	separatorAdded := false
 	for _, line := range lines {
-		if inEnvironments {
-			// Reaching first block after environments
-			if !strings.HasPrefix(line, " ") {
-				_, err = fmt.Fprintln(splittedFile, "---")
-				if err != nil {
-					return fmt.Errorf("failed to write document separator to %s: %w", helmfile, err)
+		if !separatorAdded {
+			if inEnvironments {
+				// Reaching first block after environments
+				if !strings.HasPrefix(line, " ") {
+					_, err = fmt.Fprintln(splittedFile, "---")
+					if err != nil {
+						return false, fmt.Errorf("failed to write document separator to %s: %w", helmfile, err)
+					}
+					separatorAdded = true
 				}
-			}
-		} else {
-			if strings.HasPrefix(line, "environments:") {
-				inEnvironments = true
+			} else {
+				if strings.HasPrefix(line, "environments:") {
+					inEnvironments = true
+				}
 			}
 		}
 		_, err = fmt.Fprintln(splittedFile, line)
 		if err != nil {
-			return fmt.Errorf("failed to write to %s: %w", helmfile, err)
+			return false, fmt.Errorf("failed to write to %s: %w", helmfile, err)
 		}
 	}
-	return nil
+	return separatorAdded, nil
 }
 
 func hasMultipleDocuments(helmfile string) (bool, error) {
