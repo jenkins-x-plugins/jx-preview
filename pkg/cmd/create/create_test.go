@@ -185,7 +185,6 @@ func AssertPreview(t *testing.T, customService string, failSync bool, podState c
 		o.ScmClient = scmClient
 		o.PreviewURLTimeout = time.Millisecond
 		o.Version = "0.0.0-SNAPSHOT-PR-1"
-
 		err = o.Run()
 		if failSync {
 			require.Error(t, err, "should have failed to create/update the preview environment")
@@ -414,7 +413,7 @@ func TestPreviewCreateHelmfileDiscovery(t *testing.T) {
 		}
 
 		err = o.DiscoverPreviewHelmfile()
-		require.NoError(t, err, "failed to run for test %s", tc.name)
+		require.Error(t, err, "run should fail since the next run should start automatically on push %s", tc.name)
 
 		assert.Equal(t, filepath.Join(tmpDir, "preview", "helmfile.yaml.gotmpl"), o.PreviewHelmfile, "for test %s", tc.name)
 	}
@@ -422,4 +421,45 @@ func TestPreviewCreateHelmfileDiscovery(t *testing.T) {
 	for _, c := range runner.OrderedCommands {
 		t.Logf("fake command: %s\n", c.CLI())
 	}
+}
+
+func TestHelfileV1Compatbility(t *testing.T) {
+	runner := &fakerunner.FakeRunner{}
+	scmClient, fakeData := fakescm.NewDefault()
+
+	owner := "myowner"
+	repo := "myrepo"
+	sourceURL := "https://github.com/" + owner + "/" + repo
+
+	fakescms.CreatePullRequest(fakeData, owner, repo, 1)
+
+	tmpDir, err := os.MkdirTemp("", "")
+	require.NoError(t, err, "could not create temp dir")
+	err = files.CopyDirOverwrite("test_data", tmpDir)
+	require.NoError(t, err, "could not copy test data")
+	err = files.DeleteFile(filepath.Join(tmpDir, "preview", "helmfile.yaml.gotmpl"))
+	require.NoError(t, err, "could adjust test data")
+	err = files.CopyDirOverwrite(filepath.Join(tmpDir, "oldPreview"), filepath.Join(tmpDir, "preview"))
+	require.NoError(t, err, "could adjust test data")
+
+	_, o := create.NewCmdPreviewCreate()
+	o.GitUser = "fakeuser"
+	o.GitToken = "faketoken"
+	o.NoWatchNamespace = true
+	o.CommandRunner = runner.Run
+	o.Dir = tmpDir
+
+	// values for PR discovery
+	o.Number = 1
+	o.ScmClient = scmClient
+	o.Branch = "PR-1"
+	o.SourceURL = sourceURL
+	o.PullRequestBranch = "master"
+
+	err = o.DiscoverPreviewHelmfile()
+	require.Error(t, err, "run should fail since the next run should start automatically on push")
+
+	previewHelmfile := filepath.Join(tmpDir, "preview", "helmfile.yaml.gotmpl")
+	assert.Equal(t, previewHelmfile, o.PreviewHelmfile)
+	assert.FileExists(t, previewHelmfile)
 }
