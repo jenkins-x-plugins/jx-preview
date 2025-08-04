@@ -38,19 +38,27 @@ import (
 )
 
 func TestPreviewCreate(t *testing.T) {
-	AssertPreview(t, "", false, "Running", 1)
+	AssertPreview(t, "", false, "Running", 1, nil)
 }
 
 func TestPreviewCreateWithCustomService(t *testing.T) {
-	AssertPreview(t, "custom-service", false, "Running", 0)
+	AssertPreview(t, "custom-service", false, "Running", 0, nil)
+}
+
+func TestPreviewCreateWithSelector(t *testing.T) {
+	AssertPreview(t, "", false, "Running", 1, []string{"app=my-app"})
+}
+
+func TestPreviewCreateWithMultipleSelectors(t *testing.T) {
+	AssertPreview(t, "", false, "Running", 1, []string{"tier=frontend,tier!=proxy", "tier=backend"})
 }
 
 func TestHelmfileSyncFailurePostsPodLogs(t *testing.T) {
-	AssertPreview(t, "", true, "Pending", 8)
-	AssertPreview(t, "", true, "Failed", 0)
+	AssertPreview(t, "", true, "Pending", 8, nil)
+	AssertPreview(t, "", true, "Failed", 0, nil)
 }
 
-func AssertPreview(t *testing.T, customService string, failSync bool, podState corev1.PodPhase, numberOfRestarts int32) {
+func AssertPreview(t *testing.T, customService string, failSync bool, podState corev1.PodPhase, numberOfRestarts int32, selectors []string) {
 	containerRegistry := "ghcr.io"
 	gitUser := "myuser"
 	gitToken := "mytoken"
@@ -137,6 +145,7 @@ func AssertPreview(t *testing.T, customService string, failSync bool, podState c
 		o.SourceURL = repoLink + ".git"
 		o.Number = prNumber
 		o.PreviewURLPath = previewPath
+		o.Selectors = selectors
 		if customService != "" {
 			o.PreviewService = customService
 		}
@@ -166,6 +175,16 @@ func AssertPreview(t *testing.T, customService string, failSync bool, podState c
 				// helmfile sync
 				if c.Name == "helmfile" && c.Args[2] == "sync" && failSync {
 					return " \tCOMBINED OUTPUT:\n\t\t  Error: UPGRADE FAILED: timed out waiting for the condition", errors.New(" \tCOMBINED OUTPUT:\n\t\t  Error: UPGRADE FAILED: timed out waiting for the condition'")
+				}
+				// helmfile sync
+				if c.Name == "helmfile" && c.Args[2] == "sync" {
+					if failSync {
+						return " \tCOMBINED OUTPUT:\n\t\t  Error: UPGRADE FAILED: timed out waiting for the condition", errors.New(" \tCOMBINED OUTPUT:\n\t\t  Error: UPGRADE FAILED: timed out waiting for the condition'")
+					}
+					if len(selectors) > 0 {
+						expectedSelector := "--selector=" + selectors[0]
+						assert.Contains(t, c.Args, expectedSelector, "helmfile sync command should contain the selector")
+					}
 				}
 				// git clone
 				if c.Name == "git" && c.Args[0] == "clone" {

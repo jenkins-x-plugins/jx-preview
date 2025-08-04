@@ -34,6 +34,7 @@ Creates a preview
       --path string                    An optional path added to the Preview ingress URL. If not specified uses $JX_PREVIEW_PATH
       --pr int                         the Pull Request number. If not specified we detect it via $PULL_NUMBER or $BRANCH_NAME environment variables
       --preview-url-timeout duration   Time to wait for the preview URL to be available (default 1m0.000000005s)
+      --selector stringArray           Filters releases from the helmfile to deploy based on their labels. Can be repeated to apply multiple filters.
       --service string                 Specify the service/ingress name to use for the preview URL. If not specified uses $JX_PREVIEW_SERVICE
 ```
 
