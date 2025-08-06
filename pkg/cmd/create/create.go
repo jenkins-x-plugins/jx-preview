@@ -85,6 +85,7 @@ type Options struct {
 	PullRequestBranch     string
 	PreviewURLTimeout     time.Duration
 	NoComment             bool
+	NoDeployment          bool
 	NoWatchNamespace      bool
 	Debug                 bool
 	GitClient             gitclient.Interface
@@ -125,6 +126,7 @@ func NewCmdPreviewCreate() (*cobra.Command, *Options) {
 	cmd.Flags().StringVarP(&o.PreviewService, "service", "", "", "Specify the service/ingress name to use for the preview URL. If not specified uses $JX_PREVIEW_SERVICE")
 	cmd.Flags().DurationVarP(&o.PreviewURLTimeout, "preview-url-timeout", "", time.Minute+5, "Time to wait for the preview URL to be available")
 	cmd.Flags().BoolVarP(&o.NoComment, "no-comment", "", false, "Disables commenting on the Pull Request after preview is created")
+	cmd.Flags().BoolVarP(&o.NoDeployment, "no-deployment", "", false, "Disables registering deployment on the Pull Request after preview is created. Setting the environment variable NO_DEPLOYMENT has the same effect")
 	cmd.Flags().BoolVarP(&o.NoWatchNamespace, "no-watch", "", false, "Disables watching the preview namespace as we deploy the preview")
 	cmd.Flags().BoolVarP(&o.Debug, "debug", "", false, "Enables debug logging in helmfile")
 
@@ -235,6 +237,9 @@ func (o *Options) Run() error {
 		return fmt.Errorf("failed to write output environment variables: %w", err)
 	}
 
+	if !o.NoDeployment && os.Getenv("NO_DEPLOYMENT") == "" {
+		o.createNewDeployment(ctx, o.PreviewNamespace, o.FullRepositoryName)
+	}
 	if o.NoComment {
 		return nil
 	}
@@ -245,6 +250,35 @@ func (o *Options) Run() error {
 	}
 
 	return o.commentOnPullRequest(comment)
+}
+
+func (o *Options) createNewDeployment(ctx context.Context, environment, fullRepoName string) {
+	if o.ScmClient.Deployments == nil {
+		log.Logger().Warnf("cannot update deployment status of release %s as the git server %s does not support Deployments", fullRepoName, o.GitKind)
+		return
+	}
+	ref := os.Getenv("PULL_PULL_SHA")
+	if ref == "" {
+		log.Logger().Warnf("PULL_PULL_SHA environment variable is unset or empty. Cannot create deployment for repository %s", fullRepoName)
+		return
+	}
+	deploymentInput := &scm.DeploymentInput{
+		Ref:                   ref,
+		Task:                  "deploy",
+		Environment:           environment,
+		Description:           fmt.Sprintf("preview %s for reference %s", environment, ref),
+		RequiredContexts:      nil,
+		AutoMerge:             false,
+		TransientEnvironment:  true,
+		ProductionEnvironment: false,
+	}
+
+	deployment, _, err := o.ScmClient.Deployments.Create(ctx, fullRepoName, deploymentInput)
+	if err != nil {
+		log.Logger().Warnf("failed to create Deployment for repository %s and ref %s: %v", fullRepoName, ref, err)
+		return
+	}
+	log.Logger().Infof("created Deployment for release %s at %s", fullRepoName, deployment.Link)
 }
 
 func toAuthor(to *v1alpha1.UserSpec, from *scm.User) {
@@ -880,6 +914,7 @@ func (o *Options) IfPodIsFailedShareLogs(pod *corev1.Pod, previewNamespace strin
 		// Only view previous if the pod state is not failed
 		previous := pod.Status.Phase != corev1.PodFailed
 
+		// TODO: Support showing link to logs. How to configure?
 		logs := o.KubeClient.CoreV1().Pods(previewNamespace).GetLogs(pod.Name, &corev1.PodLogOptions{Previous: previous, Container: highestRestartContainer})
 		stream, err := logs.Stream(context.Background())
 		if err != nil {
