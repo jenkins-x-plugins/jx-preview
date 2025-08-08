@@ -33,7 +33,7 @@ Creates a preview
 
 .PP
 \fB\-f\fP, \fB\-\-file\fP=""
-    Preview helmfile.yaml path to use. If not specified it is discovered in preview/helmfile.yaml and created from a template if needed
+    Preview helmfile.yaml.gotmpl path to use. If not specified it is discovered in preview/helmfile.yaml.gotmpl and created from a template if needed
 
 .PP
 \fB\-\-git\-kind\fP=""
@@ -74,6 +74,10 @@ Creates a preview
 .PP
 \fB\-\-preview\-url\-timeout\fP=1m0.000000005s
     Time to wait for the preview URL to be available
+
+.PP
+\fB\-\-selector\fP=[]
+    Filters releases from the helmfile to deploy based on their labels. Can be repeated to apply multiple filters.
 
 .PP
 \fB\-\-service\fP=""

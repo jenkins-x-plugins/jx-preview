@@ -75,6 +75,7 @@ type Options struct {
 	PreviewNamespace string
 	Namespace        string
 	PreviewService   string
+	Selectors        []string
 	DockerRegistry   string
 	BuildNumber      string
 	Version          string
@@ -123,6 +124,7 @@ func NewCmdPreviewCreate() (*cobra.Command, *Options) {
 	cmd.Flags().StringVarP(&o.GitUser, "git-user", "", "", "The user name to git clone the environment repository")
 	cmd.Flags().StringVarP(&o.PreviewURLPath, "path", "", "", "An optional path added to the Preview ingress URL. If not specified uses $JX_PREVIEW_PATH")
 	cmd.Flags().StringVarP(&o.PreviewService, "service", "", "", "Specify the service/ingress name to use for the preview URL. If not specified uses $JX_PREVIEW_SERVICE")
+	cmd.Flags().StringArrayVarP(&o.Selectors, "selector", "", []string{}, "Filters releases from the helmfile to deploy based on their labels. Can be repeated to apply multiple filters.")
 	cmd.Flags().DurationVarP(&o.PreviewURLTimeout, "preview-url-timeout", "", time.Minute+5, "Time to wait for the preview URL to be available")
 	cmd.Flags().BoolVarP(&o.NoComment, "no-comment", "", false, "Disables commenting on the Pull Request after preview is created")
 	cmd.Flags().BoolVarP(&o.NoWatchNamespace, "no-watch", "", false, "Disables watching the preview namespace as we deploy the preview")
@@ -348,6 +350,9 @@ func (o *Options) helmfileSyncPreview(envVars map[string]string) error {
 	args := []string{"--file", o.PreviewHelmfile}
 	if o.Debug {
 		args = append(args, "--debug")
+	}
+	for _, selector := range o.Selectors {
+		args = append(args, "--selector", selector)
 	}
 
 	// first lets always make sure we have the latest helm repo updates
