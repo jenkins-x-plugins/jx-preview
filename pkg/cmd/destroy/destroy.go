@@ -125,6 +125,14 @@ func (o *Options) Run() error {
 
 	}
 
+	defer func() {
+		if o.DevDir != "" {
+			err := os.RemoveAll(o.DevDir)
+			if err != nil {
+				log.Logger().Warnf("failed to remove %s: %s", o.DevDir, err)
+			}
+		}
+	}()
 	for _, name := range o.Names {
 		err = o.Destroy(name)
 		if err != nil {

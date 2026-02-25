@@ -3,6 +3,7 @@ package gc
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"github.com/jenkins-x-plugins/jx-preview/pkg/cmd/destroy"
 	"github.com/jenkins-x-plugins/jx-preview/pkg/previews"
@@ -85,6 +86,14 @@ func (o *Options) Run() error {
 	if o.DryRun {
 		log.Logger().Info("These previews are selected for destruction:")
 	}
+	defer func() {
+		if o.DevDir != "" {
+			err := os.RemoveAll(o.DevDir)
+			if err != nil {
+				log.Logger().Warnf("failed to remove %s: %s", o.DevDir, err)
+			}
+		}
+	}()
 	for k := range resources {
 		preview := resources[k]
 		name := preview.Name
