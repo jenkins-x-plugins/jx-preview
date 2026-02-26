@@ -85,10 +85,7 @@ func AssertPreview(t *testing.T, customService string, failSync bool, podState c
 
 	ingressHost := serviceName + ".1.2.3.4.nip.io"
 	previewPath := "cheese"
-	previewURL := "http://" + ingressHost
-	if previewPath != "" {
-		previewURL = stringhelpers.UrlJoin(previewURL, previewPath)
-	}
+	previewURL := stringhelpers.UrlJoin("http://"+ingressHost, previewPath)
 
 	kubeClient := SetupKubeClient(serviceName, previewNamespace, ingressHost, podState, numberOfRestarts)
 
@@ -188,11 +185,26 @@ func AssertPreview(t *testing.T, customService string, failSync bool, podState c
 				}
 				// git clone
 				if c.Name == "git" && c.Args[0] == "clone" {
-					err = os.MkdirAll(filepath.Join(c.Args[2], "helmfiles", "jx"), 0755)
+					// The directory is the second non option
+					dirArg := ""
+					argCounter := 0
+					for _, arg := range c.Args[2:] {
+						if !strings.HasPrefix(arg, "-") {
+							dirArg = arg
+							argCounter++
+							if argCounter == 2 {
+								break
+							}
+						}
+					}
+					if dirArg == "" {
+						return "", fmt.Errorf("failed to detect git clone directory argument from args: %v", c.Args)
+					}
+					err = os.MkdirAll(filepath.Join(dirArg, "helmfiles", "jx"), 0755)
 					if err != nil {
 						return "", err
 					}
-					err = os.WriteFile(filepath.Join(c.Args[2], "helmfiles", "jx", "jx-values.yaml"), []byte(""), 0600)
+					err = os.WriteFile(filepath.Join(dirArg, "helmfiles", "jx", "jx-values.yaml"), []byte(""), 0600)
 					if err != nil {
 						return "", err
 					}
@@ -306,8 +318,8 @@ func AssertPreview(t *testing.T, customService string, failSync bool, podState c
 	err = do.Run()
 	require.NoError(t, err, "failed to delete preview %s", previewName)
 
-	require.Len(t, runner.OrderedCommands, 3, "should have 2 commands")
-	assert.Equal(t, "helmfile --file "+tmpDir+"/preview/helmfile.yaml.gotmpl destroy", runner.OrderedCommands[2].CLI(), "second command")
+	require.Len(t, runner.OrderedCommands, 7)
+	assert.Equal(t, "helmfile --file "+tmpDir+"/preview/helmfile.yaml.gotmpl destroy", runner.OrderedCommands[6].CLI(), "second command")
 
 	// now lets check we removed the preview namespace
 	namespaceList, err := do.KubeClient.CoreV1().Namespaces().List(ctx, metav1.ListOptions{})

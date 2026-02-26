@@ -102,6 +102,7 @@ type Options struct {
 type envVar struct {
 	Name         string
 	DefaultValue func() string
+	AllowEmpty   bool
 }
 
 // NewCmdPreviewCreate creates a command object for the command
@@ -437,6 +438,14 @@ func (o *Options) CreateHelmfileEnvVars(fn func(string) (string, error)) (map[st
 				return o.Version
 			},
 		},
+		{
+			Name:       "PR_HEAD_REF",
+			AllowEmpty: true,
+		},
+		{
+			Name:       "PULL_NUMBER",
+			AllowEmpty: true,
+		},
 	}
 
 	for _, e := range mandatoryEnvVars {
@@ -452,7 +461,7 @@ func (o *Options) CreateHelmfileEnvVars(fn func(string) (string, error)) (map[st
 				return env, fmt.Errorf("failed to default value of variable %s: %w", name, err)
 			}
 		}
-		if value == "" {
+		if value == "" && !e.AllowEmpty {
 			return env, fmt.Errorf("missing $%s environment variable", name)
 		}
 		env[name] = value

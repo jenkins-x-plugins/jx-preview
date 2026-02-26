@@ -3,6 +3,7 @@ package gc
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"github.com/jenkins-x-plugins/jx-preview/pkg/cmd/destroy"
 	"github.com/jenkins-x-plugins/jx-preview/pkg/previews"
@@ -26,6 +27,7 @@ type Options struct {
 
 	Deleted       []string
 	DestroyDrafts bool
+	DryRun        bool
 }
 
 var (
@@ -57,6 +59,7 @@ func NewCmdGCPreviews() (*cobra.Command, *Options) {
 		},
 	}
 	cmd.Flags().BoolVarP(&options.DestroyDrafts, "gc-drafts", "", false, "Also garbage collect drafts")
+	cmd.Flags().BoolVarP(&options.DryRun, "dry-run", "", false, "Don't garbage collect, just display which would be deleted")
 
 	return cmd, options
 }
@@ -80,6 +83,17 @@ func (o *Options) Run() error {
 	resources := resourceList.Items
 	previews.SortPreviews(resources)
 
+	if o.DryRun {
+		log.Logger().Info("These previews are selected for destruction:")
+	}
+	defer func() {
+		if o.DevDir != "" {
+			err := os.RemoveAll(o.DevDir)
+			if err != nil {
+				log.Logger().Warnf("failed to remove %s: %s", o.DevDir, err)
+			}
+		}
+	}()
 	for k := range resources {
 		preview := resources[k]
 		name := preview.Name
@@ -128,11 +142,14 @@ func (o *Options) Run() error {
 		}
 
 		if pullRequest.Closed || pullRequest.Merged || (o.DestroyDrafts && pullRequest.Draft && !scmhelpers.ContainsLabel(pullRequest.Labels, "ok-to-test")) {
-			err = o.Destroy(name)
-			if err != nil {
-				return fmt.Errorf("failed to destroy preview environment %s: %v", name, err)
+			if !o.DryRun {
+				err = o.Destroy(name)
+				if err != nil {
+					return fmt.Errorf("failed to destroy preview environment %s: %v", name, err)
+				}
+			} else {
+				log.Logger().Info(name)
 			}
-
 			o.Deleted = append(o.Deleted, name)
 		}
 	}
