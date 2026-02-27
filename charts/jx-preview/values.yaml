@@ -23,9 +23,12 @@ gcJobs:
   # gcJobs.concurrencyPolicy -- Drives the job's concurrency policy
   concurrencyPolicy: Forbid
 
-  # Extra arguments to the jx preview gc command
+  # gcJobs.extraArgs -- Extra arguments to the jx preview gc command
   extraArgs: ""
 
+  # gcJobs.env -- environment variables for the jx preview gc command
+  env:
+    XDG_CONFIG_HOME: /home
 
 jxRequirements:
   cluster:

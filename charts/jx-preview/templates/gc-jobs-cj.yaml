@@ -28,8 +28,10 @@ spec:
               - -c
               - jx gitops git setup --namespace {{ .Release.Namespace }} --secret tekton-git --git-provider {{ .Values.jxRequirements.cluster.gitServer | default "https://gitlab.com" }} && jx preview gc {{ .Values.gcJobs.extraArgs }}
               env:
-              - name: XDG_CONFIG_HOME
-                value: /home
+{{- range $pkey, $pval := .Values.gcJobs.env }}
+              - name: {{ $pkey }}
+                value: {{ quote $pval }}
+{{- end }}
               image: {{ tpl .Values.image.repository . }}:{{ tpl .Values.image.tag . }}
               imagePullPolicy: {{ tpl .Values.image.pullPolicy . }}
               name: {{ template "gcJobs.name" . }}
