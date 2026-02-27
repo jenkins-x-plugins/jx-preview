@@ -129,7 +129,7 @@ func (o *Options) Run() error {
 		if o.DevDir != "" {
 			err := os.RemoveAll(o.DevDir)
 			if err != nil {
-				log.Logger().Warnf("failed to remove %s: %s", o.DevDir, err)
+				log.Logger().WithError(err).Warnf("failed to remove %s", o.DevDir)
 			}
 		}
 	}()
@@ -181,7 +181,7 @@ func (o *Options) Destroy(name string) error {
 		if exists {
 			o.DevDir, err = previews.CreateJXValuesFileWithCloneDir(o.GitClient, o.JXClient, o.Namespace, fullPreviewPath, previewNamespace, o.GitUser, o.GitToken, o.DevDir)
 			if err != nil {
-				log.Logger().Warnf("failed to create the jx-values.yaml file: %v", err)
+				log.Logger().WithError(err).Warnf("failed to create the jx-values.yaml file")
 			}
 		}
 
@@ -190,7 +190,7 @@ func (o *Options) Destroy(name string) error {
 			if o.FailOnHelmError {
 				return fmt.Errorf("failed to delete preview resources: %w", err)
 			}
-			log.Logger().Warnf("could not delete preview resources: %s", err.Error())
+			log.Logger().WithError(err).Warnf("could not delete preview resources")
 		}
 	}
 
@@ -306,7 +306,7 @@ func (o *Options) gitCloneSource(preview *v1alpha1.Preview, path string) (string
 	if spec.PullRequest.LatestCommit != "" {
 		err := gitclient.Checkout(o.GitClient, dir, spec.PullRequest.LatestCommit)
 		if err != nil {
-			log.Logger().Warnf("failed to checkout latest commit for preview %s: %v", preview.Name, err)
+			log.Logger().WithError(err).Warnf("failed to checkout latest commit for preview %s", preview.Name)
 		}
 	}
 	return dir, nil
