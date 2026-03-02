@@ -30,6 +30,10 @@ gcJobs:
   env:
     XDG_CONFIG_HOME: /home
 
+  serviceAccount:
+  # gcJobs.serviceAccount.annotations -- annotations for the cronjob service account
+    annotations: {}
+
 jxRequirements:
   cluster:
     gitServer: https://github.com

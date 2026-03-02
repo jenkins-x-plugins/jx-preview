@@ -2,3 +2,9 @@ kind: ServiceAccount
 apiVersion: v1
 metadata:
   name: {{ template "gcJobs.name" . }}
+{{- with .Values.gcJobs.serviceAccount.annotations }}
+  annotations:
+{{ toYaml . | indent 4 }}
+{{- end }}
+  labels:
+    app: jenkins-x-lighthouse-gcjobs
