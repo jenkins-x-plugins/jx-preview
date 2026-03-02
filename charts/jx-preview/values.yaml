@@ -31,7 +31,7 @@ gcJobs:
     XDG_CONFIG_HOME: /home
 
   serviceAccount:
-  # gcJobs.serviceAccount.annotations -- anotations for the cronjob service account
+  # gcJobs.serviceAccount.annotations -- annotations for the cronjob service account
     annotations: {}
 
 jxRequirements:
