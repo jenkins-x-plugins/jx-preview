@@ -9,7 +9,7 @@ require (
 	github.com/jenkins-x/jx-helpers/v3 v3.10.1
 	github.com/jenkins-x/jx-kube-client/v3 v3.0.10
 	github.com/jenkins-x/jx-logging/v3 v3.1.1
-	github.com/spf13/cobra v1.9.1
+	github.com/spf13/cobra v1.10.2
 	github.com/spf13/pflag v1.0.10
 	github.com/stretchr/testify v1.11.1
 	k8s.io/api v0.34.3
