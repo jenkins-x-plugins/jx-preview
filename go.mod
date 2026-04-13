@@ -3,7 +3,7 @@ module github.com/jenkins-x-plugins/jx-preview
 require (
 	github.com/cenkalti/backoff v2.2.1+incompatible
 	github.com/cpuguy83/go-md2man v1.0.10
-	github.com/jenkins-x-plugins/jx-gitops v1.0.31
+	github.com/jenkins-x-plugins/jx-gitops v1.0.40
 	github.com/jenkins-x/go-scm v1.15.17
 	github.com/jenkins-x/jx-api/v4 v4.8.1
 	github.com/jenkins-x/jx-helpers/v3 v3.10.1
@@ -27,7 +27,7 @@ require (
 	github.com/MakeNowJust/heredoc v1.0.0 // indirect
 	github.com/blendle/zapdriver v1.3.1 // indirect
 	github.com/bluekeyes/go-gitdiff v0.8.1 // indirect
-	github.com/cyphar/filepath-securejoin v0.4.1 // indirect
+	github.com/cyphar/filepath-securejoin v0.5.1 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/davidmz/go-pageant v1.0.2 // indirect
 	github.com/emicklei/go-restful/v3 v3.12.2 // indirect
@@ -93,7 +93,7 @@ require (
 	golang.org/x/sys v0.40.0 // indirect
 	golang.org/x/term v0.39.0 // indirect
 	golang.org/x/text v0.33.0 // indirect
-	golang.org/x/time v0.11.0 // indirect
+	golang.org/x/time v0.12.0 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.5.0 // indirect
 	google.golang.org/protobuf v1.36.10 // indirect
 	gopkg.in/evanphx/json-patch.v4 v4.12.0 // indirect
