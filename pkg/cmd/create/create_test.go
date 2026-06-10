@@ -265,11 +265,11 @@ func AssertPreview(t *testing.T, customService string, failSync bool, podState c
 	require.NoError(t, err, "failed to list PipelineActivity in %s", ns)
 	require.Len(t, actList.Items, 1, "should have one PipelineActivity")
 	activity := actList.Items[0]
-	require.Len(t, activity.Spec.Steps, 2, "PipelineActivity.Spec.Steps")
-	previewStep := activity.Spec.Steps[1]
-	require.NotNil(t, previewStep.Preview, 2, "PipelineActivity.Spec.Steps[1].Preview")
-	assert.Equal(t, previewURL, previewStep.Preview.ApplicationURL, "PipelineActivity.Spec.Steps[1].ApplicationURL")
-	assert.Equal(t, prLink, previewStep.Preview.PullRequestURL, "PipelineActivity.Spec.Steps[1].PullRequestURL")
+	require.Len(t, activity.Spec.Steps, 1, "PipelineActivity.Spec.Steps")
+	previewStep := activity.Spec.Steps[0]
+	require.NotNil(t, previewStep.Preview, "PipelineActivity.Spec.Steps[0].Preview")
+	assert.Equal(t, previewURL, previewStep.Preview.ApplicationURL, "PipelineActivity.Spec.Steps[0].ApplicationURL")
+	assert.Equal(t, prLink, previewStep.Preview.PullRequestURL, "PipelineActivity.Spec.Steps[0].PullRequestURL")
 	t.Logf("found PipelineActivity %s with app URL: %s and PR URL: %s", activity.Name, previewStep.Preview.ApplicationURL, previewStep.Preview.PullRequestURL)
 
 	// now lets test deleting the preview
