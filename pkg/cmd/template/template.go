@@ -53,7 +53,7 @@ func NewCmdPreviewTemplate() (*cobra.Command, *Options) {
 			helper.CheckErr(err)
 		},
 	}
-	o.Options.AddFlags(cmd)
+	o.AddFlags(cmd)
 	cmd.Flags().StringVarP(&o.HelmfileBinary, "helmfile-binary", "", "", "specifies the helmfile binary location to use. If not specified defaults to using the downloaded helmfile plugin")
 
 	return cmd, o

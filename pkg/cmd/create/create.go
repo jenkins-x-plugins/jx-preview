@@ -423,7 +423,7 @@ func (o *Options) CreateHelmfileEnvVars(fn func(string) (string, error)) (map[st
 		{
 			Name: "DOCKER_REGISTRY_ORG",
 			DefaultValue: func() string {
-				return o.Options.Owner
+				return o.Owner
 			},
 		},
 		{

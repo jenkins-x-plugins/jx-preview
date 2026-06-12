@@ -134,7 +134,7 @@ func AssertPreview(t *testing.T, customService string, failSync bool, podState c
 		o.KubeClient = kubeClient
 		o.JXClient = jxClient
 		o.KServeClient = kservefake.NewSimpleClientset()
-		o.PullRequestOptions.Options.JXClient = jxClient
+		o.Options.JXClient = jxClient
 		o.Namespace = ns
 		o.Branch = branch
 		o.GitToken = gitToken
