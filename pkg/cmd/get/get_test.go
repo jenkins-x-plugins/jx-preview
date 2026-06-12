@@ -69,7 +69,7 @@ func TestPreviewGet(t *testing.T) {
 		o.PreviewClient = previewClient
 		o.JXClient = jxClient
 		o.SourceURL = sourceURL
-		o.PullRequestOptions.Number = prNumber
+		o.Number = prNumber
 		o.Repository = repo
 		o.DiscoverFromGit = false
 		o.Namespace = ns

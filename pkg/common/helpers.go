@@ -32,7 +32,7 @@ func WriteOutputEnvVars(currentDir string, outputEnvVars map[string]string) erro
 	buf := strings.Builder{}
 	buf.WriteString("# preview environment variables\n")
 	for k, v := range outputEnvVars {
-		buf.WriteString(fmt.Sprintf("export %s=%q\n", k, v))
+		_, _ = fmt.Fprintf(&buf, "export %s=%q\n", k, v)
 	}
 	if text != "" {
 		buf.WriteString("\n\n")
