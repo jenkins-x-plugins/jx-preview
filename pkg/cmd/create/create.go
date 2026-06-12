@@ -136,7 +136,7 @@ func NewCmdPreviewCreate() (*cobra.Command, *Options) {
 }
 
 func (o *Options) AddFlags(cmd *cobra.Command) {
-	o.Options.DiscoverFromGit = true
+	o.DiscoverFromGit = true
 
 	cmd.Flags().StringVarP(&o.PreviewHelmfile, "file", "f", "", "Preview helmfile.yaml.gotmpl path to use. If not specified it is discovered in preview/helmfile.yaml.gotmpl and created from a template if needed")
 	cmd.Flags().StringVarP(&o.Repository, "app", "", "", "Name of the app or repository")
