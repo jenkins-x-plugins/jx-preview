@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/jenkins-x/jx-helpers/v3/pkg/cmdrunner"
+	"github.com/spring-financial-group/jx-helpers/v3/pkg/cmdrunner"
 )
 
 // HelmRelease the output from listing the releases

@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/jenkins-x/jx-helpers/v3/pkg/cmdrunner"
+	"github.com/spring-financial-group/jx-helpers/v3/pkg/cmdrunner"
 
 	"github.com/jenkins-x-plugins/jx-preview/pkg/client/clientset/versioned/fake"
 	"github.com/jenkins-x-plugins/jx-preview/pkg/cmd/gc"
@@ -14,8 +14,8 @@ import (
 	"github.com/jenkins-x/go-scm/scm"
 	fakescm "github.com/jenkins-x/go-scm/scm/driver/fake"
 	jxfake "github.com/jenkins-x/jx-api/v4/pkg/client/clientset/versioned/fake"
-	"github.com/jenkins-x/jx-helpers/v3/pkg/cmdrunner/fakerunner"
-	"github.com/jenkins-x/jx-helpers/v3/pkg/kube/jxenv"
+	"github.com/spring-financial-group/jx-helpers/v3/pkg/cmdrunner/fakerunner"
+	"github.com/spring-financial-group/jx-helpers/v3/pkg/kube/jxenv"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

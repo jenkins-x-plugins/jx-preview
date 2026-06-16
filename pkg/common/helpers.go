@@ -6,9 +6,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/jenkins-x/jx-helpers/v3/pkg/files"
-	"github.com/jenkins-x/jx-helpers/v3/pkg/termcolor"
 	"github.com/jenkins-x/jx-logging/v3/pkg/log"
+	"github.com/spring-financial-group/jx-helpers/v3/pkg/files"
+	"github.com/spring-financial-group/jx-helpers/v3/pkg/termcolor"
 )
 
 var info = termcolor.ColorInfo

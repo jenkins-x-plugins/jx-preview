@@ -9,13 +9,13 @@ import (
 	"github.com/jenkins-x-plugins/jx-preview/pkg/previews"
 	"github.com/jenkins-x-plugins/jx-preview/pkg/rootcmd"
 	"github.com/jenkins-x/go-scm/scm"
-	"github.com/jenkins-x/jx-helpers/v3/pkg/scmhelpers"
+	"github.com/spring-financial-group/jx-helpers/v3/pkg/scmhelpers"
 
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 
-	"github.com/jenkins-x/jx-helpers/v3/pkg/cobras/helper"
-	"github.com/jenkins-x/jx-helpers/v3/pkg/cobras/templates"
 	"github.com/spf13/cobra"
+	"github.com/spring-financial-group/jx-helpers/v3/pkg/cobras/helper"
+	"github.com/spring-financial-group/jx-helpers/v3/pkg/cobras/templates"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/jenkins-x/jx-logging/v3/pkg/log"
