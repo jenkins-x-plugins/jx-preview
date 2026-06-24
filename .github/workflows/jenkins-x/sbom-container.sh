@@ -3,7 +3,7 @@
 # Install syft in this script
 apk add --no-cache curl unzip
 curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | \
-sh -s -- -b /usr/local/bin v0.55.0
+sh -s -- -b /usr/local/bin v1.43.0
 chmod +x /usr/local/bin/syft
 
 # Generate SBOM
