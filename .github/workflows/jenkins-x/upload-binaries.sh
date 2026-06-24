@@ -27,7 +27,7 @@ export ROOTPACKAGE="github.com/$REPOSITORY"
 
 # Install syft in this script
 curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | \
-sh -s -- -b /usr/local/bin v0.54.0
+sh -s -- -b /usr/local/bin v1.43.0
 chmod +x /usr/local/bin/syft
 
 goreleaser release
