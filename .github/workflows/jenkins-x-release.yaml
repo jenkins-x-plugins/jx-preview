@@ -13,7 +13,7 @@ jobs:
 
     - name: prep
       id: prep
-      uses: jenkins-x-plugins/jx-release-version@v2.9.6
+      uses: jenkins-x-plugins/jx-release-version@v2.10.6
       with:
         tag: true
         github-token: ${{ secrets.GIT_BOT_TOKEN }}
