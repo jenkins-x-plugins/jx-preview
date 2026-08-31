@@ -18,8 +18,8 @@ github.com/armon/go-socks5 v0.0.0-20160902184237-e75332964ef5 h1:0CwZNZbxp69SHPd
 github.com/armon/go-socks5 v0.0.0-20160902184237-e75332964ef5/go.mod h1:wHh0iHkYZB8zMSxRWpUBQtwG5a7fFgvEO+odwuTv2gs=
 github.com/blendle/zapdriver v1.3.1 h1:C3dydBOWYRiOk+B8X9IVZ5IOe+7cl+tGOexN4QqHfpE=
 github.com/blendle/zapdriver v1.3.1/go.mod h1:mdXfREi6u5MArG4j9fewC+FGnXaBR+T4Ox4J2u4eHCc=
-github.com/bluekeyes/go-gitdiff v0.8.1 h1:lL1GofKMywO17c0lgQmJYcKek5+s8X6tXVNOLxy4smI=
-github.com/bluekeyes/go-gitdiff v0.8.1/go.mod h1:WWAk1Mc6EgWarCrPFO+xeYlujPu98VuLW3Tu+B/85AE=
+github.com/bluekeyes/go-gitdiff v0.9.0 h1:w+O6lkRBOqfGcwF0Lf6FFHQrhmxM0hCJW5+rbilGuSs=
+github.com/bluekeyes/go-gitdiff v0.9.0/go.mod h1:WWAk1Mc6EgWarCrPFO+xeYlujPu98VuLW3Tu+B/85AE=
 github.com/cenkalti/backoff v2.2.1+incompatible h1:tNowT99t7UNflLxfYYSlKYsBpXdEet03Pg2g16Swow4=
 github.com/cenkalti/backoff v2.2.1+incompatible/go.mod h1:90ReRw6GdpyfrHakVjL/QHaoyV4aDUVVkXQJJJ3NXXM=
 github.com/cpuguy83/go-md2man v1.0.10 h1:BSKMNlYxDvnunlTymqtgONjNnaRV1sTpcovwwjF22jk=
@@ -123,8 +123,8 @@ github.com/inconshreveable/mousetrap v1.1.0 h1:wN+x4NVGpMsO7ErUn/mUI3vEoE6Jt13X2
 github.com/inconshreveable/mousetrap v1.1.0/go.mod h1:vpF70FUmC8bwa3OWnCshd2FqLfsEA9PFc4w1p2J65bw=
 github.com/jenkins-x-plugins/jx-gitops v1.4.8 h1:BFlev9kHl80QbcPM6ipU6C29qtKBwTfnmE84CV6qjXM=
 github.com/jenkins-x-plugins/jx-gitops v1.4.8/go.mod h1:MPL/ro7ggCZItoMv7Fj81/hUOSeYbJB14G57jS0vc5M=
-github.com/jenkins-x/go-scm v1.15.30 h1:pbEeXLWz0Uc40wPX/ROVkHVjyRzgKI10JOc6E1GIKr0=
-github.com/jenkins-x/go-scm v1.15.30/go.mod h1:ScSSAdqJ/Ou0OnpKI5tRRiQpaE/MiQ7qXQpIJHPWcgA=
+github.com/jenkins-x/go-scm v1.15.36 h1:/8yvBzE+PMxwo9y2qophNeF7uFhXnpHFfc/eu3xSZfQ=
+github.com/jenkins-x/go-scm v1.15.36/go.mod h1:SwsSUu/34PM00vWpCGLgSnjW+d5jKw61WCkk2zKSLzM=
 github.com/jenkins-x/jx-api/v4 v4.8.6 h1:UJ1HVU6jRiGfku7Sa4Qq46A9VgpOlJohGOnzP5URnzQ=
 github.com/jenkins-x/jx-api/v4 v4.8.6/go.mod h1:lFZfS3O6+foRPIY1kMpV/0PldUGmkZmW61Ax8pqtYlg=
 github.com/jenkins-x/jx-helpers/v3 v3.11.7 h1:N4CAhiFbjiOeAreuMlvfJqzmpkPqBSHwfReCmSIX14Q=
