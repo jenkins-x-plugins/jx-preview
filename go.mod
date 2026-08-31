@@ -4,7 +4,7 @@ require (
 	github.com/cenkalti/backoff v2.2.1+incompatible
 	github.com/cpuguy83/go-md2man v1.0.10
 	github.com/jenkins-x-plugins/jx-gitops v1.4.8
-	github.com/jenkins-x/go-scm v1.15.30
+	github.com/jenkins-x/go-scm v1.15.36
 	github.com/jenkins-x/jx-api/v4 v4.8.6
 	github.com/jenkins-x/jx-helpers/v3 v3.11.7
 	github.com/jenkins-x/jx-kube-client/v3 v3.0.12
@@ -26,7 +26,7 @@ require (
 	github.com/AlecAivazis/survey/v2 v2.3.7 // indirect
 	github.com/MakeNowJust/heredoc v1.0.0 // indirect
 	github.com/blendle/zapdriver v1.3.1 // indirect
-	github.com/bluekeyes/go-gitdiff v0.8.1 // indirect
+	github.com/bluekeyes/go-gitdiff v0.9.0 // indirect
 	github.com/cyphar/filepath-securejoin v0.7.0 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/davidmz/go-pageant v1.0.2 // indirect
