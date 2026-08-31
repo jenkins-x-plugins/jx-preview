@@ -129,7 +129,8 @@ func (o *Options) Run() error {
 		}
 		err = so.Validate()
 		if err != nil {
-			return fmt.Errorf("failed to validate preview %s with source URL %s: %w", name, preview.Spec.Source.URL, err)
+			log.Logger().Warnf("cannot GC preview %s: failed to validate source URL %s: %s; skipping", name, preview.Spec.Source.URL, err)
+			continue
 		}
 
 		scmClient := so.ScmClient
@@ -138,14 +139,16 @@ func (o *Options) Run() error {
 		ctx := context.Background()
 		pullRequest, _, err := scmClient.PullRequests.Find(ctx, fullName, prNumber)
 		if err != nil {
-			return fmt.Errorf("failed to query PullRequest %s: %w", prLink, err)
+			log.Logger().Warnf("cannot GC preview %s: failed to query PullRequest %s: %s; skipping", name, prLink, err)
+			continue
 		}
 
 		if pullRequest.Closed || pullRequest.Merged || (o.DestroyDrafts && pullRequest.Draft && !scmhelpers.ContainsLabel(pullRequest.Labels, "ok-to-test")) {
 			if !o.DryRun {
 				err = o.Destroy(name)
 				if err != nil {
-					return fmt.Errorf("failed to destroy preview environment %s: %v", name, err)
+					log.Logger().Warnf("failed to destroy preview environment %s: %s; skipping", name, err)
+					continue
 				}
 			} else {
 				log.Logger().Info(name)
