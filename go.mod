@@ -7,7 +7,7 @@ require (
 	github.com/jenkins-x/go-scm v1.15.30
 	github.com/jenkins-x/jx-api/v4 v4.8.6
 	github.com/jenkins-x/jx-helpers/v3 v3.11.7
-	github.com/jenkins-x/jx-kube-client/v3 v3.0.11
+	github.com/jenkins-x/jx-kube-client/v3 v3.0.12
 	github.com/jenkins-x/jx-logging/v3 v3.1.7
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/pflag v1.0.10
