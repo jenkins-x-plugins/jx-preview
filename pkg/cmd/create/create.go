@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/jenkins-x-plugins/jx-preview/pkg/common"
+	v1 "github.com/jenkins-x/jx-api/v4/pkg/apis/jenkins.io/v1"
 
 	"github.com/jenkins-x/jx-helpers/v3/pkg/kube/pods"
 	corev1 "k8s.io/api/core/v1"
@@ -602,22 +603,16 @@ func (o *Options) updatePipelineActivity(applicationURL, pullRequestURL string) 
 		}
 		a, _, p, _, err := key.GetOrCreatePreview(jxClient, ns)
 		if err == nil && a != nil && p != nil {
-			updated := false
-			if p.ApplicationURL == "" {
-				p.ApplicationURL = applicationURL
-				updated = true
-			}
-			if p.PullRequestURL == "" && pullRequestURL != "" {
-				p.PullRequestURL = pullRequestURL
-				updated = true
-			}
-			if updated {
-				a, err = acts.Update(ctx, a, metav1.UpdateOptions{})
-				if err != nil {
-					log.Logger().Warnf("Failed to update PipelineActivity %s: %s", name, err.Error())
-				} else {
-					log.Logger().Infof("Updated PipelineActivity %s which has status %s", name, string(a.Spec.Status))
-				}
+			p.ApplicationURL = applicationURL
+			p.PullRequestURL = pullRequestURL
+			p.Status = v1.ActivityStatusTypeSucceeded
+			now := metav1.Now()
+			p.CompletedTimestamp = &now
+			a, err = acts.Update(ctx, a, metav1.UpdateOptions{})
+			if err != nil {
+				log.Logger().Warnf("Failed to update PipelineActivity %s: %s", name, err.Error())
+			} else {
+				log.Logger().Infof("Updated PipelineActivity %s which has status %s", name, string(a.Spec.Status))
 			}
 		}
 	} else {
