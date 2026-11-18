@@ -608,6 +608,7 @@ func (o *Options) updatePipelineActivity(applicationURL, pullRequestURL string) 
 			p.Status = v1.ActivityStatusTypeSucceeded
 			now := metav1.Now()
 			p.CompletedTimestamp = &now
+			activities.UpdateStatus(a, false, nil)
 			a, err = acts.Update(ctx, a, metav1.UpdateOptions{})
 			if err != nil {
 				log.Logger().Warnf("Failed to update PipelineActivity %s: %s", name, err.Error())
